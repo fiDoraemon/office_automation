@@ -14,12 +14,12 @@ return [
     'type'            => 'mysql',
     // 服务器地址
     'hostname'        => '127.0.0.1',
-    // 数据库名
-    'database'        => 'oa',
-    // 用户名
-    'username'        => 'root',
-    // 密码
-    'password'        => '123456',
+    'database'        => 'office_automation',           // 数据库名
+    'username'        => 'root',            // 用户名
+    'password'        => '',            // 密码
+//    'database'        => 'oa',           // 数据库名
+//    'username'        => 'root',            // 用户名
+//    'password'        => '123456',            // 密码
     // 端口
     'hostport'        => '3306',
     // 连接dsn
