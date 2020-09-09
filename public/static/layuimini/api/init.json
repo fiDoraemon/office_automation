@@ -242,7 +242,7 @@
       ]
     },
     {
-      "title": "OA管理",
+      "title": "OA",
       "icon": "fa fa-slideshare",
       "href": "",
       "target": "_self",
@@ -254,14 +254,8 @@
           "target": "_self",
           "child": [
             {
-              "title": "任务管理",
-              "href": "page/test.html?v=1",
-              "icon": "fa fa-calendar",
-              "target": "_self"
-            },
-            {
-              "title": "任务树",
-              "href": "page/test.html?v=2",
+              "title": "我的任务",
+              "href": "page/mission/index.html",
               "icon": "fa fa-calendar",
               "target": "_self"
             }
