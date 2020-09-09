@@ -12,6 +12,7 @@ namespace app\common\util;
 class EncryptionUtil
 {
     public static function Md5Encryption($data,$salt){
+        $salt = md5($salt);
         $data = md5($data) . $salt;
         return md5($data);
     }

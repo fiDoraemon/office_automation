@@ -11,6 +11,7 @@ namespace app\index\controller;
 
 use app\common\interceptor\CommonController;
 use app\common\Result;
+use app\common\util\EncryptionUtil;
 use think\Session;
 
 class UserController extends CommonController
@@ -20,11 +21,14 @@ class UserController extends CommonController
      * 修改密码
      */
     public function changePwd(){
-        $oldPwd = $_POST["oldPwd"];
-        $newPwd = $_POST["newPwd"];
         $user = Session::get('info');
-        //检查旧密码与填写得是否一致
+        $userId = $user->user_id;
+        $oldPwd = EncryptionUtil::Md5Encryption($_POST["oldPwd"],$userId);
+        $newPwd = $_POST["newPwd"];
+        //加密后与原密码对比
         if($oldPwd === $user->password){
+            //将新的密码加密后保存到数据库
+            $newPwd = EncryptionUtil::Md5Encryption($newPwd,$userId);
             $user->password = $newPwd;
             $saveCount = $user->save();
             if($saveCount == 1){

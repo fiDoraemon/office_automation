@@ -32,13 +32,17 @@ class LoginController //extends CommonController
         return "查询失败";
     }
 
+    public function testData(){
+        return  EncryptionUtil::Md5Encryption(123456,10086);
+    }
+
     /**
      * @return array
      * 用户登录
      */
     public function login(){
         $userNum = $_POST["userNum"];
-        $userPwd = EncryptionUtil::Md5Encryption($_POST["userPwd"]);
+        $userPwd = EncryptionUtil::Md5Encryption($_POST["userPwd"],$userNum);
         try {
             $checkResult = $this->checkUser($userNum, $userPwd);
             if($checkResult){
