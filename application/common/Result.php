@@ -14,6 +14,10 @@ class Result
     const OBJECT_EXIST          = 6;
     const FORBIDDEN_USER        = 7;
     const OLD_PASSWORLD_ERROR   = 8;
+    const SEND_CODE_SUCCESS     = 9;
+    const SEND_CODE_ERROR       = 10;
+    const EMAIL_ERROR           = 11;
+
 
     // 对应结果
     public static $resultMsg = [
@@ -25,6 +29,9 @@ class Result
         self::OBJECT_EXIST          => '对象已存在！',
         self::FORBIDDEN_USER        => '您的账户已禁用！',
         self::OLD_PASSWORLD_ERROR   => '原密码输入错误',
+        self::SEND_CODE_SUCCESS     => '验证码发送成功',
+        self::SEND_CODE_ERROR       => '验证码发送失败',
+        self::EMAIL_ERROR           => '邮箱地址错误',
     ];
 
     // 返回结果

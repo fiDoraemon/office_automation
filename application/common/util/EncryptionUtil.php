@@ -8,7 +8,11 @@
 
 namespace app\common\util;
 
-
+/**
+ * Class EncryptionUtil
+ * @package app\common\util
+ * 加密工具类
+ */
 class EncryptionUtil
 {
     public static function Md5Encryption($data,$salt){

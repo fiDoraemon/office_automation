@@ -110,6 +110,11 @@
             form = layui.form,
             layer = layui.layer;
 
+        //跳转到找回密码页面
+        $('.forget-password').on('click', function () {
+            window.location = 'user/retrieve-passworld.html';
+        });
+
         // 登录过期的时候，跳出ifram框架
         if (top.location != self.location) top.location = self.location;
 
@@ -146,15 +151,7 @@
                 layer.msg('验证码不能为空');
                 return false;
             }
-            //ajax请求服务端进行登录
             sendData();
-            //登录成功
-            // layer.msg('登录成功', function () {
-            //     window.location = '../index.html';
-            // });
-
-            //登录失败
-
             return false;
         });
     });
