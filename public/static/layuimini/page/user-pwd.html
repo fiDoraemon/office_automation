@@ -48,6 +48,7 @@
 </div>
 <script src="../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script src="../js/jq/jquery-3.5.1.js"></script>
 <script>
     layui.use(['form','miniTab'], function () {
         var form = layui.form,
@@ -56,11 +57,41 @@
 
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-            var index = layer.alert(JSON.stringify(data.field), {
-                title: '最终的提交信息'
-            }, function () {
-                layer.close(index);
-                miniTab.deleteCurrentByIframe();
+            $.ajax({
+                url: "/office_automation/public/index.php/index/user_controller/changePwd",
+                type:'post',
+                timeout: 1000,
+                data: {
+                    oldPwd: data.field['old_password'],
+                    newPwd: data.field['new_password']
+                },
+                success: function(data){
+                    switch (data['code']) {
+                        case 0:
+                            var index = layer.alert("密码修改成功！", {
+                                title: '系统提示'
+                            }, function () {
+                                layer.close(index);
+                                miniTab.deleteCurrentByIframe();
+                            });
+                            break;
+                        case 8:
+                            var index = layer.alert("原密码输入错误！", {
+                                title: '系统提示'
+                            });
+                            break;
+                        default:
+                            var index = layer.alert("密码修改失败！", {
+                                title: '系统提示'
+                            });
+                            break;
+                    }
+                },
+                error: function(data){
+                    var index = layer.alert("请求出错！", {
+                        title: '系统提示'
+                    });
+                }
             });
             return false;
         });

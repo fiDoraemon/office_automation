@@ -66,13 +66,13 @@
                             <a href="javascript:;" layuimini-content-href="page/user-setting.html" data-title="基本资料" data-icon="fa fa-gears">基本资料<span class="layui-badge-dot"></span></a>
                         </dd>
                         <dd>
-                            <a href="javascript:;" layuimini-content-href="page/user-password.html" data-title="修改密码" data-icon="fa fa-gears">修改密码</a>
+                            <a href="javascript:;" layuimini-content-href="page/user-pwd.html" data-title="修改密码" data-icon="fa fa-gears">修改密码</a>
                         </dd>
                         <dd>
                             <hr>
                         </dd>
                         <dd>
-                            <a href="javascript:;" class="login-out">退出登录</a>
+                            <a href="javascript:;" id="" class="login-out">退出登录</a>
                         </dd>
                     </dl>
                 </li>
@@ -129,7 +129,11 @@
 </div>
 <script src="lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="js/lay-config.js?v=2.0.0" charset="utf-8"></script>
+<script src="js/jq/jquery-3.5.1.js"></script>
 <script>
+    //登录拦截返回登录页面
+    //window.location = 'page/login-3.html';
+
     layui.use(['jquery', 'layer', 'miniAdmin','miniTongji'], function () {
         var $ = layui.jquery,
             layer = layui.layer,
@@ -160,9 +164,28 @@
         });
 
         $('.login-out').on("click", function () {
-            layer.msg('退出登录成功', function () {
-                window.location = 'page/login-3.html';
+            $.ajax({
+                url: "/office_automation/public/index.php/index/login_controller/loginOut",
+                type:'post',
+                timeout: 1000,
+                data: {
+                },
+                success: function(data){
+                    //退出登录，删除cookie
+                    if(data["code"] == 0){
+                        console.log("退出成功");
+                        layer.msg('退出登录成功', function () {
+                            window.location = 'page/login-3.html';
+                        });
+                    }else{
+                        console.log("退出失败")
+                    }
+                },
+                error: function(data){
+                    console.log("退出失败");
+                }
             });
+
         });
     });
 </script>
