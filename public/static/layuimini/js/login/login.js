@@ -1,3 +1,9 @@
+//实现点击刷新验证码功能
+$('#refreshCaptcha').on('click', function () {
+    var path = "/office_automation/public/index.php/index/login_controller/sendPageCode";
+    $("#refreshCaptcha").attr('src',path);
+});
+
 //发送登录请求
 function sendData(){
     var userNum  = $("#user-num").val();

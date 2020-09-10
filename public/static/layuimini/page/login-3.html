@@ -106,12 +106,6 @@
 <script src="../js/login/login.js" charset="utf-8"></script>
 <script src="../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script>
-    //实现点击刷新验证码功能
-    $('#refreshCaptcha').on('click', function () {
-        var path = "/office_automation/public/index.php/index/login_controller/sendPageCode";
-        $("#refreshCaptcha").attr('src',path);
-    });
-
     layui.use(['form','jquery'], function () {
         var $ = layui.jquery,
             form = layui.form,
