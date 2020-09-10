@@ -64,20 +64,29 @@ class LoginController
         return Result::returnResult(Result::SUCCESS,null);
     }
 
-    /**
-     * 校验邮箱验证码
-     */
-    public function checkEmailCode(){
 
-    }
     /**
      * 找回密码
      */
     public function retrievePwd(){
-        //获取页面的基本信息工号id，邮箱地址
-        //判断邮箱地址与数据库中的地址是否一致
-        //发送验证码到邮箱，并将验证码加密保存到session中
-        //用户填写验证码和新密码后请求找回密码
+        $code   = $_POST["code"];
+        $newPwd = $_POST["newPwd"];
+        $userId = $_POST["userId"];
+        //校验验证码
+        $entryCode = $this -> checkEmailCode($code);
+        if($entryCode){//更改数据库信息
+            $newPwd = EncryptionUtil::Md5Encryption($newPwd,$userId);
+            try {
+                $user = User::get(['user_id' => $userId, 'user_status' => 1]);
+            } catch (DbException $e) {
+                return Result::returnResult(Result::RETRIEVE_PASSWORLD_FAIL,null);
+            }
+            $user->password = $newPwd;
+            $user->save();
+            return Result::returnResult(Result::RETRIEVE_PASSWORLD_SUCCESS,null);
+        }else{
+            return Result::returnResult(Result::CODE_ERROR,null);
+        }
     }
 
     /**
@@ -136,6 +145,19 @@ class LoginController
             $code .= $pool[mt_rand(0, $mt_rand_max)];
         }
         return $code;
+    }
+
+    /**
+     * 校验邮箱验证码
+     */
+    private function checkEmailCode($code){
+        $emailCode = Session::get("emailCode");
+        if($code == $emailCode){  //验证码正确
+            //删除session里面的验证码信息
+            unset($_SESSION['code']);
+            return true;
+        }
+        return false;
     }
 
 

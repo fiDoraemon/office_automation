@@ -6,6 +6,7 @@
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="icon" type="image/x-icon" href="../../images/favicon.ico"/>
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <link rel="stylesheet" href="../../js/lay-module/step-lay/step.css" media="all">
@@ -75,19 +76,19 @@
                                     <div class="layui-form-item">
                                         <label class="layui-form-label">验证码:</label>
                                         <div class="layui-input-block">
-                                            <input type="text" placeholder="请填写验证码信息" class="layui-input" lay-verify="number" required />
+                                            <input type="text" id="email-code" placeholder="请填写验证码信息" class="layui-input" lay-verify="required" required />
                                         </div>
                                     </div>
                                     <div class="layui-form-item">
                                         <label class="layui-form-label">新密码:</label>
                                         <div class="layui-input-block">
-                                            <input type="password" placeholder="请填写新密码" class="layui-input" lay-verify="number" required />
+                                            <input type="password" id="new-Pwd" placeholder="请填写新密码" class="layui-input" lay-verify="required" required />
                                         </div>
                                     </div>
                                     <div class="layui-form-item">
                                         <label class="layui-form-label">确认密码:</label>
                                         <div class="layui-input-block">
-                                            <input type="password" placeholder="请确认密码" class="layui-input" lay-verify="number" required />
+                                            <input type="password" id="enter-pwd" placeholder="请确认密码" class="layui-input" lay-verify="required" required />
                                         </div>
                                     </div>
                                     <div class="layui-form-item">
@@ -188,12 +189,49 @@
                     });
                 }
             });
-
             return false;
         });
 
         form.on('submit(formStep2)', function (data) {
-            step.next('#stepForm');
+            console.log(data);
+            var code = $("#email-code").val();
+            var newPwd = $("#new-Pwd").val();
+            var enterPwd = $("#enter-pwd").val();
+            var userId = $("#user-id").val();
+            if(newPwd === enterPwd){
+                $.ajax({
+                    url: "/office_automation/public/index.php/index/login_controller/retrievePwd",
+                    type:'post',
+                    timeout: 1000,
+                    data: {
+                        code      : code,
+                        newPwd    : newPwd,
+                        userId    : userId
+                    },
+                    success: function(data){
+                        if(data["code"] == 13){
+                            step.next('#stepForm');
+                        }else if(data["code"] == 14){
+                            var index = layer.alert("验证码填写错误！", {
+                                title: '系统提示'
+                            });
+                        }else{
+                            var index = layer.alert("系统错误！", {
+                                title: '系统提示'
+                            });
+                        }
+                    },
+                    error: function(data){
+                        var index = layer.alert("系统错误！", {
+                            title: '系统提示'
+                        });
+                    }
+                });
+            }else{
+                var index = layer.alert("两次密码输入不一致！", {
+                    title: '系统提示'
+                });
+            }
             return false;
         });
 
