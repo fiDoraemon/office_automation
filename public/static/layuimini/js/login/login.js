@@ -1,5 +1,5 @@
 //实现点击刷新验证码功能
-$('#refreshCaptcha').on('click', function () {
+$('#refreshCaptcha').on('click', function(){
     var path = "/office_automation/public/index.php/index/login_controller/sendPageCode";
     $("#refreshCaptcha").attr('src',path);
 });
@@ -40,7 +40,7 @@ function sendData(){
             console.log(data);
             console.log("error");
         }
-    })
+    });
 }
 
 /**
