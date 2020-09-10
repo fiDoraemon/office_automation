@@ -13,6 +13,7 @@ use app\common\model\User;
 use app\common\Result;
 use app\common\util\EncryptionUtil;
 use app\common\util\SendmailUtil;
+use think\captcha\Captcha;
 use think\exception\DbException;
 use think\Session;
 
@@ -37,10 +38,27 @@ class LoginController
         return  EncryptionUtil::Md5Encryption(123456,10086);
     }
 
+    public function getPageCode(){
+        return Result::returnResult(Result::CODE_ERROR,Session::get('verify_code'));
+    }
+
+    /**
+     * 发送登录页面验证码
+     */
+    public function sendPageCode(){
+        $captcha = new captcha();//captcha 验证码初始化
+        $codeImg = $captcha ->entry();
+        return $codeImg;
+    }
+
     /**用户登录
      * @return array
      */
     public function login(){
+        $pageCode = $_POST["pageCode"];
+        if(!$this->checkPageCode($pageCode)){
+            return Result::returnResult(Result::CODE_ERROR,null);
+        }
         $userNum = $_POST["userNum"];
         $userPwd = EncryptionUtil::Md5Encryption($_POST["userPwd"],$userNum);
         try {
@@ -114,6 +132,17 @@ class LoginController
         return Result::returnResult(Result::SEND_CODE_ERROR,null);
     }
 
+    /** 验证前端页面验证码
+     *
+     */
+    private function checkPageCode($pageCode){
+        // 检测输入的验证码是否正确，$value为用户输入的验证码字符串
+        $captcha = new Captcha();
+        if($captcha->check($pageCode)){
+            return true;
+        }
+        return false;
+    }
 
     /** 验证用户合法性
      * @param $userNum  用户工号

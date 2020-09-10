@@ -16,9 +16,8 @@ use think\Session;
 
 class UserController extends CommonController
 {
-    /**
+    /** 修改密码
      * @return array
-     * 修改密码
      */
     public function changePwd(){
         $user = Session::get('info');
@@ -41,9 +40,8 @@ class UserController extends CommonController
     }
 
 
-    /**
+    /** 获取用户信息
      * @return array
-     * 获取用户信息
      */
     public function getUserInfo(){
         $user =  Session::get("info");

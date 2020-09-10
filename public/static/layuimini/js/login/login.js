@@ -1,15 +1,17 @@
 //发送登录请求
 function sendData(){
-    var userNum = $("#user-num").val();
-    var userPwd = $("#user-pwd").val();
+    var userNum  = $("#user-num").val();
+    var userPwd  = $("#user-pwd").val();
+    var pageCode = $("#page-code").val();
     $.ajax({
         url: "/office_automation/public/index.php/index/login_controller/login",
         type:'post',
         //dataType: 'json',//返回的内容的类型，由于PHP文件是直接echo的，那么这里就是text
         timeout: 1000,//超时时间
         data: {
-            userNum : userNum,
-            userPwd  : userPwd
+            userNum  : userNum,
+            userPwd  : userPwd,
+            pageCode : pageCode
         },
         success: function(data){
             var code = data['code'];
@@ -22,6 +24,9 @@ function sendData(){
                     break;
                 case 2:
                     loginFail();
+                    break;
+                case 14:
+                    pageCodeError();
                     break;
             }
         },
@@ -55,6 +60,15 @@ function loginFail(){
  */
 function loginError(){
     layer.msg('系统繁忙', function() {
+
+    });
+}
+
+/**
+ * 验证码输入错误
+ */
+function pageCodeError(){
+    layer.msg('验证码输入错误！', function() {
 
     });
 }
