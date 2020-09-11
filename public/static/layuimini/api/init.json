@@ -258,6 +258,12 @@
               "href": "page/mission/index.html",
               "icon": "fa fa-calendar",
               "target": "_self"
+            },
+            {
+              "title": "增加任务",
+              "href": "page/mission/add.html",
+              "icon": "fa fa-calendar",
+              "target": "_self"
             }
           ]
         },
