@@ -17,11 +17,9 @@ use think\captcha\Captcha;
 use think\exception\DbException;
 use think\Session;
 
-/**
+/** 用户登录信息操作
  * Class LoginController
  * @package app\index\controller
- *
- * 用户登录信息操作
  */
 class LoginController
 {
@@ -40,6 +38,21 @@ class LoginController
 
     public function getPageCode(){
         return Result::returnResult(Result::CODE_ERROR,Session::get('verify_code'));
+    }
+
+
+    /** token自动登录
+     * @return array
+     */
+    public function tokenLogin(){
+        $token = $_POST["userToken"];
+        if($token != null){
+            $res = $this -> checkToken($token);
+            if($res){
+                return Result::returnResult(Result::TOKEN_LOGIN_SUCCESS,null);
+            }
+        }
+        return Result::returnResult(Result::ERROR,null);
     }
 
     /**
@@ -65,7 +78,7 @@ class LoginController
             $checkResult = $this->checkUser($userNum, $userPwd);
             if($checkResult){
                 $userInfo = Session::get('info');
-                return Result::returnResult(Result::SUCCESS,$userInfo);
+                return Result::returnResult(Result::SUCCESS,$userInfo->token);
             }else{
                 return Result::returnResult(Result::NO_USER_INFO,null);
             }
@@ -78,10 +91,13 @@ class LoginController
      * @return array
      */
     public function loginOut(){
+//        $user = Session::get("info");
+//        $user->token = "";
+//        $user->token_time_out = 0;
+//        $user->save();
         Session::set('info',null);
         return Result::returnResult(Result::SUCCESS,null);
     }
-
 
     /**
      * 找回密码
@@ -132,6 +148,44 @@ class LoginController
         return Result::returnResult(Result::SEND_CODE_ERROR,null);
     }
 
+
+    /**
+     * 检查用户的token是否正确
+     */
+    private function checkToken($token){
+        $user = User::get(['token' => $token, 'user_status' => 1]);
+        $timeOut = $user -> token_time_out;
+        if (!empty($timeOut)) {
+            if (time() - $timeOut > 0) {
+                return false; //token长时间未使用而过期，需重新登陆
+            }
+            $new_time_out = time() + 604800; //604800是七天
+            $user -> token_time_out = $new_time_out;
+            $res = $user -> save();
+            if ($res == 1) {
+                Session::set("info",$user);
+                return true; //token验证成功，time_out刷新成功，可以获取接口信息
+            }
+        }
+        return false; //token错误验证失败
+    }
+
+    public function testTime(){
+        $user = User::get(['token' => 'd805aaa46c5149314a3a1e342266c656dce13c4b', 'user_status' => 1]);
+        $timeOut = $user -> token_time_out;
+        return $timeOut . "---" . time();
+    }
+
+    /**
+     * 创建一个token
+     */
+    private function makeToken()
+    {
+        $str = md5(uniqid(md5(microtime(true)), true)); //生成一个不会重复的字符串
+        $str = sha1($str); //加密
+        return $str;
+    }
+
     /** 验证前端页面验证码
      *
      */
@@ -156,6 +210,11 @@ class LoginController
             return false;
         }else{
             //登录成功，保存信息到session中
+            $token = $this -> makeToken();
+            $token_time_out = time() + 604800; //604800是七天
+            $user -> token = $token;
+            $user -> token_time_out = $token_time_out;
+            $user -> save();
             Session::set('info',$user);
             return true;
         }

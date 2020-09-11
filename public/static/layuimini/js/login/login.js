@@ -1,3 +1,25 @@
+//自动token登录
+var token = $.cookie('user_token');
+if(token != "" && token != null){ //检查cookie中是否存在token信息
+    $.ajax({
+        url: "/office_automation/public/index.php/index/login_controller/tokenLogin",
+        type:'post',
+        timeout: 1000,//超时时间
+        data: {
+            userToken : token
+        },
+        success: function(res){
+            if(res["code"] == 16){
+                //token登录成功,跳转页面
+                window.location = '../index.html';
+            }
+        },
+        error: function(res){
+            console.log(res);
+        }
+    });
+}
+
 //实现点击刷新验证码功能
 $('#refreshCaptcha').on('click', function(){
     var path = "/office_automation/public/index.php/index/login_controller/sendPageCode";
@@ -19,10 +41,13 @@ function sendData(){
             userPwd  : userPwd,
             pageCode : pageCode
         },
-        success: function(data){
-            var code = data['code'];
+        success: function(res){
+            var code = res['code'];
+            console.log(res);
+            var user_token = res["data"];
             switch (code) {
                 case 0:
+                    $.cookie('user_token',user_token,{path:'/office_automation/public/static/layuimini'});
                     loginSuccess();
                     break;
                 case 1:
