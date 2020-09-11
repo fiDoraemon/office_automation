@@ -17,7 +17,7 @@ return [
 //    'database'        => 'office_automation',           // 数据库名
 //    'username'        => 'root',            // 用户名
 //    'password'        => '',            // 密码
-    'database'        => 'oa',           // 数据库名
+    'database'        => 'office_automation',           // 数据库名
     'username'        => 'root',            // 用户名
     'password'        => '123456',            // 密码
     // 端口

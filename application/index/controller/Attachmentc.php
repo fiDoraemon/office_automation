@@ -2,12 +2,13 @@
 
 namespace app\index\controller;
 
-use app\index\model\Mission;
+use app\common\model\Attachment;
 use app\common\Result;
+use app\common\service\AttachmentService;
 use think\Controller;
 use think\Request;
 
-class Missionc extends Controller
+class Attachmentc extends Controller
 {
     /**
      * 显示资源列表
@@ -16,11 +17,7 @@ class Missionc extends Controller
      */
     public function index()
     {
-        $mission = new Mission();
-        $missions = $mission->select();
-        $result = Result::returnResult(Result::SUCCESS, $missions, count($missions));
-
-        return $result;
+        //
     }
 
     /**
@@ -41,7 +38,18 @@ class Missionc extends Controller
      */
     public function save(Request $request)
     {
-        //
+        $file = $this->request->file('file');
+
+        if($file && !is_array($file)) {         // 如果上传文件不存在或有多个文件
+            $data = AttachmentService::fileUpload($file);
+            if($data['result'] == true) {
+                return Result::returnResult(Result::SUCCESS, ['id' => $data['id']]);
+            } else {
+                return Result::returnResult(Result::ERROR, ['error' => $data['error']]);
+            }
+        } else {
+            return Result::returnResult(Result::UPLOAD_ERROR);
+        }
     }
 
     /**
