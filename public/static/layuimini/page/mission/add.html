@@ -24,38 +24,37 @@
         </div>
     </div>
     <div class="layui-form-item">
+        <label class="layui-form-label required">性别</label>
+        <div class="layui-input-block">
+            <input type="radio" name="sex" value="男" title="男" checked="">
+            <input type="radio" name="sex" value="女" title="女">
+        </div>
+    </div>
+    <div class="layui-form-item">
         <label class="layui-form-label required">负责人</label>
         <div class="layui-input-block">
             <input type="text" name="assignee_name" lay-verify="required" lay-reqtext="未选择负责人" placeholder="请选择负责人" class="layui-input">
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label required">开始日期</label>
-        <div class="layui-input-inline">
-            <input type="text" name="start_date" id="start_date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+        <div class="layui-inline">
+            <label class="layui-form-label">开始日期</label>
+            <div class="layui-input-inline">
+                <input type="text" name="start_date" id="start_date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+            </div>
         </div>
-        <label class="layui-form-label required">截至日期</label>
-        <div class="layui-input-inline">
-            <input type="text" name="finish_date" id="finish_date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+        <div class="layui-inline">
+            <label class="layui-form-label">截至日期</label>
+            <div class="layui-input-inline">
+                <input type="text" name="finish_date" id="finish_date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+            </div>
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">项目代号</label>
-        <div class="layui-input-inline">
-            <select id="related_project" name="related_project">
-                <option value=""></option>
-                <option value="0">写作</option>
-                <option value="1" selected="">阅读</option>
-                <option value="2">游戏</option>
-                <option value="3">音乐</option>
-                <option value="4">旅行</option>
-            </select>
-        </div>
         <label class="layui-form-label">优先级</label>
-        <div class="layui-input-inline">
+        <div class="layui-input-block">
             <input type="number" name="priority" placeholder="请输入任务优先级" value="0" class="layui-input">
         </div>
-
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">任务标签</label>
@@ -75,43 +74,6 @@
             <textarea name="description" class="layui-textarea" placeholder="请输入任务描述"></textarea>
         </div>
     </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">邀请关注</label>
-        <div class="layui-input-block">
-            <input type="text" name="invite_follow" placeholder="请选择要邀请关注任务的人" class="layui-input">
-        </div>
-    </div>
-    <div class="layui-form-item">
-        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
-            <legend>上传附件</legend>
-        </fieldset>
-        <div class="layui-fluid">
-            <div class="layui-row">
-                <div class="layui-col-sm3">
-                    <div class="layui-upload-drag" id="attachment">
-                        <i class="layui-icon"></i>
-                        <p>点击上传，或将文件拖拽到此处</p>
-                        <input type="hidden" id="attachment_list" name="attachment_list" value="">
-                    </div>
-                    <br>
-                    <button type="button" class="layui-btn" id="start_upload">开始上传</button>
-                </div>
-                <div class="layui-col-sm9">
-                    <div class="layui-upload-list">
-                        <table class="layui-table">
-                            <thead>
-                            <tr><th>文件名</th>
-                                <th>大小</th>
-                                <th>状态</th>
-                                <th>操作</th>
-                            </tr></thead>
-                            <tbody id="fileList"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="layui-form-item">
         <div class="layui-input-block">
@@ -121,12 +83,11 @@
 </div>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script>
-    layui.use(['form', 'laydate', 'upload'], function () {
-        var form = layui.form
-        , layer = layui.layer
-        , laydate = layui.laydate
-        , upload = layui.upload
-        , $ = layui.$;
+    layui.use(['form', 'laydate'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            laydate = layui.laydate,
+            $ = layui.$;
 
         //日期
         laydate.render({
@@ -134,93 +95,6 @@
         });
         laydate.render({
             elem: '#finish_date'
-        });
-
-        //文件上传
-        var fileListView = $('#fileList')
-        ,uploadListIns = upload.render({
-            elem: '#attachment'
-            ,url: '/office_automation/public/index/attachmentc/save'
-            ,auto: false
-            ,multiple: true
-            ,number: 3          // 同时可上传的文件数量
-            ,size: 20480            // 单位 KB，最大 20MB
-            ,accept: 'file'
-            ,bindAction: '#start_upload'
-            ,choose: function(obj){
-                if($('#fileList').children().length > 2) {
-                    return layer.msg('最多上传三个附件！');
-                }
-                var files = this.files = obj.pushFile();         // 将每次选择的文件追加到文件队列
-                $("#start_upload").removeAttr("disabled");
-                // 预读本地文件
-                obj.preview(function(index, file, result){          // 分别是文件索引、文件对象、文件base64编码
-                    var tr = $(['<tr id="upload-'+ index +'">'
-                        ,'<td>'+ file.name +'</td>'
-                        ,'<td>'+ (file.size/1024).toFixed(1) +'kb</td>'
-                        ,'<td>等待上传</td>'
-                        ,'<td>'
-                        ,'<button class="layui-btn layui-btn-xs layui-hide reload">重传</button>'
-                        ,'<button class="layui-btn layui-btn-xs layui-btn-danger delete">删除</button>'
-                        ,'</td>'
-                        ,'</tr>'].join(''));
-
-                    //单个重传
-                    tr.find('.reload').on('click', function(){
-                        obj.upload(index, file);
-                    });
-
-                    //删除
-                    tr.find('.delete').on('click', function(){
-                        delete files[index]; //删除对应的文件
-                        tr.remove();
-                        uploadListIns.config.elem.next()[0].value = '';         // 清空 input file 值，以免删除后出现同名文件不可选
-                        if(!files) {
-                            $("#start_upload").attr("disabled", true);
-                        }
-                    });
-
-                    fileListView.append(tr);
-                });
-            }
-            ,before: function(obj){
-                layer.load();            // 取消上传后仍会触发 before
-            }
-            ,done: function(res, index, upload){
-                if(res.code == 0){
-                    // 写入附件 id
-                    if($('#attachment_list').val() == '') {
-                        $('#attachment_list').val(res.data.id);
-                    } else {
-                        var ids = $('#attachment_list').val().split(';');
-                        if(!ids.includes(res.data.id)) {
-                            ids.push(res.data.id);
-                        }
-                        $('#attachment_list').val(ids.join(';'));
-                    }
-
-                    var tr = fileListView.find('tr#upload-'+ index)
-                    ,tds = tr.children();
-                    tds.eq(2).html('<span style="color: #5FB878;">上传成功</span>');
-                    tds.eq(3).html('');
-                    delete this.files[index];            // 删除文件队列已经上传成功的文件
-                } else {
-                    console.log('上传失败：' + res.msg + `(${index})`);
-                    this.error(index, upload);
-                }
-            }
-            ,allDone: function(obj){
-                layer.closeAll('loading');
-                layer.msg('上传完成！');
-                $("#start_upload").attr("disabled", true);
-                console.log('上传完成！共上传' + obj.total + '个文件，成功文件数：' + obj.successful +'，失败文件数：' + obj.aborted);
-            }
-            ,error: function(index, upload){            // 分别为当前文件的索引、重新上传的方法
-                var tr = fileListView.find('tr#upload-'+ index)
-                ,tds = tr.children();
-                tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
-                tds.eq(3).find('.reload').removeClass('layui-hide');           // 显示重传
-            }
         });
 
         //监听提交

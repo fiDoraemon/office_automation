@@ -10,8 +10,12 @@
 // +----------------------------------------------------------------------
 
 return [
-    // 定义资源路由
-    '__rest__'=>[
-        'attachmentc'=>'index/attachmentc',
+    '__pattern__' => [
+        'name' => '\w+',
     ],
+    '[hello]'     => [
+        ':id'   => ['index/hello', ['method' => 'get'], ['id' => '\d+']],
+        ':name' => ['index/hello', ['method' => 'post']],
+    ],
+
 ];

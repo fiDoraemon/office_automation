@@ -20,7 +20,7 @@ class Result
     const RETRIEVE_PASSWORLD_FAIL       = 12;
     const RETRIEVE_PASSWORLD_SUCCESS    = 13;
     const CODE_ERROR                    = 14;
-    const UPLOAD_ERROR                  = 15;
+
 
     // 对应结果
     public static $resultMsg = [
@@ -38,7 +38,6 @@ class Result
         self::RETRIEVE_PASSWORLD_FAIL   => '密码找回失败',
         self::RETRIEVE_PASSWORLD_SUCCESS=> '密码找回成功',
         self::CODE_ERROR                => '验证码错误',
-        self::UPLOAD_ERROR              => '上传文件不存在或有多个文件',
     ];
 
     // 返回结果

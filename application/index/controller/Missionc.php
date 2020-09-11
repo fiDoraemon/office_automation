@@ -2,7 +2,7 @@
 
 namespace app\index\controller;
 
-use app\index\model\Mission;
+use app\common\model\Mission;
 use app\common\Result;
 use think\Controller;
 use think\Request;
