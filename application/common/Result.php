@@ -22,7 +22,6 @@ class Result
     const CODE_ERROR                    = 14;
     const UPLOAD_ERROR                  = 15;
 
-
     // 对应结果
     public static $resultMsg = [
         self::SUCCESS                   => '请求成功！',

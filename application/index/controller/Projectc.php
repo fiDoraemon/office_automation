@@ -2,12 +2,10 @@
 
 namespace app\index\controller;
 
-use app\index\model\Mission;
-use app\common\Result;
 use think\Controller;
 use think\Request;
 
-class Missionc extends Controller
+class Projectc extends Controller
 {
     /**
      * 显示资源列表
@@ -16,11 +14,7 @@ class Missionc extends Controller
      */
     public function index()
     {
-        $mission = new Mission();
-        $missions = $mission->select();
-        $result = Result::returnResult(Result::SUCCESS, $missions, count($missions));
-
-        return $result;
+        //
     }
 
     /**

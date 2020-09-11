@@ -22,7 +22,7 @@
         },
         "time": "2018-02-27T06:27:42+00:00",
         "type": "library",
-        "installation-source": "dist",
+        "installation-source": "source",
         "autoload": {
             "files": [
                 "src/helper.php"
@@ -77,7 +77,7 @@
         },
         "time": "2017-10-10T12:26:56+00:00",
         "type": "library",
-        "installation-source": "dist",
+        "installation-source": "source",
         "autoload": {
             "files": [],
             "psr-4": {
