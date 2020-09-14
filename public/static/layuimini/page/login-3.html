@@ -132,8 +132,10 @@
 
         $('.icon-nocheck').on('click', function () {
             if ($(this).hasClass('icon-check')) {
+                keep_login = 0;
                 $(this).removeClass('icon-check');
             } else {
+                keep_login = 1;
                 $(this).addClass('icon-check');
             }
         });

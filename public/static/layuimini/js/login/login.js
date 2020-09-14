@@ -1,3 +1,4 @@
+keep_login = 0;  //0代表不保持登录，1代表保持登录
 //自动token登录
 var token = $.cookie('user_token');
 if(token != "" && token != null){ //检查cookie中是否存在token信息
@@ -39,7 +40,8 @@ function sendData(){
         data: {
             userNum  : userNum,
             userPwd  : userPwd,
-            pageCode : pageCode
+            pageCode : pageCode,
+            keepLogin: keep_login
         },
         success: function(res){
             var code = res['code'];
@@ -47,7 +49,9 @@ function sendData(){
             var user_token = res["data"];
             switch (code) {
                 case 0:
-                    $.cookie('user_token',user_token,{path:'/office_automation/public/static/layuimini'});
+                    if(keep_login === 1){
+                        $.cookie('user_token',user_token,{path:'/office_automation/public/static/layuimini'});
+                    }
                     loginSuccess();
                     break;
                 case 1:

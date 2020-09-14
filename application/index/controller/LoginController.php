@@ -14,6 +14,7 @@ use app\common\Result;
 use app\common\util\EncryptionUtil;
 use app\common\util\SendmailUtil;
 use think\captcha\Captcha;
+use think\Db;
 use think\exception\DbException;
 use think\Session;
 
@@ -32,6 +33,18 @@ class LoginController
         return "查询失败";
     }
 
+    public function getUser(){
+//        $user = Db::table('oa_user')
+//            ->field("id,user_id,user_name,dd_userid,department_id,token,token_time_out")
+//            ->where('user_id','=',10086)
+//            ->where('password','=',"0e720fca4bd3ebe045e9b7f07bc1a7e8")
+//            ->where('user_status','=',1)
+//            ->find();
+        $user = User::get(['user_id' => 10086 ,'password' => "0e720fca4bd3ebe045e9b7f07bc1a7e8" ,'user_status' => 1])
+            ->column("id,user_id,user_name,dd_userid,department_id,token,token_time_out");
+        $user = $user["1"];
+        return $user;
+    }
     public function testData(){
         return  EncryptionUtil::Md5Encryption(123456,10086);
     }
@@ -40,6 +53,11 @@ class LoginController
         return Result::returnResult(Result::CODE_ERROR,Session::get('verify_code'));
     }
 
+//    public function testTime(){
+//        $user = User::get(['token' => 'd805aaa46c5149314a3a1e342266c656dce13c4b', 'user_status' => 1]);
+//        $timeOut = $user -> token_time_out;
+//        return $timeOut . "---" . time();
+//    }
 
     /** token自动登录
      * @return array
@@ -68,6 +86,7 @@ class LoginController
      * @return array
      */
     public function login(){
+        $keepLogin = $_POST["keepLogin"];
         $pageCode = $_POST["pageCode"];
         if(!$this->checkPageCode($pageCode)){
             return Result::returnResult(Result::CODE_ERROR,null);
@@ -75,7 +94,7 @@ class LoginController
         $userNum = $_POST["userNum"];
         $userPwd = EncryptionUtil::Md5Encryption($_POST["userPwd"],$userNum);
         try {
-            $checkResult = $this->checkUser($userNum, $userPwd);
+            $checkResult = $this->checkUser($userNum, $userPwd, $keepLogin);
             if($checkResult){
                 $userInfo = Session::get('info');
                 return Result::returnResult(Result::SUCCESS,$userInfo->token);
@@ -91,10 +110,6 @@ class LoginController
      * @return array
      */
     public function loginOut(){
-//        $user = Session::get("info");
-//        $user->token = "";
-//        $user->token_time_out = 0;
-//        $user->save();
         Session::set('info',null);
         return Result::returnResult(Result::SUCCESS,null);
     }
@@ -148,7 +163,6 @@ class LoginController
         return Result::returnResult(Result::SEND_CODE_ERROR,null);
     }
 
-
     /**
      * 检查用户的token是否正确
      */
@@ -170,14 +184,8 @@ class LoginController
         return false; //token错误验证失败
     }
 
-    public function testTime(){
-        $user = User::get(['token' => 'd805aaa46c5149314a3a1e342266c656dce13c4b', 'user_status' => 1]);
-        $timeOut = $user -> token_time_out;
-        return $timeOut . "---" . time();
-    }
-
     /**
-     * 创建一个token
+     * 创建一个40个字符的token（md5盐值加密）
      */
     private function makeToken()
     {
@@ -187,7 +195,8 @@ class LoginController
     }
 
     /** 验证前端页面验证码
-     *
+     * @param $pageCode 前端传进来的验证码
+     * @return bool  true验证码校验成功，false验证失败
      */
     private function checkPageCode($pageCode){
         // 检测输入的验证码是否正确，$value为用户输入的验证码字符串
@@ -201,20 +210,29 @@ class LoginController
     /** 验证用户合法性
      * @param $userNum  用户工号
      * @param $userPwd  用户密码
-     * @return bool     用户合法返回true并且保存在session种，非法返回false;
+     * @return bool    用户合法返回true并且保存在session种，非法返回false;
      * @throws \think\exception\DbException
      */
-    private function checkUser($userNum, $userPwd){
+    private function checkUser($userNum, $userPwd, $keepLogin){
+//        $user = Db::table('oa_user')
+//            ->field("id,user_id,user_name,dd_userid,department_id,token,token_time_out")
+//            ->where('user_id','=',$userNum)
+//            ->where('password','=',$userPwd)
+//            ->where('user_status','=',1)
+//            ->find();
         $user = User::get(['user_id' => $userNum ,'password' => $userPwd ,'user_status' => 1]);
+                   // ->column("id,user_id,user_name,dd_userid,department_id,token,token_time_out");
         if(is_null($user)){
             return false;
-        }else{
-            //登录成功，保存信息到session中
-            $token = $this -> makeToken();
-            $token_time_out = time() + 604800; //604800是七天
-            $user -> token = $token;
-            $user -> token_time_out = $token_time_out;
-            $user -> save();
+        }else{//登录成功
+            if($keepLogin == 1){
+                $token = $this -> makeToken();
+                $token_time_out = time() + 604800; //604800是七天
+                $user -> token = $token;
+                $user -> token_time_out = $token_time_out;
+                $user -> save();
+            }
+            //保存信息到session中
             Session::set('info',$user);
             return true;
         }
@@ -235,8 +253,9 @@ class LoginController
         return $code;
     }
 
-    /**
-     * 校验邮箱验证码
+    /** 校验邮箱验证码
+     * @param $code  用户输入的邮箱验证码
+     * @return bool  true邮箱验证码验证成功
      */
     private function checkEmailCode($code){
         $emailCode = Session::get("emailCode");
