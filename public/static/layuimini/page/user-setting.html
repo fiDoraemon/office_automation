@@ -68,7 +68,7 @@
 <script>
     //进入页面马上获取用户的基本信息
     $.ajax({
-        url: "/office_automation/public/index.php/index/user_controller/getUserInfo",
+        url: "/office_automation/public/index.php/index/user_c/getUserInfo",
         type:'post',
         timeout: 1000,
         data: {
@@ -107,7 +107,7 @@
             var userPhone = $("#user_phone").val();
             var userEmail = $("#user_email").val();
             $.ajax({
-                url: "/office_automation/public/index.php/index/user_controller/updateUserInfo",
+                url: "/office_automation/public/index.php/index/user_c/updateUserInfo",
                 type:'post',
                 timeout: 1000,//超时时间
                 data:{

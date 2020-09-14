@@ -159,7 +159,7 @@
             var userEmail = $("#user-email").val();
             var codeType = $("#code-type").val();
             $.ajax({
-                url: "/office_automation/public/index.php/index/login_controller/sendEmailCode",
+                url: "/office_automation/public/index.php/index/login_c/sendEmailCode",
                 type:'post',
                 timeout: 30000,
                 data: {
@@ -200,7 +200,7 @@
             var userId = $("#user-id").val();
             if(newPwd === enterPwd){
                 $.ajax({
-                    url: "/office_automation/public/index.php/index/login_controller/retrievePwd",
+                    url: "/office_automation/public/index.php/index/login_c/retrievePwd",
                     type:'post',
                     timeout: 1000,
                     data: {

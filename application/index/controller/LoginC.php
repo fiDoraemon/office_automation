@@ -23,19 +23,8 @@ use think\Session;
  * Class LoginController
  * @package app\index\controller
  */
-class LoginController
+class LoginC
 {
-    public function findUser(){
-//        $user = Db::table('oa_user')
-//            ->field("id,user_id,user_name,dd_userid,department_id,token,token_time_out")
-//            ->where('user_id','=',10086)
-//            ->where('password','=',"0e720fca4bd3ebe045e9b7f07bc1a7e8")
-//            ->where('user_status','=',1)
-//            ->find();
-        $user = User::get(['user_id' => 10086 ,'password' => "0e720fca4bd3ebe045e9b7f07bc1a7e8" ,'user_status' => 1])
-            ->value("id,user_id,user_name,dd_userid,department_id,token,token_time_out");
-        return $user;
-    }
 
     /**
      * token自动登录
@@ -232,8 +221,8 @@ class LoginController
     private function getCode(){
         //定义一个验证码池，验证码由其中几个字符组成
         $pool='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $word_length=6;//验证码长度
-        $code = '';//验证码
+        $word_length=6;     //验证码长度
+        $code = '';         //验证码
         for ($i = 0, $mt_rand_max = strlen($pool) - 1; $i < $word_length; $i++)
         {
             $code .= $pool[mt_rand(0, $mt_rand_max)];

@@ -3,7 +3,7 @@ keep_login = 0;  //0代表不保持登录，1代表保持登录
 var token = $.cookie('user_token');
 if(token != "" && token != null){ //检查cookie中是否存在token信息
     $.ajax({
-        url: "/office_automation/public/index.php/index/login_controller/tokenLogin",
+        url: "/office_automation/public/index.php/index/login_c/tokenLogin",
         type:'post',
         timeout: 1000,//超时时间
         data: {
@@ -23,7 +23,7 @@ if(token != "" && token != null){ //检查cookie中是否存在token信息
 
 //实现点击刷新验证码功能
 $('#refreshCaptcha').on('click', function(){
-    var path = "/office_automation/public/index.php/index/login_controller/sendPageCode";
+    var path = "/office_automation/public/index.php/index/login_c/sendPageCode";
     $("#refreshCaptcha").attr('src',path);
 });
 
@@ -33,7 +33,7 @@ function sendData(){
     var userPwd  = $("#user-pwd").val();
     var pageCode = $("#page-code").val();
     $.ajax({
-        url: "/office_automation/public/index.php/index/login_controller/login",
+        url: "/office_automation/public/index.php/index/login_c/login",
         type:'post',
         //dataType: 'json',//返回的内容的类型，由于PHP文件是直接echo的，那么这里就是text
         timeout: 1000,//超时时间

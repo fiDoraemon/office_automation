@@ -19,7 +19,7 @@ use think\db\exception\ModelNotFoundException;
 use think\exception\DbException;
 use think\Session;
 
-class UserController extends CommonController
+class UserC extends CommonController
 {
     /**
      * 修改密码
