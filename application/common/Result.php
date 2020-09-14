@@ -22,6 +22,13 @@ class Result
     const CODE_ERROR                    = 14;
     const UPLOAD_ERROR                  = 15;
     const TOKEN_LOGIN_SUCCESS           = 16;
+    const USER_ADD_SUCCESS              = 17;
+    const USER_ADD_ERROR                = 18;
+    const USER_DELETE_SUCCESS           = 19;
+    const USER_DELETE_ERROR             = 20;
+    const USER_SELECT_SUCCESS           = 21;
+    const USER_SELECT_ERROR             = 22;
+
 
     // 对应结果
     public static $resultMsg = [
@@ -41,7 +48,12 @@ class Result
         self::CODE_ERROR                => '验证码错误',
         self::UPLOAD_ERROR              => '上传文件不存在或有多个文件',
         self::TOKEN_LOGIN_SUCCESS       => '使用token登录成功',
-
+        self::USER_ADD_SUCCESS          => '添加用户成功',
+        self::USER_ADD_ERROR            => '添加用户失败',
+        self::USER_DELETE_SUCCESS       => '删除用户成功',
+        self::USER_DELETE_ERROR         => '删除用户失败',
+        self::USER_SELECT_SUCCESS       => '查询用户成功',
+        self::USER_SELECT_ERROR         => '查询用户失败',
     ];
 
     // 返回结果
