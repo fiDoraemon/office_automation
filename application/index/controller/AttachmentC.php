@@ -8,7 +8,7 @@ use app\common\service\AttachmentService;
 use think\Controller;
 use think\Request;
 
-class Attachmentc extends Controller
+class AttachmentC extends Controller
 {
     /**
      * 显示资源列表
