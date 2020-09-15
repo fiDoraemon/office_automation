@@ -90,6 +90,7 @@ class UserC extends CommonController
         $userId       = $_POST["userId"];
         $userName     = $_POST["userName"];
         $password     = $_POST["password"];
+        $password     = EncryptionUtil::Md5Encryption($password,$userId); //密码加密保存到数据库
         $phone        = $_POST["phone"];;
         $email        = $_POST["email"];
         $ddUserid     = $_POST["ddUserid"];;
