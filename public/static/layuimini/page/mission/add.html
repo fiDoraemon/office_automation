@@ -16,27 +16,31 @@
 </head>
 <body>
 <div class="layui-form layuimini-form">
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+        <legend>必填信息</legend>
+    </fieldset>
     <div class="layui-form-item">
         <label class="layui-form-label required">任务标题</label>
         <div class="layui-input-block">
-            <input type="text" name="username" lay-verify="required" lay-reqtext="任务标题不能为空" placeholder="请输入任务标题" value="" class="layui-input">
+            <input type="text" name="mission_title" lay-verify="required" lay-reqtext="任务标题不能为空" autocomplete="off" placeholder="请输入任务标题" class="layui-input" value="123">
             <!--<tip>填写自己管理账号的名称。</tip>-->
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label required">负责人</label>
-        <div class="layui-input-block">
-            <input type="text" name="assignee_name" lay-verify="required" lay-reqtext="未选择负责人" placeholder="请选择负责人" class="layui-input">
+        <div class="layui-input-inline">
+            <input type="text" name="assignee_name" lay-verify="required" lay-reqtext="未选择负责人" autocomplete="off" placeholder="请选择负责人" class="layui-input" id="assignee_name">
+            <input type="hidden" name="assignee_id" id="assignee_id">
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label required">开始日期</label>
         <div class="layui-input-inline">
-            <input type="text" name="start_date" id="start_date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+            <input type="text" name="start_date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input" id="start_date">
         </div>
         <label class="layui-form-label required">截至日期</label>
         <div class="layui-input-inline">
-            <input type="text" name="finish_date" id="finish_date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+            <input type="text" name="finish_date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input" id="finish_date">
         </div>
     </div>
     <div class="layui-form-item">
@@ -44,54 +48,52 @@
         <div class="layui-input-inline">
             <select id="related_project" name="related_project">
                 <option value=""></option>
-                <option value="0">写作</option>
-                <option value="1" selected="">阅读</option>
-                <option value="2">游戏</option>
-                <option value="3">音乐</option>
-                <option value="4">旅行</option>
             </select>
         </div>
         <label class="layui-form-label">优先级</label>
         <div class="layui-input-inline">
             <input type="number" name="priority" placeholder="请输入任务优先级" value="0" class="layui-input">
         </div>
-
     </div>
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+        <legend>非必填信息</legend>
+    </fieldset>
     <div class="layui-form-item">
         <label class="layui-form-label">任务标签</label>
         <div class="layui-input-block">
-            <input type="text" name="label" placeholder="请输入任务标签" class="layui-input">
+            <input type="text" name="label" placeholder="请输入任务标签" class="layui-input" value="123">
         </div>
     </div>
     <div class="layui-form-item layui-form-text">
         <label class="layui-form-label">完成标准</label>
         <div class="layui-input-block">
-            <textarea name="finish_standard" class="layui-textarea" placeholder="请输入完成标准"></textarea>
+            <textarea name="finish_standard" class="layui-textarea" placeholder="请输入完成标准">123</textarea>
         </div>
     </div>
     <div class="layui-form-item layui-form-text">
         <label class="layui-form-label">任务描述</label>
         <div class="layui-input-block">
-            <textarea name="description" class="layui-textarea" placeholder="请输入任务描述"></textarea>
+            <textarea name="description" class="layui-textarea" placeholder="请输入任务描述">123</textarea>
         </div>
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">邀请关注</label>
         <div class="layui-input-block">
-            <input type="text" name="invite_follow" placeholder="请选择要邀请关注任务的人" class="layui-input">
+            <input type="text" name="invite_follow_names" id="invite_follow_names" autocomplete="off" placeholder="请选择要邀请关注任务的人" class="layui-input">
+            <input type="hidden" name="invite_follow_ids" id="invite_follow_ids">
         </div>
     </div>
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+        <legend>上传附件</legend>
+    </fieldset>
     <div class="layui-form-item">
-        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
-            <legend>上传附件</legend>
-        </fieldset>
         <div class="layui-fluid">
             <div class="layui-row">
                 <div class="layui-col-sm3">
                     <div class="layui-upload-drag" id="attachment">
                         <i class="layui-icon"></i>
                         <p>点击上传，或将文件拖拽到此处</p>
-                        <input type="hidden" id="attachment_list" name="attachment_list" value="">
+                        <input type="hidden" id="attachment_list" name="attachment_list">
                     </div>
                     <br>
                     <button type="button" class="layui-btn" id="start_upload">开始上传</button>
@@ -120,13 +122,16 @@
     </div>
 </div>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script src="../../js/common.js" charset="utf-8"></script>
 <script>
-    layui.use(['form', 'laydate', 'upload'], function () {
+    layui.use(['form', 'laydate', 'upload', 'tableSelect'], function () {
         var form = layui.form
-        , layer = layui.layer
-        , laydate = layui.laydate
-        , upload = layui.upload
-        , $ = layui.$;
+        ,layer = layui.layer
+        ,laydate = layui.laydate
+        ,upload = layui.upload
+        ,tableSelect = layui.tableSelect
+        ,$ = layui.$;
 
         //日期
         laydate.render({
@@ -140,7 +145,7 @@
         var fileListView = $('#fileList')
         ,uploadListIns = upload.render({
             elem: '#attachment'
-            ,url: '/office_automation/public/index/attachmentc/save'
+            ,url: '/office_automation/public/attachment'
             ,auto: false
             ,multiple: true
             ,number: 3          // 同时可上传的文件数量
@@ -225,21 +230,102 @@
 
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-            var index = layer.alert(JSON.stringify(data.field), {
-                title: '最终的提交信息'
-            }, function () {
+            // var index = layer.alert(JSON.stringify(data.field), {
+            //     title: '最终的提交信息'
+            // }, function () {
+            //
+            //     // 关闭弹出层
+            //     layer.close(index);
+            //
+            //     var iframeIndex = parent.layer.getFrameIndex(window.name);
+            //     parent.layer.close(iframeIndex);
+            //
+            // });
 
-                // 关闭弹出层
+            layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
                 layer.close(index);
-
-                var iframeIndex = parent.layer.getFrameIndex(window.name);
-                parent.layer.close(iframeIndex);
-
+                $.post(
+                    "/office_automation/public/mission",
+                    $.parseJSON(JSON.stringify(data.field)),            // TODO
+                    function (res, status) {
+                        if (res.code == 0) {
+                            layer.alert('新建成功！', {title: '提示'},
+                                function (index) {
+                                    layer.close(index);
+                                    var iframeIndex = parent.layer.getFrameIndex(window.name);
+                                    parent.layer.close(iframeIndex);
+                                }
+                            );
+                        } else {
+                            layer.msg('新建失败！');
+                        }
+                    }
+                );
             });
 
             return false;
         });
 
+        // 获取项目列表
+        $.get(
+            "/office_automation/public/mission/create",
+            function (res, status) {
+                if(res.code == 0) {
+                    // 填充项目下拉框
+                    var projectList = res.data.projectList;
+                    var element = '';
+                    for(i in projectList) {
+                        element += `<option value="${projectList[i].project_id}">${projectList[i].project_code}</option>`;
+                    }
+                    $('#related_project').append(element);
+                    form.render('select');          // 刷新select选择框渲染
+                }
+            }
+        );
+
+        // 责任人下拉表格
+        tableSelect.render({
+            elem: '#assignee_name',
+            checkedKey: 'id',
+            table: {
+                url: '/office_automation/public/index/index/userList'
+                ,cols: [[
+                    { type: 'radio' },
+                    { field: 'user_id', title: '工号' },
+                    { field: 'user_name', title: '姓名' }
+                ]]
+                ,page: true
+            },
+            done: function (elem, data) {
+                elem.val(data.data[0].user_name)
+                $('#assignee_id').val(data.data[0].user_id)
+            }
+        })
+        // 关注人下拉表格
+        tableSelect.render({
+            elem: '#invite_follow_names',
+            checkedKey: 'id',
+            table: {
+                url: '/office_automation/public/index/index/userList'
+                ,cols: [[
+                    { type: 'checkbox' },
+                    { field: 'user_id', title: '工号' },
+                    { field: 'user_name', title: '姓名' }
+                ]]
+                ,page: true
+            },
+            done: function (elem, data) {
+                var names = []
+                var ids = []
+
+                layui.each(data.data, function (index, item) {
+                    names.push(item.user_name)
+                    ids.push(item.user_id)
+                })
+                elem.val(names.join("，"))
+                $('#invite_follow_ids').val(ids.join(";"))
+            }
+        })
     });
 </script>
 </body>

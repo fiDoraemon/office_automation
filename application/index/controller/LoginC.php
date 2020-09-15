@@ -199,7 +199,7 @@ class LoginC
             ->find();
         if(is_null($user)){
             return false;
-        }else{//登录成功
+        }else{          // 登录成功
             if($keepLogin == 1){
                 $token = $this -> makeToken();
                 $token_time_out = time() + 604800; //604800是七天

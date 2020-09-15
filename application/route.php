@@ -12,6 +12,7 @@
 return [
     // 定义资源路由
     '__rest__'=>[
-        'attachmentc'=>'index/attachmentc',
+        'attachment' => 'index/AttachmentC',
+        'mission' => 'index/MissionC',
     ],
 ];
