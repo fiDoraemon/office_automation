@@ -12,6 +12,19 @@
         body {
             background-color: #ffffff;
         }
+        .move-btn {
+            position: absolute;
+            top: 126px;
+            right: 132px;
+        }
+        .layui-upload-drag {
+            padding: 40px;
+            margin-top: 10px;
+        }
+        .return-btn {
+            margin-top: 40px;
+        }
+
     </style>
 </head>
 <body>
@@ -89,16 +102,15 @@
     <div class="layui-form-item">
         <div class="layui-fluid">
             <div class="layui-row">
-                <div class="layui-col-sm3">
+                <div class="layui-col-sm3 layui-col-sm-offset1">
                     <div class="layui-upload-drag" id="attachment">
                         <i class="layui-icon"></i>
                         <p>点击上传，或将文件拖拽到此处</p>
                         <input type="hidden" id="attachment_list" name="attachment_list">
                     </div>
-                    <br>
-                    <button type="button" class="layui-btn" id="start_upload">开始上传</button>
+                    <button type="button" class="layui-btn move-btn" id="start_upload">开始上传</button>
                 </div>
-                <div class="layui-col-sm9">
+                <div class="layui-col-sm8">
                     <div class="layui-upload-list">
                         <table class="layui-table">
                             <thead>
@@ -117,7 +129,7 @@
 
     <div class="layui-form-item">
         <div class="layui-input-block">
-            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">提交</button>
+            <button class="layui-btn layui-btn-normal return-btn" lay-submit lay-filter="saveBtn">提交</button>
         </div>
     </div>
 </div>
@@ -230,17 +242,6 @@
 
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-            // var index = layer.alert(JSON.stringify(data.field), {
-            //     title: '最终的提交信息'
-            // }, function () {
-            //
-            //     // 关闭弹出层
-            //     layer.close(index);
-            //
-            //     var iframeIndex = parent.layer.getFrameIndex(window.name);
-            //     parent.layer.close(iframeIndex);
-            //
-            // });
 
             layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
                 layer.close(index);
@@ -252,8 +253,7 @@
                             layer.alert('新建成功！', {title: '提示'},
                                 function (index) {
                                     layer.close(index);
-                                    var iframeIndex = parent.layer.getFrameIndex(window.name);
-                                    parent.layer.close(iframeIndex);
+                                    location.reload();
                                 }
                             );
                         } else {
