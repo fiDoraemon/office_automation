@@ -14,5 +14,6 @@ return [
     '__rest__'=>[
         'attachment' => 'index/AttachmentC',
         'mission' => 'index/MissionC',
+        'project' => 'index/ProjectC',
     ],
 ];

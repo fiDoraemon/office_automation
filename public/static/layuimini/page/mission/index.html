@@ -14,32 +14,28 @@
     <div class="layuimini-main">
 
         <fieldset class="table-search-fieldset">
-            <legend>搜索信息</legend>
+            <legend>任务搜索</legend>
             <div style="margin: 10px 10px 10px 10px">
                 <form class="layui-form layui-form-pane" action="">
                     <div class="layui-form-item">
                         <div class="layui-inline">
-                            <label class="layui-form-label">用户姓名</label>
+                            <label class="layui-form-label">任务标题</label>
                             <div class="layui-input-inline">
-                                <input type="text" name="username" autocomplete="off" class="layui-input">
+                                <input type="text" name="keyword" class="layui-input" placeholder="请输入关键词">
                             </div>
                         </div>
                         <div class="layui-inline">
-                            <label class="layui-form-label">用户性别</label>
+                            <label class="layui-form-label">关联项目</label>
                             <div class="layui-input-inline">
-                                <input type="text" name="sex" autocomplete="off" class="layui-input">
+                                <select id="related_project" name="related_project">
+                                    <option value=""></option>
+                                </select>
                             </div>
                         </div>
                         <div class="layui-inline">
-                            <label class="layui-form-label">用户城市</label>
+                            <label class="layui-form-label">标签</label>
                             <div class="layui-input-inline">
-                                <input type="text" name="city" autocomplete="off" class="layui-input">
-                            </div>
-                        </div>
-                        <div class="layui-inline">
-                            <label class="layui-form-label">用户职业</label>
-                            <div class="layui-input-inline">
-                                <input type="text" name="classify" autocomplete="off" class="layui-input">
+                                <input type="text" name="label" class="layui-input" placeholder="请输入任务标签">
                             </div>
                         </div>
                         <div class="layui-inline">
@@ -57,11 +53,11 @@
             <!--</div>-->
         <!--</script>-->
 
-        <table class="layui-hide" id="currentTableId" lay-filter="currentTableFilter"></table>
+        <table class="layui-hide" id="missionList" lay-filter="currentTableFilter"></table>
 
         <script type="text/html" id="currentTableBar">
-            <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="edit">编辑</a>
-            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+            <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="read">详情</a>
+            <!--<a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="stop">暂停</a>-->
         </script>
 
     </div>
@@ -74,7 +70,7 @@
             table = layui.table;
 
         table.render({
-            elem: '#currentTableId',
+            elem: '#missionList',
             url: '/office_automation/public/mission',
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter', 'exports', 'print', {
@@ -84,37 +80,37 @@
             }],
             cols: [[
                 {type: "checkbox", width: 50},
-                {field: 'mission_id', width: 80, title: 'ID', sort: true},
-                {field: 'mission_title', width: 80, title: '任务标题'},
-                {field: 'reporter_id', width: 80, title: '发起人'},
-                {field: 'description', width: 80, title: '任务描述'},
-                {field: 'status', title: '任务状态', minWidth: 150},
-                {field: 'priority', width: 80, title: '优先级', sort: true},
-                {field: 'label', width: 80, title: '标签'},
-                {field: 'start_date', width: 80, title: '开始日期', sort: true},
-                {field: 'finish_date', width: 135, title: '截至日期', sort: true},
+                {field: 'mission_id', width: 60, title: 'ID', sort: true},
+                {field: 'mission_title', minWidth: 150, title: '任务标题'},
+                {field: 'reporter_name', width: 80, title: '发起人', align: "center"},
+                {field: 'status', width: 100, title: '任务状态', align: "center"},
+                {field: 'priority', width: 100, title: '优先级', sort: true, align: "center"},
+                {field: 'label', width: 100, title: '标签', align: "center"},
+                {field: 'start_date', width: 130, title: '开始日期', sort: true, align: "center"},
+                {field: 'finish_date', width: 130, title: '截止日期', sort: true, align: "center"},
                 {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
             ]],
+            id: 'missionList',
+            autoSort: false,
             limits: [10, 15, 20, 25, 50, 100],
-            limit: 15,
+            limit: 10,
             page: true,
             skin: 'line'
         });
 
         // 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
-            var result = JSON.stringify(data.field);
-            layer.alert(result, {
-                title: '最终的搜索信息'
-            });
+            var result = data.field;
 
             //执行搜索重载
-            table.reload('currentTableId', {
+            table.reload('missionList', {
                 page: {
                     curr: 1
-                }
-                , where: {
-                    searchParams: result
+                },
+                where: {
+                    keyword: result.keyword,
+                    related_project: result.related_project,
+                    label: result.label
                 }
             }, 'data');
 
@@ -124,50 +120,50 @@
         /**
          * toolbar监听事件
          */
-        table.on('toolbar(currentTableFilter)', function (obj) {
-            if (obj.event === 'add') {  // 监听添加操作
-                var index = layer.open({
-                    title: '新建任务',
-                    type: 2,
-                    shade: 0.2,
-                    maxmin:true,
-                    shadeClose: true,
-                    area: ['100%', '100%'],
-                    content: '../../page/mission/add.html',
-                });
-                $(window).on("resize", function () {
-                    // layer.full(index);           TODO
-                });
-            } else if (obj.event === 'delete') {  // 监听删除操作
-                var checkStatus = table.checkStatus('currentTableId')
-                    , data = checkStatus.data;
-                layer.alert(JSON.stringify(data));
-            }
-        });
+        // table.on('toolbar(currentTableFilter)', function (obj) {
+        //     if (obj.event === 'add') {  // 监听添加操作
+        //         var index = layer.open({
+        //             title: '新建任务',
+        //             type: 2,
+        //             shade: 0.2,
+        //             maxmin:true,
+        //             shadeClose: true,
+        //             area: ['100%', '100%'],
+        //             content: '../../page/mission/add.html',
+        //         });
+        //         $(window).on("resize", function () {
+        //             // layer.full(index);           TODO
+        //         });
+        //     } else if (obj.event === 'delete') {  // 监听删除操作
+        //         var checkStatus = table.checkStatus('currentTableId')
+        //             , data = checkStatus.data;
+        //         layer.alert(JSON.stringify(data));
+        //     }
+        // });
 
-        //监听表格复选框选择
+        // 监听表格复选框选择
         table.on('checkbox(currentTableFilter)', function (obj) {
             console.log(obj)
         });
 
+        // 监听操作按钮
         table.on('tool(currentTableFilter)', function (obj) {
             var data = obj.data;
-            if (obj.event === 'edit') {
-
+            if (obj.event === 'read') {
                 var index = layer.open({
-                    title: '编辑用户',
+                    title: '任务详情',
                     type: 2,
                     shade: 0.2,
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '../page/table/edit.html',
+                    content: '../../page/mission/read.html?id=' + data.mission_id,
                 });
-                $(window).on("resize", function () {
-                    layer.full(index);
-                });
+                // $(window).on("resize", function () {            // TODO ?
+                //     layer.full(index);
+                // });
                 return false;
-            } else if (obj.event === 'delete') {
+            } else if (obj.event === 'stop') {
                 layer.confirm('真的删除行么', function (index) {
                     obj.del();
                     layer.close(index);
@@ -175,6 +171,33 @@
             }
         });
 
+        // 获取项目列表
+        $.get(
+            "/office_automation/public/project",
+            function (res, status) {
+                if(res.code == 0) {
+                    // 填充项目下拉框
+                    var projectList = res.data;
+                    var element = '';
+                    for(i in projectList) {
+                        element += `<option value="${projectList[i].project_id}">${projectList[i].project_code}</option>`;
+                    }
+                    $('#related_project').append(element);
+                    form.render('select');          // 刷新select选择框渲染
+                }
+            }
+        );
+
+        //监听排序事件
+        table.on('sort(currentTableFilter)', function(obj){
+            table.reload('missionList', {
+                initSort: obj           // 记录初始排序
+                ,where: {
+                    field: obj.field            // 排序字段
+                    ,order: obj.type            // 排序方式
+                }
+            });
+        });
     });
 </script>
 

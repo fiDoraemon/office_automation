@@ -13,13 +13,10 @@ return [
     // 数据库类型
     'type'            => 'mysql',
     // 服务器地址
-    'hostname'        => '127.0.0.1',
+    'hostname'        => '192.168.0.112',
     'database'        => 'office_automation',           // 数据库名
     'username'        => 'root',            // 用户名
     'password'        => '',            // 密码
-//    'database'        => 'office_automation',           // 数据库名
-//    'username'        => 'root',            // 用户名
-//    'password'        => '123456',            // 密码
     // 端口
     'hostport'        => '3306',
     // 连接dsn

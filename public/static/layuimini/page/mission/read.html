@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>新建任务</title>
+    <title>任务详情</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -25,117 +25,145 @@
     </style>
 </head>
 <body>
-<div class="layuimini-container">
-    <div class="layuimini-main">
-        <div class="layui-form layuimini-form">
-    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
-        <legend>必填信息</legend>
-    </fieldset>
-    <div class="layui-form-item">
-        <label class="layui-form-label required">任务标题</label>
-        <div class="layui-input-block">
-            <input type="text" name="mission_title" lay-verify="required" lay-reqtext="任务标题不能为空" autocomplete="off" placeholder="请输入任务标题" class="layui-input" value="123">
-            <!--<tip>填写自己管理账号的名称。</tip>-->
+
+    <div class="layui-form layuimini-form" lay-filter="setValue">
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+            <legend>任务信息</legend>
+        </fieldset>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">任务号</label>
+            <div class="layui-input-inline">
+                <input type="text" name="mission_id" id="mission_id" class="layui-input" disabled>
+            </div>
         </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label required">处理人</label>
-        <div class="layui-input-inline">
-            <input type="text" name="assignee_name" lay-verify="required" lay-reqtext="未选择处理人" autocomplete="off" placeholder="请选择处理人" class="layui-input" id="assignee_name">
-            <input type="hidden" name="assignee_id" id="assignee_id">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">任务标题</label>
+            <div class="layui-input-block">
+                <input type="text" name="mission_title" lay-verify="required" lay-reqtext="任务标题不能为空" autocomplete="off" placeholder="请输入任务标题" class="layui-input" disabled>
+                <!--<tip>填写自己管理账号的名称。</tip>-->
+            </div>
         </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label required">开始日期</label>
-        <div class="layui-input-inline">
-            <input type="text" name="start_date" lay-verify="date" placeholder="请选择日期" autocomplete="off" class="layui-input" id="start_date">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">发起人</label>
+            <div class="layui-input-inline">
+                <input type="text" name="reporter_id" class="layui-input" disabled>
+            </div>
         </div>
-        <label class="layui-form-label required">截至日期</label>
-        <div class="layui-input-inline">
-            <input type="text" name="finish_date" lay-verify="date" placeholder="请选择日期" autocomplete="off" class="layui-input" id="finish_date">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">当前处理人</label>
+            <div class="layui-input-inline">
+                <input type="text" name="current_assignee_name" class="layui-input" disabled>
+            </div>
         </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">项目代号</label>
-        <div class="layui-input-inline">
-            <select id="related_project" name="related_project">
-                <option value=""></option>
-            </select>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">开始日期</label>
+            <div class="layui-input-inline">
+                <input type="text" name="start_date" id="start_date" lay-verify="date" placeholder="请选择日期" autocomplete="off" class="layui-input" id="start_date" disabled>
+            </div>
+            <label class="layui-form-label required">截至日期</label>
+            <div class="layui-input-inline">
+                <input type="text" name="finish_date" id="finish_date" lay-verify="date" placeholder="请选择日期" autocomplete="off" class="layui-input" id="finish_date" disabled>
+            </div>
         </div>
-        <label class="layui-form-label">优先级</label>
-        <div class="layui-input-inline">
-            <input type="number" name="priority" placeholder="请输入任务优先级" value="0" class="layui-input">
+        <div class="layui-form-item">
+            <label class="layui-form-label">项目代号</label>
+            <div class="layui-input-inline">
+                <select name="related_project" id="related_project">
+                    <option value=""></option>
+                </select>
+            </div>
+            <label class="layui-form-label">优先级</label>
+            <div class="layui-input-inline">
+                <input type="number" name="priority" id="priority" placeholder="请输入任务优先级" class="layui-input" disabled>
+            </div>
         </div>
-    </div>
-    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
-        <legend>非必填信息</legend>
-    </fieldset>
-    <div class="layui-form-item">
-        <label class="layui-form-label">任务标签</label>
-        <div class="layui-input-block">
-            <input type="text" name="label" placeholder="请输入任务标签" class="layui-input" value="123">
+        <div class="layui-form-item">
+            <label class="layui-form-label">任务标签</label>
+            <div class="layui-input-block">
+                <input type="text" name="label" id="label" placeholder="请输入任务标签" class="layui-input" disabled>
+            </div>
         </div>
-    </div>
-    <div class="layui-form-item layui-form-text">
-        <label class="layui-form-label">完成标准</label>
-        <div class="layui-input-block">
-            <textarea name="finish_standard" class="layui-textarea" placeholder="请输入完成标准">123</textarea>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">完成标准</label>
+            <div class="layui-input-block">
+                <textarea name="finish_standard" id="finish_standard" class="layui-textarea" placeholder="请输入完成标准" disabled></textarea>
+            </div>
         </div>
-    </div>
-    <div class="layui-form-item layui-form-text">
-        <label class="layui-form-label">任务描述</label>
-        <div class="layui-input-block">
-            <textarea name="description" class="layui-textarea" placeholder="请输入任务描述">123</textarea>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">任务描述</label>
+            <div class="layui-input-block">
+                <textarea name="description" id="description" class="layui-textarea" placeholder="请输入任务描述" disabled></textarea>
+            </div>
         </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label">邀请关注</label>
-        <div class="layui-input-block">
-            <input type="text" name="invite_follow_names" id="invite_follow_names" autocomplete="off" placeholder="请选择要邀请关注任务的人" class="layui-input">
-            <input type="hidden" name="invite_follow_ids" id="invite_follow_ids">
+        <div class="layui-form-item">
+            <label class="layui-form-label">邀请关注</label>
+            <div class="layui-input-block">
+                <input type="text" name="invite_follow_names" id="invite_follow_names" autocomplete="off" placeholder="请选择要邀请关注任务的人" class="layui-input">
+                <input type="hidden" name="invite_follow_ids" id="invite_follow_ids">
+            </div>
         </div>
-    </div>
-    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
-        <legend>上传附件</legend>
-    </fieldset>
-    <div class="layui-form-item">
-        <div class="layui-fluid">
-            <div class="layui-row">
-                <div class="layui-col-sm3 layui-col-sm-offset1">
-                    <div class="layui-upload-drag" id="attachment">
-                        <i class="layui-icon"></i>
-                        <p>点击上传，或将文件拖拽到此处</p>
-                        <input type="hidden" id="attachment_list" name="attachment_list">
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+            <legend>上传附件</legend>
+        </fieldset>
+        <div class="layui-form-item">
+            <div class="layui-fluid">
+                <div class="layui-row">
+                    <div class="layui-col-sm3 layui-col-sm-offset1">
+                        <div class="layui-upload-drag" id="attachment">
+                            <i class="layui-icon"></i>
+                            <p>点击上传，或将文件拖拽到此处</p>
+                            <input type="hidden" id="attachment_list" name="attachment_list">
+                        </div>
+                        <button type="button" class="layui-btn move-btn" id="start_upload">开始上传</button>
                     </div>
-                    <button type="button" class="layui-btn move-btn" id="start_upload">开始上传</button>
-                </div>
-                <div class="layui-col-sm8">
-                    <div class="layui-upload-list">
-                        <table class="layui-table">
-                            <thead>
-                            <tr><th>文件名</th>
-                                <th>大小</th>
-                                <th>状态</th>
-                                <th>操作</th>
-                            </tr></thead>
-                            <tbody id="fileList"></tbody>
-                        </table>
+                    <div class="layui-col-sm8">
+                        <div class="layui-upload-list">
+                            <table class="layui-table">
+                                <thead>
+                                <tr><th>文件名</th>
+                                    <th>大小</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr></thead>
+                                <tbody id="fileList"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <hr>
-    <div class="layui-form-item">
-        <div class="layui-input-block">
-            <button class="layui-btn layui-btn-normal return-btn" lay-submit lay-filter="saveBtn">提交</button>
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+            <legend>任务处理</legend>
+        </fieldset>
+        <div class="layui-form-item">
+            <label class="layui-form-label">任务状态</label>
+            <div class="layui-input-inline">
+                <select name="status" id="status">
+                    <option value=""></option>
+                </select>
+            </div>
+            <label class="layui-form-label required">后续处理人</label>
+            <div class="layui-input-inline">
+                <input type="text" name="assignee_name" id="assignee_name" lay-verify="required" lay-reqtext="未选择后续处理人" autocomplete="off" placeholder="请选择后续处理人" class="layui-input">
+                <input type="hidden" name="assignee_id" id="assignee_id">
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">处理意见</label>
+            <div class="layui-input-block">
+                <textarea name="process_note" id="process_note" class="layui-textarea" placeholder="请输入任务处理意见"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal return-btn" lay-submit lay-filter="saveBtn">提交</button>
+            </div>
         </div>
     </div>
-</div>
-    </div>
-</div>
+
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script src="../../js/common.js" charset="utf-8"></script>
 <script>
     layui.use(['form', 'laydate', 'upload', 'tableSelect'], function () {
         var form = layui.form,
@@ -155,7 +183,7 @@
 
         //文件上传
         var fileListView = $('#fileList')
-        ,uploadListIns = upload.render({
+            ,uploadListIns = upload.render({
             elem: '#attachment'
             ,url: '/office_automation/public/attachment'
             ,auto: false
@@ -217,7 +245,7 @@
                     }
 
                     var tr = fileListView.find('tr#upload-'+ index)
-                    ,tds = tr.children();
+                        ,tds = tr.children();
                     tds.eq(2).html('<span style="color: #5FB878;">上传成功</span>');
                     tds.eq(3).html('');
                     delete this.files[index];            // 删除文件队列已经上传成功的文件
@@ -234,7 +262,7 @@
             }
             ,error: function(index, upload){            // 分别为当前文件的索引、重新上传的方法
                 var tr = fileListView.find('tr#upload-'+ index)
-                ,tds = tr.children();
+                    ,tds = tr.children();
                 tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
                 tds.eq(3).find('.reload').removeClass('layui-hide');           // 显示重传
             }
@@ -266,19 +294,37 @@
             return false;
         });
 
-        // 获取项目列表
+        // 获取任务详情
         $.get(
-            "/office_automation/public/project",
+            "/office_automation/public/mission/" + getQueryVariable('id'),
             function (res, status) {
                 if(res.code == 0) {
                     // 填充项目下拉框
-                    var projectList = res.data;
+                    var projectList = res.data.projectList;
                     var element = '';
                     for(i in projectList) {
                         element += `<option value="${projectList[i].project_id}">${projectList[i].project_code}</option>`;
                     }
                     $('#related_project').append(element);
                     form.render('select');          // 刷新select选择框渲染
+                    // 填充表单数据
+                    var missionDetail = res.data.missionDetail;
+                    form.val("setValue", {
+                        "mission_id": missionDetail.mission_id
+                        ,"mission_title": missionDetail.mission_title
+                        ,"reporter_id": missionDetail.reporter_id
+                        ,"current_assignee_name": missionDetail.assignee_name
+                        ,"assignee_name": missionDetail.assignee_name
+                        ,"assignee_id": missionDetail.assignee_id
+                        ,"finish_standard": missionDetail.finish_standard
+                        ,"description": missionDetail.description
+                        ,"status": missionDetail.status
+                        ,"priority": missionDetail.priority
+                        ,"start_date": missionDetail.start_date
+                        ,"finish_date": missionDetail.finish_date
+                        ,"interested_list": missionDetail.interested_list
+                        ,"related_project": missionDetail.related_project           // TODO
+                    });
                 }
             }
         );

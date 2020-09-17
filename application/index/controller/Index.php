@@ -4,6 +4,7 @@ namespace app\index\controller;
 use app\common\model\User;
 use app\common\Result;
 use app\common\service\AttachmentService;
+use app\index\model\Mission;
 use think\captcha\Captcha;
 use think\Controller;
 
@@ -16,17 +17,22 @@ class Index extends Controller
     }
 
     // 显示用户列表
-    public function userList($page = 1, $keyword = '') {
+    public function userList($page = 1, $limit = 10, $keyword = '') {
         $user = new User();
 
-        if($keyword == '') {
-            $count = $user->value('count(*)');
-            $data = $user->field('id, user_id, user_name')->page("$page, 10")->select();
-        } else {
-            $count = $user->value('count(*)');
-            $data = $user->field('id, user_id, user_name')->page("$page, 10")->select();
+        if($keyword != '') {
+            $user->where('user_name','like',"%$keyword%");
         }
+        $data = $user->field('id, user_id, user_name')->page("$page, $limit")->select();
+        $count = $user->value('count(*)');
 
         return Result::returnResult(Result::SUCCESS, $data, $count);
+    }
+
+    public function test() {
+        $mission = Mission::get(27);
+        $mission->reporter_name = $mission->user->user_name;
+//        echo $mission->user;
+        return $mission;
     }
 }

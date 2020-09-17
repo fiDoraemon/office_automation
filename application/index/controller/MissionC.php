@@ -2,27 +2,62 @@
 
 namespace app\index\controller;
 
+use app\index\common\DataEnum;
 use app\index\model\Mission;
 use app\index\model\MissionProcess;
 use app\index\service\ProjectService;
 use app\common\Result;
 use think\Controller;
 use think\Request;
+use think\Session;
 
 class MissionC extends Controller
 {
     /**
-     * 显示资源列表
+     * 显示任务列表
      *
      * @return \think\Response
      */
-    public function index()
+    public function index($page = 1, $limit = 10, $keyword = '')
     {
         $mission = new Mission();
-        $missions = $mission->select();
-        $result = Result::returnResult(Result::SUCCESS, $missions, count($missions));
+        // 如果传入关键词、项目代号、标签
+        if($keyword != '') {
+            $mission->where('mission_title','like',"%$keyword%");
+        }
+        if(input('get.related_project') != '') {
+            $mission->where('related_project',input('get.related_project'));
+        }
+        if(input('get.label') != '') {
+            $mission->where('label',input('get.label'));
+        }
+        if(input('get.field') != '') {
+            $mission->order(input('get.field') . ' ' . input('get.order'));
+        }
+        $count = $mission->count();
+        // 如果传入关键词、项目代号、标签 TODO
+        if($keyword != '') {
+            $mission->where('mission_title','like',"%$keyword%");
+        }
+        if(input('get.related_project') != '') {
+            $mission->where('related_project',input('get.related_project'));
+        }
+        if(input('get.label') != '') {
+            $mission->where('label',input('get.label'));
+        }
+        if(input('get.field') != '') {
+            $mission->order(input('get.field') . ' ' . input('get.order'));
+        }
+        $missions = $mission->field('mission_id,mission_title,reporter_id,status,priority,label,start_date,finish_date')->page("$page, $limit")->select();
 
-        return $result;
+        // 处理结果集
+        Session::set('user_type', 'reporter_id');
+        foreach ($missions as $one) {
+            $one->reporter_name = $one->user->user_name;            // 关联查找用户名
+            $one->status = DataEnum::$missionStatus[$one->status];          // 转换状态码成信息
+        }
+
+        return Result::returnResult(Result::SUCCESS, $missions, $count);
     }
 
     /**
@@ -33,10 +68,7 @@ class MissionC extends Controller
     public function create()
     {
         // 获取项目列表
-        $projectService = new ProjectService();
-        $projectList = $projectService->index();
 
-        return Result::returnResult(Result::SUCCESS, ['projectList' => $projectList], count($projectList));
     }
 
     /**
@@ -60,14 +92,26 @@ class MissionC extends Controller
     }
 
     /**
-     * 显示指定的资源
+     * 显示指定的任务
      *
      * @param  int  $id
      * @return \think\Response
      */
     public function read($id)
     {
-        //
+        // 获取任务详情
+        $mission = Mission::get($id);
+        // 关联查找用户名和转换状态码成信息
+        Session::set('user_type', 'reporter_id');
+        $mission->reporter_id = $mission->user->user_name;
+        Session::set('user_type', 'assignee_id');
+        $mission->assignee_name = $mission->user->user_name;
+        $mission->status = DataEnum::$missionStatus[$mission->status];
+
+        // 获取项目列表
+        $projectList = ProjectService::index();
+
+        return Result::returnResult(Result::SUCCESS, ['missionDetail' => $mission, 'projectList' => $projectList]);
     }
 
     /**
