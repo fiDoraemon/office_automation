@@ -3,7 +3,7 @@
  */
 function selectInfo(form){
     $.ajax({
-        url: "/office_automation/public/index.php/index/meeting_c/selectInfo",
+        url: "/office_automation/public/index.php/index/meeting_c/getInfo",
         type:'post',
         timeout: 1000,
         data: {
@@ -14,7 +14,7 @@ function selectInfo(form){
             var minuteArray = res["data"]["minuteType"];
             for (var i = 0; i < projectArray.length; i++){
                 var $option = "<option value='" + projectArray[i]["project_code"] + "'>" + projectArray[i]["project_code"] + "</option>";
-                $("#select-for-department").append($option);
+                $("#select-project-code").append($option);
             }
             for (var i = 0; i < minuteArray.length; i++){
                 var $option = "<option value='" + minuteArray[i]["type_id"] + "'>" + minuteArray[i]["type_name"] + "</option>";

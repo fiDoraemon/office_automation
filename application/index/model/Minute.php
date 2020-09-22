@@ -6,7 +6,7 @@
  * Time: 17:17
  */
 
-namespace app\common\model;
+namespace app\index\model;
 
 
 use think\Model;
@@ -55,6 +55,14 @@ class Minute extends Model
      */
     public function projectStage(){
         return $this->hasOne('ProjectStage',"id","project_stage")->field('id,stage_name');
+    }
+
+    /**
+     * 与发起会议的所属部门一对一对应
+     * @return \think\model\relation\HasOne
+     */
+    public function department(){
+        return $this->hasOne('Department',"department_id","department_id")->field('department_name');
     }
 
 

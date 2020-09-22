@@ -37,36 +37,40 @@
 
         <form class="layui-form" action="">
             <div class="layui-form-item">
+                <label class="layui-form-label">会议类型</label>
+                <div class="layui-input-block">
+                    <select name="minute_type" lay-filter="minute_type" lay-verify="required" id="select-minute-type">
+                        <option value="">--请选择会议类型--</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label input-title">会议主持</label>
+                <div class="layui-input-block">
+                    <input type="text" id="host-name" name="host_name" disabled="disabled"  lay-verify="title" autocomplete="off" placeholder="请输入会议主持人" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
                 <label class="layui-form-label input-title">组织部门</label>
                 <div class="layui-input-block">
-                    <select name="interest" lay-filter="aihao">
-                        <option value=""></option>
-                        <option value="0">写作</option>
-                        <option value="1" selected="">阅读</option>
-                        <option value="2">游戏</option>
-                        <option value="3">音乐</option>
-                        <option value="4">旅行</option>
-                    </select>
+                    <input type="text" id="department-name" name="department_name" disabled="disabled"  lay-verify="title" autocomplete="off" placeholder="请输入组织部门" class="layui-input">
                 </div>
             </div>
 
             <div class="layui-form-item">
                 <label class="layui-form-label input-title">会议主题</label>
                 <div class="layui-input-block">
-                    <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入会议主题" class="layui-input">
+                    <input type="text" id="minute-theme" name="minute_theme" lay-verify="title" autocomplete="off" placeholder="请输入会议主题" class="layui-input">
                 </div>
             </div>
 
             <div class="layui-form-item">
                 <label class="layui-form-label input-title">项目代号</label>
-                <div class="layui-input-block">
-                    <select name="interest" lay-filter="aihao">
-                        <option value=""></option>
-                        <option value="0">写作</option>
-                        <option value="1" selected="">阅读</option>
-                        <option value="2">游戏</option>
-                        <option value="3">音乐</option>
-                        <option value="4">旅行</option>
+                <div class="layui-input-inline">
+                    <select lay-verify="required" lay-filter="project_code" id="select-project-code" >
+                        <option value="" selected>--请选择--</option>
                     </select>
                 </div>
             </div>
@@ -86,35 +90,28 @@
             <div class="layui-form-item">
                 <label class="layui-form-label input-title">会议地点</label>
                 <div class="layui-input-block">
-                    <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入会议地点" class="layui-input">
-                </div>
-            </div>
-
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">会议主持</label>
-                <div class="layui-input-block">
-                    <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入会议主持人" class="layui-input">
+                    <input type="text" id="" name="title" lay-verify="title" autocomplete="off" placeholder="请输入会议地点" class="layui-input">
                 </div>
             </div>
 
             <div class="layui-form-item">
                 <label class="layui-form-label input-title">应到人员</label>
-                <div class="layui-input-inline">
-                    <input type="text" name="" placeholder="请选择" autocomplete="off" class="layui-input" id="demo" value="" ts-selected="002,003">
+                <div class="layui-input-block">
+                    <textarea placeholder="请选择应到会议员工" class="layui-textarea" id="list-users" ts-selected="1110023" ></textarea>
                 </div>
             </div>
 
             <div class="layui-form-item layui-form-text">
                 <label class="layui-form-label input-title">会议决议</label>
                 <div class="layui-input-block">
-                    <textarea placeholder="请输入内容" class="layui-textarea"></textarea>
+                    <textarea placeholder="请输入内容" id="minute-resolution" class="layui-textarea"></textarea>
                 </div>
             </div>
 
             <div class="layui-form-item layui-form-text">
                 <label class="layui-form-label input-title">会议记录</label>
                 <div class="layui-input-block">
-                    <textarea placeholder="请输入内容" class="layui-textarea"></textarea>
+                    <textarea placeholder="请输入内容" id="minute-context" class="layui-textarea" rows="10"></textarea>
                 </div>
             </div>
 
@@ -150,6 +147,78 @@
             </div>
 
 
+
+
+
+
+            <div id="addlmrDialog" style="display: none;">
+                <form class="layui-form layui-show" action="" lay-filter="example">
+                    <button type="button" id="newadd-btn" class="submit-btn layui-btn layui-btn-normal layui-btn-sm addlist-btn">新增</button>
+                    <ul class="addlmrlist-contanerbox">
+                        <li id = "lmr-0">
+                            <div class="lmr-card box-shadow">
+                                <div class="form-content-sty">
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label" style="width: 50px;">姓名</label>
+                                        <div class="layui-input-block" style="margin-left: 60px;">
+                                            <input type="text" name="name" id="lmrname0" value="" lay-verify="name" autocomplete="off" placeholder="请输入姓名" class="layui-input">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-content-sty">
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">身份证号</label>
+                                        <div class="layui-input-block">
+                                            <input type="text" name="idcode" id="lmrid0" value="" lay-verify="idcode" autocomplete="off" placeholder="请输入身份证号" class="layui-input">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-content-sty">
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">手机号</label>
+                                        <div class="layui-input-block">
+                                            <input type="text" name="phone" id="lmrphonum0" value="" lay-verify="phone" autocomplete="off" placeholder="请输入手机号" class="layui-input">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-content-sty">
+                                    <div class="layui-form-item dz-sty">
+                                        <label class="layui-form-label" style="width: 50px;">住址</label>
+                                        <div class="layui-input-inline">
+                                            <select id="province-0" onchange="changeSelect(this);" lay-filter="province-0" name="adprovince">
+                                                <option value="">请选择省</option>
+                                            </select>
+                                        </div>
+                                        <div class="layui-input-inline">
+                                            <select id="city-0" onchange="changeSelect(this);" lay-filter="city-0" name="adcity">
+                                                <option value="">请选择市</option>
+                                            </select>
+                                        </div>
+                                        <div class="layui-input-inline">
+                                            <select id="district-0" lay-filter="district-0" name="addistrict">
+                                                <option value="">请选区</option>
+                                            </select>
+                                        </div>
+                                        <div class="layui-input-inline">
+                                            <input style="width: 350px!important;" id="lmraddress0" value=""  type="text" name="xxadress" lay-verify="xxadress" autocomplete="off" placeholder="请手动填写详细地址" class="layui-input">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-content-sty">
+                                    &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+                                    <!-- <button type="button" class="layui-btn layui-btn-danger layui-btn-sm" id="del-btns" οnclick="dellmr('lmr-0')">删除</button> -->
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </form>
+
+            </div>
+
+
+
+
+
             <div class="layui-form-item">
                 <div class="layui-input-block">
                     <button class="layui-btn" lay-submit="" lay-filter="demo1">立即提交</button>
@@ -166,24 +235,39 @@
 <script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script type="text/javascript" src="../../lib/layui-v2.5.5/layui.all.js"></script>
+<script src="../../js/meet/add-minutes.js" charset="utf-8"></script> <!--引入查询所有项目代码js-->
 <script type="text/javascript" src="../../js/lay-module/tableSelect/tableSelect.js"></script>
 <script>
     //开始使用下拉多个选择
     var tableSelect = layui.tableSelect;
     tableSelect.render({
-        elem: '#demo',	//定义输入框input对象 必填
-        checkedKey: 'id', //表格的唯一建值，非常重要，影响到选中状态 必填
+        elem: '#list-users',	//定义输入框input对象 必填
+        checkedKey: 'user_id', //表格的唯一建值，非常重要，影响到选中状态 必填
         searchKey: 'keyword',	//搜索输入框的name值 默认keyword
-        searchPlaceholder: '关键词搜索',	//搜索输入框的提示文字 默认关键词搜索
-        height:'400',  //自定义高度
-        width:'900',  //自定义宽度
+        // searchPlaceholder: '员工搜索',	//搜索输入框的提示文字 默认关键词搜索
+        height:'500',  //自定义高度
+        width:'500',  //自定义宽度
+        // searchType: 'more', //开启多条件搜索
+        searchList: [
+            {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
+        ],
         table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
-            url:'',
-            cols: [[]]
+            url:'/office_automation/public/index.php/index/meeting_c/getAllUsers',
+            cols: [[
+                {type: "checkbox", width: 80},
+                {field: 'user_id', width: 140, title: '员工工号'},
+                {field: 'user_name', width: 140, title: '姓名'},
+                {field: 'department_name', width: 140, title: '部门'},
+                // {title: '操作', minWidth: 50, align: "center"}
+            ]]
         },
         done: function (elem, data) {
-            //选择完后的回调，包含2个返回值 elem:返回之前input对象；data:表格返回的选中的数据 []
-            //拿到data[]后 就按照业务需求做想做的事情啦~比如加个隐藏域放ID...
+            var NEWJSON = []
+            console.log(data.data);
+            layui.each(data.data, function (index, item) {
+                NEWJSON.push(item.user_name)
+            })
+            elem.val(NEWJSON.join(","))
         }
     });
 
@@ -195,8 +279,9 @@
         checkedKey: 'id',
         searchType: 'more', //开启多条件搜索
         searchList: [
-            {searchKey: 'name', searchPlaceholder: '搜索用户姓名'}, //搜索条件1
-            {searchKey: 'sex', searchPlaceholder: '搜索用户性别'},  //搜索条件2
+            {searchKey: 'user_id', searchPlaceholder: '搜索员工id'}, //搜索条件1
+            {searchKey: 'user_name', searchPlaceholder: '搜索员工名字'},  //搜索条件2
+            {searchKey: 'department_id', searchPlaceholder: '搜索所属部门'},  //搜索条件3
         ],
         table: {
             url: 'table.json',
@@ -211,7 +296,7 @@
             //选择完后的回调，包含2个返回值 elem:返回之前input对象；data:表格返回的选中的数据 []
             //拿到data[]后 就按照业务需求做想做的事情啦~比如加个隐藏域放ID...
         }
-    })
+    });
 
 
 
@@ -233,6 +318,8 @@
             ,type: 'time'
             ,range: true //或 range: '~' 来自定义分割字符
         });
+
+        selectAddInfo(form);
 
         //文件上传
         var fileListView = $('#fileList')
@@ -327,8 +414,8 @@
         //自定义验证规则
         form.verify({
             title: function (value) {
-                if (value.length < 5) {
-                    return '标题至少得5个字符啊';
+                if (value.length < 1) {
+                    return '请填写必要信息';
                 }
             }
             , pass: [
@@ -338,6 +425,69 @@
             , content: function (value) {
                 layedit.sync(editIndex);
             }
+        });
+
+        //监听会议类型
+        form.on('select(minute_type)',function(data){
+            //根据选择的会议类型，更改不同的会议记录
+            var simple_type = "---会议目的---\n" +
+                "1.\n" +
+                "---会议议题---\n" +
+                "1.\n" +
+                "--会前工作---\n" +
+                "1.\n" +
+                "--会议过程记录--\n" +
+                "1.\n" +
+                "2.";
+            var review_type = "---评审内容---\n" +
+                "1.\n" +
+                "---资料类型---\n" +
+                "（可选项：设计开发文档、技术文档、其他（要写出其他的具体内容））\n" +
+                "--会议时间/会签截止时间---\n" +
+                "\n" +
+                "--评审记录--\n" +
+                "1.\n" +
+                "提出人：\n" +
+                "问题：\n" +
+                "重要程度：\n" +
+                "处理方式：\n" +
+                "处理人：";
+            var ECR_type = "---对各业务方向的影响（各方向负责人写）---\n" +
+                "系统（牛顿） ：\n" +
+                "液路（牛顿）:\n" +
+                "硬件（尚添）：\n" +
+                "机械（肖清文）：\n" +
+                "软件（崔刚）：\n" +
+                "设计转换（何战仓）：\n" +
+                "试剂（TBD）：\n" +
+                "其他：\n" +
+                "\n" +
+                "---对各业务方向的影响（申请人自己写，非必填）---\n" +
+                "系统： \n" +
+                "液路：\n" +
+                "硬件：\n" +
+                "机械：\n" +
+                "下位机软件：\n" +
+                "上位机软件：\n" +
+                "设计转换：\n" +
+                "试剂：\n" +
+                "其他：";
+            var minute_resolution = "--初步评审结论：";
+            switch (data.value) {
+                case "1":   $("#minute-context").val(simple_type);
+                            $("#minute-resolution").val("");
+                            break;
+                case "2":   $("#minute-context").val(review_type);
+                            $("#minute-resolution").val(minute_resolution);
+                            break;
+                case "3":   $("#minute-context").val(review_type);
+                            $("#minute-resolution").val(minute_resolution);
+                            break;
+                case "4":   $("#minute-context").val(ECR_type);
+                            $("#minute-resolution").val(minute_resolution);
+                            break;
+            }
+            return false;
         });
 
         //监听指定开关
