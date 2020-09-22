@@ -13,7 +13,10 @@ use app\common\model\Attachment;
 
 class AttachmentService
 {
-    // 文件上传
+    /*
+     * 文件上传
+     * $type：文件类型，比如 mission
+     */
     public static function fileUpload($file) {
 
         $fileInfo = $file->getInfo();
@@ -23,9 +26,10 @@ class AttachmentService
         if ($info) {
             // 插入附件信息
             $attachment = new Attachment([
-                'uploader_id' => '3330011',
                 'source_name' => $fileInfo['name'],
                 'storage_name' => $info->getFilename(),
+                'uploader_id' => '1110023',
+                'file_size' => $fileInfo['size'],
                 'save_path' => $info->getSaveName()
             ]);
             $attachment->save();
@@ -34,5 +38,17 @@ class AttachmentService
             // 上传失败获取错误信息
             return ['result' => false, 'error' => $file->getError()];
         }
+    }
+
+    // 删除附件
+    public static function delete($id) {
+        // 删除附件信息
+        $attachment = Attachment::get($id);
+        $filePath = ROOT_PATH . 'public/upload/' . $attachment->save_path;
+        $attachment->delete();
+        // 删除附件真实文件
+        unlink($filePath);
+
+        return true;
     }
 }

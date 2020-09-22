@@ -31,7 +31,7 @@ class AttachmentC extends Controller
     }
 
     /**
-     * 保存新建的资源
+     * 保存新建的文件
      *
      * @param  \think\Request  $request
      * @return \think\Response
@@ -40,13 +40,14 @@ class AttachmentC extends Controller
     {
         $file = $this->request->file('file');
 
-        if($file && !is_array($file)) {         // 如果上传文件不存在或有多个文件
+        if($file && !is_array($file)) {
             $data = AttachmentService::fileUpload($file);
             if($data['result'] == true) {
                 return Result::returnResult(Result::SUCCESS, ['id' => $data['id']]);
             } else {
                 return Result::returnResult(Result::ERROR, ['error' => $data['error']]);
             }
+        // 如果上传文件不存在或有多个文件
         } else {
             return Result::returnResult(Result::UPLOAD_ERROR);
         }

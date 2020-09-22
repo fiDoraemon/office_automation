@@ -27,4 +27,14 @@ class DataEnum
         4 => 'ECR评审'
     ];
 
+    // 附件类型
+    public static $attachmentType = [
+        0 => 'mission',         // 任务
+        1 => 'mission_process',           // 任务处理
+        2 => 'minute'           // 会议
+
+    ];
+
+    // 文件上传目录
+    const uploadDir = '/office_automation/public/upload/';
 }

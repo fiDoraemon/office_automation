@@ -5,6 +5,7 @@ use app\common\model\User;
 use app\common\Result;
 use app\common\service\AttachmentService;
 use app\index\model\Mission;
+use app\index\model\MissionInterest;
 use think\captcha\Captcha;
 use think\Controller;
 
@@ -30,9 +31,8 @@ class Index extends Controller
     }
 
     public function test() {
-        $mission = Mission::get(27);
-        $mission->reporter_name = $mission->user->user_name;
-//        echo $mission->user;
-        return $mission;
+        $missionInterest = new MissionInterest();
+        $result = $missionInterest->where('mission_id', 12)->column('user_id');
+        return $result;
     }
 }

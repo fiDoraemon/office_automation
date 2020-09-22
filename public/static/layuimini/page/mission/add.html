@@ -50,13 +50,13 @@
         <div class="layui-input-inline">
             <input type="text" name="start_date" lay-verify="date" placeholder="请选择日期" autocomplete="off" class="layui-input" id="start_date">
         </div>
-        <label class="layui-form-label required">截至日期</label>
+        <label class="layui-form-label required">截止日期</label>
         <div class="layui-input-inline">
             <input type="text" name="finish_date" lay-verify="date" placeholder="请选择日期" autocomplete="off" class="layui-input" id="finish_date">
         </div>
     </div>
     <div class="layui-form-item">
-        <label class="layui-form-label">项目代号</label>
+        <label class="layui-form-label">关联项目</label>
         <div class="layui-input-inline">
             <select id="related_project" name="related_project">
                 <option value=""></option>
@@ -247,7 +247,7 @@
                 layer.close(index);
                 $.post(
                     "/office_automation/public/mission",
-                    $.parseJSON(JSON.stringify(data.field)),            // TODO
+                    data.field,            // TODO
                     function (res, status) {
                         if (res.code == 0) {
                             layer.alert('新建成功！', {title: '提示'},
