@@ -32,9 +32,10 @@ $.ajax({
         $("#attend-user").val(attendusers);
         $("#minute-resolution").val(data.resolution);
         $("#minute-context").val(data.record);
-
     },
     error: function(res){
         console.log(res)
     }
 });
+
+

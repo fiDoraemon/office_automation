@@ -197,15 +197,10 @@
                     area: ['100%', '100%'],
                     content: 'update-meeting.html?minute_id='+minute_id,
                 });
-                // $(window).on("resize", function () {
-                //     layer.full(index);
-                // });
-                return false;
-            } else if (obj.event === 'delete') {
-                layer.confirm('真的删除行么', function (index) {
-                    obj.del();
-                    layer.close(index);
+                $(window).on("resize", function () {
+                    layer.full(index);
                 });
+                return false;
             }
         });
 
