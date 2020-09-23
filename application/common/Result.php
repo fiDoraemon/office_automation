@@ -28,6 +28,7 @@ class Result
     const USER_DELETE_ERROR             = 20;
     const USER_SELECT_SUCCESS           = 21;
     const USER_SELECT_ERROR             = 22;
+    const DELETE_ATTACHMENT             = 23;
 
 
     // 对应结果
@@ -54,6 +55,7 @@ class Result
         self::USER_DELETE_ERROR         => '删除用户失败',
         self::USER_SELECT_SUCCESS       => '查询用户成功',
         self::USER_SELECT_ERROR         => '查询用户失败',
+        self::DELETE_ATTACHMENT         => '删除附件失败',
     ];
 
     // 返回结果

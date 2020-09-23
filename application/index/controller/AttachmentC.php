@@ -2,9 +2,9 @@
 
 namespace app\index\controller;
 
-use app\common\model\Attachment;
+use app\index\model\Attachment;
 use app\common\Result;
-use app\common\service\AttachmentService;
+use app\index\service\AttachmentService;
 use think\Controller;
 use think\Request;
 
@@ -31,7 +31,7 @@ class AttachmentC extends Controller
     }
 
     /**
-     * 保存新建的资源
+     * 保存新建的文件
      *
      * @param  \think\Request  $request
      * @return \think\Response
@@ -40,13 +40,14 @@ class AttachmentC extends Controller
     {
         $file = $this->request->file('file');
 
-        if($file && !is_array($file)) {         // 如果上传文件不存在或有多个文件
+        if($file && !is_array($file)) {
             $data = AttachmentService::fileUpload($file);
             if($data['result'] == true) {
                 return Result::returnResult(Result::SUCCESS, ['id' => $data['id']]);
             } else {
                 return Result::returnResult(Result::ERROR, ['error' => $data['error']]);
             }
+        // 如果上传文件不存在或有多个文件
         } else {
             return Result::returnResult(Result::UPLOAD_ERROR);
         }
@@ -87,13 +88,22 @@ class AttachmentC extends Controller
     }
 
     /**
-     * 删除指定资源
+     * 删除指定附件
      *
      * @param  int  $id
      * @return \think\Response
      */
     public function delete($id)
     {
-        //
+        $attachment = Attachment::get($id);
+        if($attachment) {
+            $filePath = ROOT_PATH . 'public/upload/' . $attachment->save_path;
+            $attachment->delete();          // 删除附件信息
+            unlink($filePath);          // 删除附件真实文件
+
+            return Result::returnResult(Result::SUCCESS);
+        } else {
+            return Result::returnResult(Result::DELETE_ATTACHMENT);
+        }
     }
 }

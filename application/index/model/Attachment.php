@@ -6,5 +6,9 @@ use think\Model;
 
 class Attachment extends Model
 {
-    //
+    // 关联用户（一对一）
+    public function uploader()
+    {
+        return $this->hasOne('User','user_id', 'uploader_id')->field('user_name');
+    }
 }
