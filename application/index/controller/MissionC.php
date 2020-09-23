@@ -2,8 +2,8 @@
 
 namespace app\index\controller;
 
-use app\common\model\Attachment;
-use app\common\service\AttachmentService;
+use app\index\model\Attachment;
+use app\index\service\AttachmentService;
 use app\index\common\DataEnum;
 use app\index\model\Mission;
 use app\index\model\MissionInterest;
@@ -91,21 +91,25 @@ class MissionC extends Controller
         $mission->allowField(true)->save();
 
         // 插入任务和关注人对应信息
-        $userIds = explode(';', input('post.invite_follow_ids'));
-        foreach ($userIds as $userId) {
-            $missionInterest = new MissionInterest();
-            $missionInterest->mission_id = $mission->mission_id;
-            $missionInterest->user_id = $userId;
-            $missionInterest->save();
+        if(input('post.invite_follow_ids')) {
+            $userIds = explode(';', input('post.invite_follow_ids'));
+            foreach ($userIds as $userId) {
+                $missionInterest = new MissionInterest();
+                $missionInterest->mission_id = $mission->mission_id;
+                $missionInterest->user_id = $userId;
+                $missionInterest->save();
+            }
         }
 
         // 任务关联附件
-        $attachmentIds = explode(';', input('post.attachment_list'));
-        foreach ($attachmentIds as $attachmentId) {
-            $attachment = Attachment::get($attachmentId);
-            $missionInterest->attachment_type = 'mission';
-            $missionInterest->mission_id = $mission->mission_id;
-            $missionInterest->save();
+        if(input('post.attachment_list')) {
+            $attachmentIds = explode(';', input('post.attachment_list'));
+            foreach ($attachmentIds as $attachmentId) {
+                $attachment = Attachment::get($attachmentId);
+                $attachment->attachment_type = 'mission';
+                $attachment->related_id = $mission->mission_id;
+                $attachment->save();
+            }
         }
 
         return Result::returnResult(Result::SUCCESS);
@@ -137,13 +141,6 @@ class MissionC extends Controller
         $mission->interest_ids = implode(',', $idArray);
         unset($mission->missionInterests);          // 去除 任务-关注人 关联属性
 
-        // 获取任务附件列表
-        $mission->attachmentList = $mission->attachments()->where('attachment_type', 'mission')->select();
-        foreach ($mission->attachmentList as $attachment) {
-            $attachment->save_path = DataEnum::uploadDir . $attachment->save_path;
-            $attachment->uploader;
-        }
-
         // 获取项目列表
         $projectList = ProjectService::index();
 
@@ -156,13 +153,30 @@ class MissionC extends Controller
             'statusList' => $statusList
         ];
 
-        // 获取任务处理记录
-        $processList = $mission->processList;
-        foreach ($processList as $process) {
-            $process->handler;
-            $process->assignee;
-            $process->status;
+        // 获取任务附件列表
+        $mission->attachmentList = $mission->attachments()->where('attachment_type', 'mission')->select();
+        foreach ($mission->attachmentList as $attachment) {
+            $attachment->save_path = DataEnum::uploadDir . $attachment->save_path;
+            $attachment->uploader;
         }
+        $attachmentList = $mission->attachmentList;         // 需要定义一个临时变量
+
+        // 获取任务处理记录
+        foreach ($mission->processList as $process) {
+            $process->handler;
+            $process->status;
+            $tempArray = array();
+            // 整合任务处理附件到任务任务附件列表
+            foreach ($process->attachments as $attachment) {
+                $attachment->save_path = DataEnum::uploadDir . $attachment->save_path;
+                $attachment->uploader;
+                array_push($attachmentList, $attachment);
+                array_push($tempArray, $attachment->source_name);
+            }
+            unset($process->attachments);
+            $process->attachment = implode('，', $tempArray);           // 附件信息
+        }
+        $mission->attachmentList = $attachmentList;
 
         return Result::returnResult(Result::SUCCESS, $data);
     }
@@ -188,22 +202,24 @@ class MissionC extends Controller
     public function update($id)
     {
         $mission = Mission::get($id);
-        $fields = input('post.');
+        $fields = input('put.');
         // 更新任务
         $mission->allowField(true)->save($_POST);
 
         // 处理关注人列表
-        $userIds = explode(';', input('post.invite_follow_ids'));
-        // 获取关注人工号列表数组
-        $missionInterest = new MissionInterest();
-        $interestUserIds = $missionInterest->where('mission_id', 12)->column('user_id');
-        foreach ($userIds as $userId) {
-            // 如果未存在 任务-关注人 对应关系就插入
-            if(in_array($userId, $interestUserIds)) {
-                $missionInterest = new MissionInterest();
-                $missionInterest->mission_id = $id;
-                $missionInterest->user_id = $userId;
-                $missionInterest->save();
+        if(input('put.invite_follow_ids')) {
+            $userIds = explode(';', input('put.invite_follow_ids'));
+            // 获取关注人工号列表数组
+            $missionInterest = new MissionInterest();
+            $interestUserIds = $missionInterest->where('mission_id', 12)->column('user_id');
+            foreach ($userIds as $userId) {
+                // 如果未存在 任务-关注人 对应关系就插入
+                if(in_array($userId, $interestUserIds)) {
+                    $missionInterest = new MissionInterest();
+                    $missionInterest->mission_id = $id;
+                    $missionInterest->user_id = $userId;
+                    $missionInterest->save();
+                }
             }
         }
 
@@ -212,19 +228,22 @@ class MissionC extends Controller
         $missionProcess->data([
             'mission_id'  =>  $id,
             'handler_id' =>  '1110023',          // TODO
-            'process_note' => $fields['process_note'],
-            'post_assignee_id' => $fields['assignee_id'],
-            'post_status' => $fields['status'],
-            'post_finish_date' => $fields['finish_date']
+            'process_note' => input('put.process_note'),
+            'post_assignee_id' => input('put.assignee_id'),
+            'post_status' => input('put.status'),
+            'post_finish_date' => input('put.finish_date')
         ]);
         $missionProcess->save();
 
         // 任务处理关联附件
-        $attachmentIds = explode(';', input('post.attachment_list'));
-        foreach ($attachmentIds as $attachmentId) {
-            $attachment = Attachment::get($attachmentId);
-            $attachment->attachment_type = 'mission_process';
-            $attachment->related_id = $missionProcess->process_id;
+        if(input('put.attachment_list')) {
+            $attachmentIds = explode(';', input('put.attachment_list'));
+            foreach ($attachmentIds as $attachmentId) {
+                $attachment = Attachment::get($attachmentId);
+                $attachment->attachment_type = 'mission_process';
+                $attachment->related_id = $missionProcess->process_id;
+                $attachment->save();
+            }
         }
 
         return Result::returnResult(Result::SUCCESS);
@@ -244,12 +263,6 @@ class MissionC extends Controller
     // 删除指定附件
     public function deleteAttachment()
     {
-        // 删除附件信息
-        $result = AttachmentService::delete(input('post.attachemnt_id'));
-        if($result == true) {
-            return Result::returnResult(Result::SUCCESS);
-        } else {
 
-        }
     }
 }

@@ -170,13 +170,12 @@
             <div class="layui-col-sm11 layui-col-sm-offset1">
                 <table class="layui-table">
                     <colgroup>
-                        <col width="80">
-                        <col width="100">
-                        <col width="120">
-                        <col width="180">
-                        <col width="120">
-                        <col width="120">
-                        <col >
+                        <col width="8%">
+                        <col width="8%">
+                        <col width="10%">
+                        <col width="15%">
+                        <col width="10%">
+                        <col width="51%">
                     </colgroup>
                     <thead>
                     <tr>
@@ -185,8 +184,7 @@
                         <th>处理后状态</th>
                         <th>处理时间</th>
                         <th>截止日期</th>
-                        <th>附件</th>
-                        <th>处理意见</th>
+                        <th>处理意见及附件</th>
                     </tr>
                     </thead>
                     <tbody id="mission-process">
@@ -307,6 +305,7 @@
         //监听提交
         form.on('submit(saveBtn)', function (data) {
             var result = data.field;
+
             layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
                 layer.close(index);
                 $.ajax({
@@ -323,9 +322,10 @@
                         'finish_standard': result.finish_standard,
                         'description': result.description,
                         'invite_follow_ids': $('#invite_follow_names').attr('ts-selected'),
-                        'process_note': result.process_note
+                        'process_note': result.process_note,
+                        'attachment_list': result.attachment_list
                     },
-                    success: function(result){
+                    success: function(res){
                         if (res.code == 0) {
                             layer.alert('提交成功！', {title: '提示'},
                                 function (index) {
@@ -387,6 +387,9 @@
                     var processList = missionDetail.processList;
                     element = '';
                     for(i in processList) {
+                        if(processList[i].attachment != '') {
+                            processList[i].attachment = '附件：' + processList[i].attachment;
+                        }
                         element += `
                         <tr>
                             <td>${i + 1}</td>
@@ -394,8 +397,12 @@
                             <td>${processList[i].status['status_name']}</td>
                             <td>${processList[i].process_time}</td>
                             <td>${processList[i].post_finish_date}</td>
-                            <td></td>
-                            <td>${processList[i].process_note}</td>
+                            <td>
+                                <blockquote class="layui-elem-quote">
+                                ${processList[i].process_note}
+                                </blockquote>
+                                ${processList[i].attachment}
+                            </td>
                         </tr>
                         `;
                     }
@@ -412,12 +419,32 @@
                             <td>已上传</td>
                             <td>
                                 <a class="layui-btn layui-btn-xs" href="${attachmentList[i].save_path}" download="${attachmentList[i].source_name}">下载</a>
-                                <button class="layui-btn layui-btn-xs layui-btn-danger">删除</button>
+                                <button class="layui-btn layui-btn-xs layui-btn-danger delete" attachment_id="${attachmentList[i].attachment_id}">删除</button>
                             </td>
                         </tr>
                         `;
                     }
                     $('#fileList').append(element);
+                    // 删除附件
+                    $('#fileList').find('.delete').click(function () {
+                        var attachment_id = $(this).attr('attachment_id');
+                        var tr = $(this).parent().parent();
+                        layer.confirm('确定删除？', {icon: 3, title:'提示'}, function(index) {
+                            layer.close(index);
+                            $.ajax({
+                                url: "/office_automation/public/attachment/" + attachment_id,
+                                type: 'delete',
+                                success: function (res) {
+                                    if (res.code == 0) {
+                                        layer.msg('删除成功！');
+                                        tr.remove();
+                                    } else {
+                                        layer.msg('删除失败！');
+                                    }
+                                }
+                            });
+                        });
+                    });
                 }
             }
         );

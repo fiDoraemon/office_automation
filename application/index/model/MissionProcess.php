@@ -9,13 +9,13 @@ class MissionProcess extends Model
     // 处理人（一对一）
     public function handler()
     {
-        return $this->hasOne('app\common\model\User','user_id', 'handler_id')->field('user_name');
+        return $this->hasOne('User','user_id', 'handler_id')->field('user_name');
     }
 
     // 后续处理人（一对一）
     public function assignee()
     {
-        return $this->hasOne('app\common\model\User','user_id', 'post_assignee_id')->field('user_name');
+        return $this->hasOne('User','user_id', 'post_assignee_id')->field('user_name');
     }
 
     // 任务状态（一对一）
@@ -27,6 +27,6 @@ class MissionProcess extends Model
     // 关联附件（一对多）
     public function attachments()
     {
-        return $this->hasMany('app\common\model\Attachment', 'related_id', 'process_id');
+        return $this->hasMany('Attachment', 'related_id', 'process_id');
     }
 }
