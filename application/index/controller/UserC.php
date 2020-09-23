@@ -10,7 +10,7 @@ namespace app\index\controller;
 
 
 use app\common\interceptor\CommonController;
-use app\common\model\User;
+use app\index\model\User;
 use app\common\Result;
 use app\common\util\EncryptionUtil;
 use think\Db;

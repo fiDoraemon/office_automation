@@ -119,6 +119,7 @@
             done: function (elem, data) {
                 var NEWJSON = []
                 layui.each(data.data, function (index, item) {
+                    console.log(data);
                     NEWJSON.push(item.username)
                 })
                 elem.val(NEWJSON.join(","))

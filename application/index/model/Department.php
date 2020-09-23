@@ -6,12 +6,12 @@
  * Time: 14:28
  */
 
-namespace app\common\model;
+namespace app\index\model;
 
 
 use think\Model;
 
-class department extends Model
+class Department extends Model
 {
     protected $pk = 'department_id';
 }

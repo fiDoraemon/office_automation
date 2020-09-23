@@ -9,7 +9,7 @@
 namespace app\index\controller;
 
 
-use app\common\model\User;
+use app\index\model\User;
 use app\common\Result;
 use app\common\util\EncryptionUtil;
 use app\common\util\SendmailUtil;
