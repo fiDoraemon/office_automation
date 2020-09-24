@@ -33,6 +33,18 @@ class Mission extends Model
     // 关联附件（一对多）
     public function attachments()
     {
-        return $this->hasMany('Attachment', 'related_id', 'mission_id')->field('attachment_id, source_name, uploader_id, file_size, save_path, upload_date');
+        return $this->hasMany('Attachment', 'related_id', 'mission_id')->where('attachment_type', 'mission')->field('attachment_id, source_name, uploader_id, file_size, save_path, upload_date');
+    }
+
+    // 关联项目代号（一对一）
+    public function project()
+    {
+        return $this->hasOne('Project', 'project_id', 'related_project')->field('project_code');
+    }
+
+    // 关联状态信息（一对一）
+    public function missionStatus()
+    {
+        return $this->hasOne('MissionStatus', 'status_id', 'status')->field('status_name');
     }
 }

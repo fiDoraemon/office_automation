@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>我的任务</title>
+    <title>任务树</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -14,16 +14,10 @@
     <div class="layuimini-main">
 
         <fieldset class="table-search-fieldset">
-            <legend>任务搜索</legend>
+            <legend>根任务筛选</legend>
             <div style="margin: 10px 10px 10px 10px">
                 <form class="layui-form layui-form-pane" action="">
                     <div class="layui-form-item">
-                        <div class="layui-inline">
-                            <label class="layui-form-label">任务标题</label>
-                            <div class="layui-input-inline">
-                                <input type="text" name="keyword" class="layui-input" placeholder="请输入关键词">
-                            </div>
-                        </div>
                         <div class="layui-inline">
                             <label class="layui-form-label">关联项目</label>
                             <div class="layui-input-inline">
@@ -46,18 +40,21 @@
             </div>
         </fieldset>
 
-        <script type="text/html" id="mission-toolbar">
-            <div class="layui-btn-container">
-                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add">导出工作报表</button>
-                <!--<button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>-->
-            </div>
-        </script>
+        <!--<script type="text/html" id="toolbarDemo">-->
+        <!--<div class="layui-btn-container">-->
+        <!--<button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>-->
+        <!--<button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>-->
+        <!--</div>-->
+        <!--</script>-->
 
         <table class="layui-hide" id="missionList" lay-filter="missionListFilter"></table>
 
         <script type="text/html" id="missionListBar">
-            <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="read">详情</a>
-            <!--<a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="stop">暂停</a>-->
+            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="treeView">任务树视图</a>
+            <a class="layui-btn layui-btn-xs" lay-event="relateChild">关联子任务</a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="addTime">盖时间戳</a>
+            <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="progressDetail">进展详情</a>
+            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="export">导出</a>
         </script>
 
     </div>
@@ -71,8 +68,8 @@
 
         table.render({
             elem: '#missionList',
-            url: '/office_automation/public/mission',
-            toolbar: '#mission-toolbar',
+            url: '/office_automation/public/index/mission_c/treeIndex',
+            toolbar: '#toolbarDemo',
             defaultToolbar: ['filter', 'exports', 'print', {
                 title: '提示',
                 layEvent: 'LAYTABLE_TIPS',
@@ -82,12 +79,10 @@
                 {type: "checkbox", width: 50},
                 {field: 'mission_id', width: 60, title: 'ID', sort: true},
                 {field: 'mission_title', minWidth: 150, title: '任务标题'},
-                {field: 'reporter_name', width: 80, title: '发起人', align: "center"},
+                {field: 'assignee_name', width: 80, title: '处理人', align: "center"},
                 {field: 'status', width: 100, title: '任务状态', align: "center"},
-                {field: 'priority', width: 100, title: '优先级', sort: true, align: "center"},
+                {field: 'related_project', width: 120, title: '项目代号', sort: true, align: "center"},
                 {field: 'label', width: 100, title: '标签', align: "center"},
-                {field: 'start_date', width: 130, title: '开始日期', sort: true, align: "center"},
-                {field: 'finish_date', width: 130, title: '截止日期', sort: true, align: "center"},
                 {title: '操作', minWidth: 150, toolbar: '#missionListBar', align: "center"}
             ]],
             id: 'missionList',
@@ -108,9 +103,9 @@
                     curr: 1
                 },
                 where: {
-                    keyword: result.keyword,
                     related_project: result.related_project,
-                    label: result.label
+                    label: result.label,
+                    is_root: 1
                 }
             }, 'data');
 
@@ -120,54 +115,58 @@
         /**
          * toolbar监听事件
          */
-        table.on('toolbar(missionListFilter)', function (obj) {
-            if (obj.event === 'add') {  // 监听添加操作
-                var index = layer.open({
-                    title: '新建任务',
-                    type: 2,
-                    shade: 0.2,
-                    maxmin:true,
-                    shadeClose: true,
-                    area: ['100%', '100%'],
-                    content: '../../page/mission/add.html',
-                });
-                $(window).on("resize", function () {
-                    // layer.full(index);           TODO
-                });
-            } else if (obj.event === 'delete') {  // 监听删除操作
-                var checkStatus = table.checkStatus('currentTableId')
-                    , data = checkStatus.data;
-                layer.alert(JSON.stringify(data));
-            }
-        });
+        // table.on('toolbar(currentTableFilter)', function (obj) {
+        //     if (obj.event === 'add') {  // 监听添加操作
+        //         var index = layer.open({
+        //             title: '新建任务',
+        //             type: 2,
+        //             shade: 0.2,
+        //             maxmin:true,
+        //             shadeClose: true,
+        //             area: ['100%', '100%'],
+        //             content: '../../page/mission/add.html',
+        //         });
+        //         $(window).on("resize", function () {
+        //             // layer.full(index);           TODO
+        //         });
+        //     } else if (obj.event === 'delete') {  // 监听删除操作
+        //         var checkStatus = table.checkStatus('currentTableId')
+        //             , data = checkStatus.data;
+        //         layer.alert(JSON.stringify(data));
+        //     }
+        // });
 
         // 监听表格复选框选择
-        table.on('checkbox(missionListFilter)', function (obj) {
+        table.on('checkbox(currentTableFilter)', function (obj) {
             console.log(obj)
         });
 
         // 监听操作按钮
         table.on('tool(missionListFilter)', function (obj) {
             var data = obj.data;
-            if (obj.event === 'read') {
+            if (obj.event === 'treeView') {
                 var index = layer.open({
-                    title: '任务详情',
+                    title: '任务树视图',
                     type: 2,
                     shade: 0.2,
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '../../page/mission/read.html?id=' + data.mission_id,
+                    content: '../../page/mission/tree-view.html?v=2&id=' + data.mission_id,
                 });
-                // $(window).on("resize", function () {            // TODO ?
-                //     layer.full(index);
-                // });
+
                 return false;
-            } else if (obj.event === 'stop') {
+            } else if (obj.event === 'relateChild') {
                 layer.confirm('真的删除行么', function (index) {
                     obj.del();
                     layer.close(index);
                 });
+            } else if (obj.event === 'addTime') {
+
+            } else if (obj.event === 'progress') {
+
+            } else if (obj.event === 'export') {
+
             }
         });
 

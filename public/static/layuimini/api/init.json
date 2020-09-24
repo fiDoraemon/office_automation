@@ -264,6 +264,18 @@
               "href": "page/mission/add.html",
               "icon": "fa fa-calendar",
               "target": "_self"
+            },
+            {
+              "title": "任务树",
+              "href": "page/mission/tree-index.html",
+              "icon": "fa fa-calendar",
+              "target": "_self"
+            },
+            {
+              "title": "工作日历",
+              "href": "page/mission/work-calendar.html",
+              "icon": "fa fa-calendar",
+              "target": "_self"
             }
           ]
         },

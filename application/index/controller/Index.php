@@ -1,9 +1,9 @@
 <?php
 namespace app\index\controller;
 
-use app\common\model\User;
+use app\index\model\User;
 use app\common\Result;
-use app\common\service\AttachmentService;
+use app\index\service\AttachmentService;
 use app\index\model\Mission;
 use app\index\model\MissionInterest;
 use think\captcha\Captcha;
