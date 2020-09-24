@@ -12,6 +12,9 @@
         .input-title{
             font-weight: bold;
         }
+        .not-input{
+            color: #999999;
+        }
         .move-btn {
             position: absolute;
             top: 126px;
@@ -24,20 +27,17 @@
     </style>
 </head>
 <body>
-<div class="layuimini-container">
-    <div class="layuimini-main">
-
         <blockquote class="layui-elem-quote layui-text">
             鉴于小伙伴的普遍反馈，先温馨提醒两个常见“问题”：1. <a href="/doc/base/faq.html#form" target="_blank">为什么select/checkbox/radio没显示？</a> 2. <a href="/doc/modules/form.html#render" target="_blank">动态添加的表单元素如何更新？</a>
         </blockquote>
 
         <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
-            <legend>发起普通会议</legend>
+            <legend>发起会议</legend>
         </fieldset>
 
-        <form class="layui-form" action="">
+        <div class="layui-form layuimini-form">
             <div class="layui-form-item">
-                <label class="layui-form-label">会议类型</label>
+                <label class="layui-form-label input-title required">会议类型</label>
                 <div class="layui-input-block">
                     <select name="minute_type" lay-filter="minute_type" lay-verify="required" id="select-minute-type">
                         <option value="">--请选择会议类型--</option>
@@ -46,28 +46,22 @@
             </div>
 
             <div class="layui-form-item">
-                <label class="layui-form-label input-title">会议主持</label>
-                <div class="layui-input-block">
+                <label class="layui-form-label input-title not-input">会议主持</label>
+                <div class="layui-input-inline">
                     <input type="text" id="host-name" name="host_name" disabled="disabled"  lay-verify="title" autocomplete="off" placeholder="请输入会议主持人" class="layui-input">
                 </div>
-            </div>
-
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">组织部门</label>
-                <div class="layui-input-block">
+                <label class="layui-form-label input-title not-input">组织部门</label>
+                <div class="layui-input-inline">
                     <input type="text" id="department-name" name="department_name" disabled="disabled"  lay-verify="title" autocomplete="off" placeholder="请输入组织部门" class="layui-input">
                 </div>
             </div>
 
             <div class="layui-form-item">
-                <label class="layui-form-label input-title">会议主题</label>
-                <div class="layui-input-block">
+                <label class="layui-form-label input-title required">会议主题</label>
+                <div class="layui-input-inline">
                     <input type="text" id="minute-theme" name="minute_theme" lay-verify="title" autocomplete="off" placeholder="请输入会议主题" class="layui-input">
                 </div>
-            </div>
-
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">项目代号</label>
+                <label class="layui-form-label input-title required">项目代号</label>
                 <div class="layui-input-inline">
                     <select lay-verify="required" lay-filter="project_code" id="select-project-code" >
                         <option value="" selected>--请选择--</option>
@@ -76,7 +70,7 @@
             </div>
 
             <div class="layui-form-item">
-                <label class="layui-form-label input-title">会议时间</label>
+                <label class="layui-form-label input-title required">会议时间</label>
                 <div class="layui-inline">
                     <div class="layui-input-inline">
                         <input type="text" name="date" id="date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
@@ -88,16 +82,16 @@
             </div>
 
             <div class="layui-form-item">
-                <label class="layui-form-label input-title">会议地点</label>
+                <label class="layui-form-label input-title required">会议地点</label>
                 <div class="layui-input-block">
                     <input type="text" id="" name="title" lay-verify="title" autocomplete="off" placeholder="请输入会议地点" class="layui-input">
                 </div>
             </div>
 
             <div class="layui-form-item">
-                <label class="layui-form-label input-title">应到人员</label>
+                <label class="layui-form-label input-title required">应到人员</label>
                 <div class="layui-input-block">
-                    <textarea placeholder="请选择应到会议员工" class="layui-textarea" id="list-users" ts-selected="1110023" ></textarea>
+                    <textarea placeholder="请选择应到会议员工" class="layui-textarea" id="list-users" ts-selected="" ></textarea>
                 </div>
             </div>
 
@@ -153,12 +147,7 @@
                     <button class="layui-btn" lay-submit="" lay-filter="demo1">临时保存</button>
                 </div>
             </div>
-        </form>
-
-        <!-- 示例-970 -->
-        <ins class="adsbygoogle" style="display:inline-block;width:970px;height:90px" data-ad-client="ca-pub-6111334333458862" data-ad-slot="3820120620"></ins>
-    </div>
-</div>
+        </div>
 <script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script type="text/javascript" src="../../lib/layui-v2.5.5/layui.all.js"></script>
@@ -197,36 +186,6 @@
             elem.val(NEWJSON.join(","))
         }
     });
-
-    //默认值
-    //只需要在触发input上添加 ts-selected="1,2,3" 属性即可 值需与checkedKey对应
-    //多条件搜索
-    tableSelect.render({
-        elem: '#demo3',
-        checkedKey: 'id',
-        searchType: 'more', //开启多条件搜索
-        searchList: [
-            {searchKey: 'user_id', searchPlaceholder: '搜索员工id'}, //搜索条件1
-            {searchKey: 'user_name', searchPlaceholder: '搜索员工名字'},  //搜索条件2
-            {searchKey: 'department_id', searchPlaceholder: '搜索所属部门'},  //搜索条件3
-        ],
-        table: {
-            url: 'table.json',
-            cols: [[
-                { type: 'radio' },
-                { field: 'id', title: 'ID' },
-                { field: 'username', title: '姓名' },
-                { field: 'sex', title: '性别' }
-            ]]
-        },
-        done: function (elem, data) {
-            //选择完后的回调，包含2个返回值 elem:返回之前input对象；data:表格返回的选中的数据 []
-            //拿到data[]后 就按照业务需求做想做的事情啦~比如加个隐藏域放ID...
-        }
-    });
-
-
-
 
     layui.use(['form', 'layedit', 'laydate' ,'upload'], function () {
         var form = layui.form

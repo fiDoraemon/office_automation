@@ -21,8 +21,16 @@ class Minute extends Model
      */
     public function minuteAttends()
     {
-        //hasMany('关联模型名','外键名','主键名',['模型别名定义']);
         return $this->hasMany('MinuteAttend','minute_id','minute_id')->field('user_id');
+    }
+
+    /**
+     * 与实际到会人员一对多关联
+     * @return \think\model\relation\HasMany
+     */
+    public function minuteAttendeds()
+    {
+        return $this->hasMany('MinuteAttend','minute_id','minute_id')-> where("status",1)->field('user_id');
     }
 
     /**
@@ -65,6 +73,12 @@ class Minute extends Model
         return $this->hasOne('Department',"department_id","department_id")->field('department_name');
     }
 
+    /**
+     * 与关联任务一对多对应
+     */
+    public function minuteMission(){
+        return $this->hasMany('MinuteMission',"minute_id","minute_id")->field('mission_id');
+    }
 
 
 }

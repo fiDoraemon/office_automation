@@ -11,6 +11,7 @@ namespace app\index\controller;
 use app\common\Result;
 use app\index\model\Department;
 use app\index\model\Minute;
+use app\index\model\MinuteAttend;
 use app\index\model\User;
 use think\Db;
 use think\db\exception\DataNotFoundException;
@@ -29,6 +30,12 @@ class MeetingC
 
     /**
      * 实现根据会议类型、项目代号和会议名字模糊查询
+     * @param int $page 第几页
+     * @param int $limit 一页几行数据
+     * @param string $projectCode 项目代号
+     * @param int $minuteType 会议类型
+     * @param string $keyword 模糊查询条件
+     * @param int $isMyLaunch 是不是我应到的会议
      * @return array
      * @throws DataNotFoundException
      * @throws DbException
@@ -99,7 +106,6 @@ class MeetingC
         return Result::returnResult(Result::SUCCESS, $listMineMeet,$count);
     }
 
-
     /**
      * 查询所有项目代号、会议的类型和我应到的会议
      * @return array
@@ -117,6 +123,7 @@ class MeetingC
     }
 
     /**
+     * 添加会议页面的基本信息
      * @return array
      */
     public function getAddInfo(){
@@ -142,17 +149,36 @@ class MeetingC
     }
 
     /**
-     * 查询所有在职的员工
+     * 查询所有在职的员工 （耦合度较大，后期可考虑解耦）
      * @param int $limit
      * @param int $page
+     * @param int $type  0代表查询所有在职员工（发起会议），1代表查询应改到会但未经到会员工（选择实到人员），2代表新增到会员工（需要把已经需要到会的员工排除掉）
+     * @param string $keyword 模糊查询条件
+     * @param string $minuteId 会议id
      * @return array
      * @throws \think\Exception
      */
-    public function getAllUsers($limit = 10,$page = 1,$keyword = ""){
+    public function getAllUsers($limit = 10,$page = 1,$keyword = "",$minuteId = "",$type = 0){
         //所有在职员工
         $user = new User();
         try {
             $user -> where("user_status", 1);
+            //判断查询员工类型
+            if($minuteId != ""){
+                $attendUsers = new MinuteAttend;
+                $attendUsers -> where("minute_id",$minuteId);
+                if($type == 1){
+                    //查询哪些人员是需要参加会议的,显示应到但是未到的人员
+                    //1.先查询某个会议中那些人是需要到的
+                    $userList = $attendUsers -> where("status",0) //2.排除掉已经到会的人员
+                                             -> column("user_id");
+                    $user -> where("user_id", "in",$userList);
+                }elseif ($type == 2){
+                    //某个会议没有在应参加会议名单里面的员工
+                    $userList = $attendUsers -> column("user_id");
+                    $user -> where("user_id", "not in",$userList);
+                }
+            }
             if($keyword != ""){   //模糊查询条件
                 $Department = new Department();
                 $listDepartmentId = $Department -> where("department_name", "like", "%$keyword%")
@@ -161,7 +187,23 @@ class MeetingC
                       -> whereOr('department_id','in',$listDepartmentId);
             }
             $count = $user -> count();  //获取条件符合的总人数
+
             $user -> where("user_status", 1);
+            if($minuteId != ""){
+                $attendUsers = new MinuteAttend;
+                $attendUsers -> where("minute_id",$minuteId);
+                if($type == 1){
+                    //查询哪些人员是需要参加会议的,显示应到但是未到的人员
+                    //1.先查询某个会议中那些人是需要到的
+                    $userList = $attendUsers -> where("status",0) //2.排除掉已经到会的人员
+                    -> column("user_id");
+                    $user -> where("user_id", "in",$userList);
+                }elseif ($type == 2){
+                    //某个会议没有在应参加会议名单里面的员工
+                    $userList = $attendUsers -> column("user_id");
+                    $user -> where("user_id", "not in",$userList);
+                }
+            }
             if($keyword != ""){
                 $Department = new Department();
                 $listDepartmentId = $Department -> where("department_name", "like", "%$keyword%")
@@ -191,19 +233,42 @@ class MeetingC
      * @throws DbException
      * @throws ModelNotFoundException
      */
-    public function getMinute(){
+    public function getMinuteInfo(){
         $minuteId = $_POST["minuteId"];
         $minute = new Minute();
         $minute -> department();
         $resultMinute = $minute -> where("minute_id", $minuteId)
                 -> field("minute_id,department_id,minute_theme,minute_date,minute_time,place,project,host_id,resolution,record,minute_type,review_status,project_stage")
                 -> find();
+        //关联对应发起会议的员工所属部门
         $resultMinute -> department;
+        //关联项目
         $resultMinute -> projectStage;
+        //关联主持人
         $resultMinute -> user;
+        //关联多个应到会人员
         $attendUsers = $resultMinute -> minuteAttends;
         foreach ($attendUsers as $attend){
             $attend -> user;
+        }
+        //关联多个已经到会人员
+        $attendedUsers = $resultMinute -> minuteAttendeds;
+        foreach ($attendedUsers as $attended){
+            $attended -> user;
+        }
+        //关联一对多会议纪要任务表
+        $minuteMissions = $resultMinute -> minuteMission;
+        foreach ($minuteMissions as $mms){
+            //任务和任务负责人一对一关联
+            $mission = $mms -> mission;         //会议任务表对应的任务
+            $assignee = $mission -> assignee;   //任务对应的负责人
+            $missionStatus = $mission -> missionStatus;
+            $process = $mission -> processNew;
+            foreach ($process as $pro){
+                $mission -> process_note = $pro -> process_note;
+            }
+            $mission -> assignee_name = $assignee -> user_name;
+            $mission -> status = $missionStatus -> status_name;
         }
         return Result::returnResult(Result::SUCCESS,$resultMinute);
     }
@@ -240,6 +305,21 @@ class MeetingC
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
         }
+    }
+
+
+    /**
+     * 获取所有的基本任务
+     */
+    public function getMinuteMission(){
+
+    }
+
+    /**
+     * 新增复合任务清单,获取所有会议id和名字
+     */
+    public function getAllMinute(){
+
     }
 
 }

@@ -30,6 +30,12 @@ class Mission extends Model
         return $this->hasMany('MissionProcess', 'mission_id', 'mission_id')->field('process_id, handler_id, process_note, post_status, post_finish_date, process_time');
     }
 
+    // 关联任务处理（一对多,但是只要获取最新的一个消息）
+    public function processNew()
+    {
+        return $this->hasMany('MissionProcess', 'mission_id', 'mission_id')->order("process_id","desc")->limit(1)->field('process_note');
+    }
+
     // 关联附件（一对多）
     public function attachments()
     {

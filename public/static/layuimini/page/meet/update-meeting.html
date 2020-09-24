@@ -12,6 +12,9 @@
         .input-title{
             font-weight: bold;
         }
+        .not-input{
+            color: #999999;
+        }
         .move-btn {
             position: absolute;
             top: 126px;
@@ -24,264 +27,360 @@
     </style>
 </head>
 <body>
-<div class="layuimini-container">
-    <div class="layuimini-main">
+    <blockquote class="layui-elem-quote layui-text">
+       注意：只有会议发起人才能对会议部分信息进行修改！
+    </blockquote>
 
-        <blockquote class="layui-elem-quote layui-text">
-           注意：只有会议发起人才能对会议部分信息进行修改！
-        </blockquote>
+    <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+        <legend>会议详细信息</legend>
+    </fieldset>
 
-        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
-            <legend>会议详细信息</legend>
-        </fieldset>
-
-        <form class="layui-form" action="">
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">组织部门</label>
-                <div class="layui-input-block">
-                    <input type="text" name="" lay-verify="" id="department-name" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
-                </div>
+    <div class="layui-form layuimini-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label input-title not-input">组织部门</label>
+            <div class="layui-input-inline">
+                <input type="text" name="" lay-verify="" id="department-name" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
             </div>
-
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">会议主题</label>
-                <div class="layui-input-block">
-                    <input type="text" name="title" id="minute-theme" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
-                </div>
+            <label class="layui-form-label input-title not-input" >会议主持</label>
+            <div class="layui-input-inline">
+                <input type="text" name="title" id="minute-host" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
             </div>
+        </div>
 
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">完成情况</label>
-                <div class="layui-input-block">
-                    <input type="text" name="title" id="complete-status" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
-                </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label input-title not-input">会议主题</label>
+            <div class="layui-input-inline">
+                <input type="text" name="title" id="minute-theme" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
             </div>
-
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">项目代号</label>
-                <div class="layui-input-block">
-                    <input type="text" name="title" id="project-code" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
-                </div>
+            <label class="layui-form-label input-title not-input">完成情况</label>
+            <div class="layui-input-inline">
+                <input type="text" name="title" id="complete-status" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
             </div>
+        </div>
 
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">项目阶段</label>
-                <div class="layui-input-block">
-                    <input type="text" name="title" id="project-stage" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
-                </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label input-title not-input">项目代号</label>
+            <div class="layui-input-inline">
+                <input type="text" name="title" id="project-code" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
             </div>
-
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">会议时间</label>
-                <div class="layui-inline">
-                    <div class="layui-input-inline">
-                        <input type="text" id="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input" disabled="disabled">
-                    </div>
-                    <div class="layui-input-inline">
-                        <input type="text" id="time" placeholder="hh:mm" autocomplete="off" class="layui-input" disabled="disabled">
-                    </div>
-                </div>
+            <label class="layui-form-label input-title not-input">项目阶段</label>
+            <div class="layui-input-inline">
+                <input type="text" name="title" id="project-stage" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
             </div>
+        </div>
 
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">会议地点</label>
-                <div class="layui-input-block">
-                    <input type="text" name="title" id="minute-place" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
-                </div>
-            </div>
 
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">会议主持</label>
-                <div class="layui-input-block">
-                    <input type="text" name="title" id="minute-host" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
-                </div>
-            </div>
-
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">应到人员</label>
-                <div class="layui-input-block">
-                    <input type="text" name="title" id="attend-user" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
-                </div>
-            </div>
-
-            <div class="layui-form-item">
-                <label class="layui-form-label input-title">实到人员</label>
+        <div class="layui-form-item">
+            <label class="layui-form-label input-title not-input">会议时间</label>
+            <div class="layui-inline">
                 <div class="layui-input-inline">
-                    <input type="text" name="" placeholder="请选择" autocomplete="off" class="layui-input" id="demo" value="" ts-selected="002,003" disabled="disabled">
+                    <input type="text" id="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input" disabled="disabled">
+                </div>
+                <div class="layui-input-inline">
+                    <input type="text" id="time" placeholder="hh:mm" autocomplete="off" class="layui-input" disabled="disabled">
                 </div>
             </div>
+        </div>
 
-            <div class="layui-form-item layui-form-text">
-                <label class="layui-form-label input-title">会议决议</label>
-                <div class="layui-input-block">
-                    <textarea placeholder="请输入内容" id="minute-resolution" class="layui-textarea"></textarea>
-                </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label input-title not-input">会议地点</label>
+            <div class="layui-input-block">
+                <input type="text" name="title" id="minute-place" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
             </div>
+        </div>
 
-            <div class="layui-form-item layui-form-text">
-                <label class="layui-form-label input-title">会议记录</label>
-                <div class="layui-input-block">
-                    <textarea placeholder="请输入内容" id="minute-context" class="layui-textarea"></textarea>
-                </div>
+
+
+        <div class="layui-form-item">
+            <label class="layui-form-label input-title not-input">应到人员</label>
+            <div class="layui-input-block">
+                <input type="text" name="title" id="attend-user" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
             </div>
+        </div>
 
-            <div class="layui-form-item layui-form-text">
-                <label class="layui-form-label input-title">会议纪要任务表</label>
-                <div class="layui-input-block">
-                    <table class="layui-hide" id="minute-table"></table>
-                </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label input-title">实到人员</label>
+            <div class="layui-input-block">
+                <input type="text" name="" placeholder="--请选择已到会人员--" autocomplete="off" class="layui-input" id="attended-user" value="" ts-selected="">
             </div>
+        </div>
 
-            <!--<script type="text/html" id="toolbarTop">-->
-                <!--<div class="layui-btn-container">-->
-                    <!--<button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" id="addEvent" lay-event="addEvent"> 添加 </button>-->
-                    <!--<button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="deleteAll"> 删除 </button>-->
-                <!--</div>-->
-            <!--</script>-->
-            <div class="layui-form-item layui-form-text">
-                <label class="layui-form-label input-title">添加会议纪要任务表</label>
-                <div class="layui-input-block">
-                    <!--<table class="layui-hide" id="addMinuteResolution" lay-filter="addTableFilter"></table>-->
-                    <div class="layui-form">
-                        <table class="layui-table">
-                            <thead>
-                            <tr>
-                                <th>标题</th>
-                                <th>责任部门</th>
-                                <th>责任人</th>
-                                <th>完成日期</th>
-                                <th>任务描述</th>
-                                <th>操作</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
-                                <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
-                                <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
-                                <td><input type="text" name="date" id="date1" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input date"></td>
-                                <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
-                                <td><a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete">删除</a></td>
-                            </tr>
-                            <tr>
-                                <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
-                                <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
-                                <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
-                                <td><input type="text" name="" id="date2" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="" class="layui-input date"></td>
-                                <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
-                                <td><a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete">删除</a></td>
-                            </tr>
-                            <tr>
-                                <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
-                                <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
-                                <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
-                                <td><input type="text" name="" id="date3" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="" class="layui-input date"></td>
-                                <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
-                                <td><a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete">删除</a></td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <button type="button" class="layui-btn layui-btn-primary layui-btn-fluid" id="addEvent">添加会议纪要任务</button>
-                </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label input-title">新增应到人员</label>
+            <div class="layui-input-block">
+                <input type="text" name="" placeholder="--请选择新增应到员工--" autocomplete="off" class="layui-input" id="new-attend-users" value="" ts-selected="">
             </div>
-            <script type="text/html" id="currentTableBar">
-                <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
-            </script>
+        </div>
 
-            <div class="layui-form-item layui-form-text">
-                <!--<label class="layui-form-label input-title">上传附件</label>-->
-                <!--<div class="layui-form-item">-->
-                    <!--<div class="layui-fluid">-->
-                        <!--<div class="layui-row">-->
-                            <!--<div class="layui-col-sm3 layui-col-sm-offset1">-->
-                                <!--<div class="layui-upload-drag" id="attachment">-->
-                                    <!--<i class="layui-icon"></i>-->
-                                    <!--<p>点击上传，或将文件拖拽到此处</p>-->
-                                    <!--<input type="hidden" id="attachment_list" name="attachment_list">-->
-                                <!--</div>-->
-                                <!--<button type="button" class="layui-btn move-btn" id="start_upload">开始上传</button>-->
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label input-title">新增基本任务清单</label>
+            <div class="layui-input-block">
+                <input type="text" name="" placeholder="--请选择基本任务清单--" autocomplete="off" class="layui-input" id="add-mission" value="" ts-selected="">
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label input-title">新增复合任务清单</label>
+            <div class="layui-input-block">
+                <input type="text" name="" placeholder="--请选择复合任务清单--" autocomplete="off" class="layui-input" id="add-minute-mission" value="" ts-selected="">
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label input-title">会议决议</label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入内容" id="minute-resolution" class="layui-textarea"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label input-title">会议记录</label>
+            <div class="layui-input-block">
+                <textarea placeholder="请输入内容" id="minute-context" class="layui-textarea"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label input-title">会议纪要任务表</label>
+            <div class="layui-input-block">
+                <table class="layui-hide" id="minute-table"></table>
+            </div>
+        </div>
+
+        <!--<script type="text/html" id="toolbarTop">-->
+            <!--<div class="layui-btn-container">-->
+                <!--<button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" id="addEvent" lay-event="addEvent"> 添加 </button>-->
+                <!--<button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="deleteAll"> 删除 </button>-->
+            <!--</div>-->
+        <!--</script>-->
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label input-title">添加会议纪要任务表</label>
+            <div class="layui-input-block">
+                <!--<table class="layui-hide" id="addMinuteResolution" lay-filter="addTableFilter"></table>-->
+                <div class="layui-form">
+                    <table class="layui-table">
+                        <thead>
+                        <tr>
+                            <th>标题</th>
+                            <th>责任部门</th>
+                            <th>责任人</th>
+                            <th>完成日期</th>
+                            <th>任务描述</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
+                            <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
+                            <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
+                            <td><input type="text" name="date" id="date1" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input date"></td>
+                            <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
+                            <td><a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete">删除</a></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
+                            <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
+                            <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
+                            <td><input type="text" name="" id="date2" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="" class="layui-input date"></td>
+                            <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
+                            <td><a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete">删除</a></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
+                            <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
+                            <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
+                            <td><input type="text" name="" id="date3" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="" class="layui-input date"></td>
+                            <td><input type="text" name="" lay-verify="" autocomplete="off" placeholder="" class="layui-input"/></td>
+                            <td><a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete">删除</a></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button type="button" class="layui-btn layui-btn-primary layui-btn-fluid" id="addEvent">添加会议纪要任务</button>
+            </div>
+        </div>
+        <script type="text/html" id="currentTableBar">
+            <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
+        </script>
+
+        <div class="layui-form-item layui-form-text">
+            <!--<label class="layui-form-label input-title">上传附件</label>-->
+            <!--<div class="layui-form-item">-->
+                <!--<div class="layui-fluid">-->
+                    <!--<div class="layui-row">-->
+                        <!--<div class="layui-col-sm3 layui-col-sm-offset1">-->
+                            <!--<div class="layui-upload-drag" id="attachment">-->
+                                <!--<i class="layui-icon"></i>-->
+                                <!--<p>点击上传，或将文件拖拽到此处</p>-->
+                                <!--<input type="hidden" id="attachment_list" name="attachment_list">-->
                             <!--</div>-->
-                            <!--<div class="layui-col-sm8">-->
-                                <!--<div class="layui-upload-list">-->
-                                    <!--<table class="layui-table">-->
-                                        <!--<thead>-->
-                                        <!--<tr><th>文件名</th>-->
-                                            <!--<th>大小</th>-->
-                                            <!--<th>状态</th>-->
-                                            <!--<th>操作</th>-->
-                                        <!--</tr></thead>-->
-                                        <!--<tbody id="fileList"></tbody>-->
-                                    <!--</table>-->
-                                <!--</div>-->
+                            <!--<button type="button" class="layui-btn move-btn" id="start_upload">开始上传</button>-->
+                        <!--</div>-->
+                        <!--<div class="layui-col-sm8">-->
+                            <!--<div class="layui-upload-list">-->
+                                <!--<table class="layui-table">-->
+                                    <!--<thead>-->
+                                    <!--<tr><th>文件名</th>-->
+                                        <!--<th>大小</th>-->
+                                        <!--<th>状态</th>-->
+                                        <!--<th>操作</th>-->
+                                    <!--</tr></thead>-->
+                                    <!--<tbody id="fileList"></tbody>-->
+                                <!--</table>-->
                             <!--</div>-->
                         <!--</div>-->
                     <!--</div>-->
                 <!--</div>-->
-            </div>
+            <!--</div>-->
+        </div>
 
-            <div class="layui-form-item">
-                <div class="layui-input-block" style="align-items: center;">
-                    <button class="layui-btn" lay-submit="" lay-filter="demo1">立即提交</button>
-                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-                    <button class="layui-btn" lay-submit="" lay-filter="demo1">临时保存</button>
-                </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block" style="align-items: center;">
+                <button class="layui-btn" lay-submit="" lay-filter="demo1">立即提交</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                <button class="layui-btn" lay-submit="" lay-filter="demo1">临时保存</button>
             </div>
+        </div>
 
-        </form>
     </div>
-</div>
+
 <script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script type="text/javascript" src="../../lib/layui-v2.5.5/layui.all.js"></script>
-<script type="text/javascript" src="../../js/lay-module/tableSelect/tableSelect.js"></script>
 <script type="text/javascript" src="../../js/meet/update-minute.js"></script>
+<script type="text/javascript" src="../../js/lay-module/tableSelect/tableSelect.js"></script>
 <script>
     //开始使用下拉多个选择
     var tableSelect = layui.tableSelect;
-    tableSelect.render({
-        elem: '#demo',	//定义输入框input对象 必填
-        checkedKey: 'id', //表格的唯一建值，非常重要，影响到选中状态 必填
-        searchKey: 'keyword',	//搜索输入框的name值 默认keyword
-        searchPlaceholder: '关键词搜索',	//搜索输入框的提示文字 默认关键词搜索
-        height:'400',  //自定义高度
-        width:'900',  //自定义宽度
-        table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
-            url:'',
-            cols: [[]]
-        },
-        done: function (elem, data) {
-            //选择完后的回调，包含2个返回值 elem:返回之前input对象；data:表格返回的选中的数据 []
-            //拿到data[]后 就按照业务需求做想做的事情啦~比如加个隐藏域放ID...
-        }
-    });
 
-    //默认值
-    //只需要在触发input上添加 ts-selected="1,2,3" 属性即可 值需与checkedKey对应
-    //多条件搜索
+    /**
+     * 选择已到会员工
+     */
     tableSelect.render({
-        elem: '#demo3',
-        checkedKey: 'id',
-        searchType: 'more', //开启多条件搜索
+        elem: '#attended-user',	//定义输入框input对象 必填
+        checkedKey: 'user_id', //表格的唯一建值，非常重要，影响到选中状态 必填
+        searchKey: 'keyword',	//搜索输入框的name值 默认keyword
+        // searchPlaceholder: '员工搜索',	//搜索输入框的提示文字 默认关键词搜索
+        height:'500',  //自定义高度
+        width:'500',  //自定义宽度
+        // searchType: 'more', //开启多条件搜索
         searchList: [
-            {searchKey: 'name', searchPlaceholder: '搜索用户姓名'}, //搜索条件1
-            {searchKey: 'sex', searchPlaceholder: '搜索用户性别'},  //搜索条件2
+            {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
         ],
-        table: {
-            url: 'table.json',
+        table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
+            url:'/office_automation/public/index.php/index/meeting_c/getAllUsers?type=1&minuteId='+minute_id,
             cols: [[
-                { type: 'radio' },
-                { field: 'id', title: 'ID' },
-                { field: 'username', title: '姓名' },
-                { field: 'sex', title: '性别' }
+                {type: "checkbox", width: 80},
+                {field: 'user_id', width: 140, title: '员工工号'},
+                {field: 'user_name', width: 140, title: '姓名'},
+                {field: 'department_name', width: 140, title: '部门'},
             ]]
         },
         done: function (elem, data) {
-            //选择完后的回调，包含2个返回值 elem:返回之前input对象；data:表格返回的选中的数据 []
-            //拿到data[]后 就按照业务需求做想做的事情啦~比如加个隐藏域放ID...
+            var NEWJSON = []
+            console.log(data.data);
+            layui.each(data.data, function (index, item) {
+                NEWJSON.push(item.user_name)
+            })
+            elem.val(NEWJSON.join(","))
         }
-    })
+    });
 
+    /**
+     * 选择新添需要到会员工
+     */
+    tableSelect.render({
+        elem: '#new-attend-users',	//定义输入框input对象 必填
+        checkedKey: 'user_id', //表格的唯一建值，非常重要，影响到选中状态 必填
+        searchKey: 'keyword',	//搜索输入框的name值 默认keyword
+        // searchPlaceholder: '员工搜索',	//搜索输入框的提示文字 默认关键词搜索
+        height:'500',  //自定义高度
+        width:'500',  //自定义宽度
+        // searchType: 'more', //开启多条件搜索
+        searchList: [
+            {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
+        ],
+        table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
+            url:'/office_automation/public/index.php/index/meeting_c/getAllUsers?type=2&minuteId='+minute_id,
+            cols: [[
+                {type: "checkbox", width: 80},
+                {field: 'user_id', width: 140, title: '员工工号'},
+                {field: 'user_name', width: 140, title: '姓名'},
+                {field: 'department_name', width: 140, title: '部门'},
+            ]]
+        },
+        done: function (elem, data) {
+            var NEWJSON = []
+            console.log(data.data);
+            layui.each(data.data, function (index, item) {
+                NEWJSON.push(item.user_name)
+            })
+            elem.val(NEWJSON.join(","))
+        }
+    });
+
+    /**
+     * 选择基本任务清单
+     */
+    tableSelect.render({
+        elem: '#add-mission',	    //定义输入框input对象 必填
+        checkedKey: 'mission_id',   //表格的唯一建值，非常重要，影响到选中状态 必填
+        searchKey: 'keyword',	    //搜索输入框的name值 默认keyword
+        height:'500',
+        width:'500',
+        searchList: [
+            {searchKey: 'keyword', searchPlaceholder: '任务名字/任务ID'},  //搜索条件
+        ],
+        table: {
+            url:'/office_automation/public/index.php/index/meeting_c/getMinuteMission',
+            cols: [[
+                {type: "checkbox", width: 80},
+                {field: 'mission_id', width: 140, title: '任务号'},
+                {field: 'mission_name', width: 140, title: '任务标题'},
+                {field: 'assignee_name', width: 140, title: '负责人'},
+            ]]
+        },
+        done: function (elem, data) {
+            var NEWJSON = [];
+            console.log(data.data);
+            layui.each(data.data, function (index, item) {
+                NEWJSON.push(item.user_name)
+            })
+            elem.val(NEWJSON.join(","))
+        }
+    });
+
+    /**
+     * 选选择复合任务清单
+     */
+    tableSelect.render({
+        elem: '#add-minute-mission',	    //定义输入框input对象 必填
+        checkedKey: 'mission_id',   //表格的唯一建值，非常重要，影响到选中状态 必填
+        searchKey: 'keyword',	    //搜索输入框的name值 默认keyword
+        height:'500',
+        width:'500',
+        searchList: [
+            {searchKey: 'keyword', searchPlaceholder: '任务名字/任务ID'},  //搜索条件
+        ],
+        table: {
+            url:'/office_automation/public/index.php/index/meeting_c/getMinuteMission',
+            cols: [[
+                {type: "checkbox", width: 80},
+                {field: 'mission_id', width: 140, title: '任务号'},
+                {field: 'mission_name', width: 140, title: '任务标题'},
+                {field: 'assignee_name', width: 140, title: '负责人'},
+            ]]
+        },
+        done: function (elem, data) {
+            var NEWJSON = [];
+            console.log(data.data);
+            layui.each(data.data, function (index, item) {
+                NEWJSON.push(item.user_name)
+            })
+            elem.val(NEWJSON.join(","))
+        }
+    });
 
     layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         var form = layui.form
@@ -430,49 +529,14 @@
         table.render({
             elem: '#minute-table'
             ,cols: [[ //标题栏
-                {field: 'id', title: 'ID', width: 200}
-                ,{field: 'username', title: '标题', width: 200}
-                ,{field: 'email', title: '责任人', Width: 200}
-                ,{field: 'sign',title: '完成日期', Width: 200}
-                ,{field: 'sex', title: '最近处理信息', width: 200}
-                ,{field: 'city', title: '进度', width: 200}
+                {field: 'mission_id', title: 'ID', width: 200}
+                ,{field: 'mission_title', title: '标题', width: 200}
+                ,{field: 'assignee_name', title: '责任人', Width: 200}
+                ,{field: 'finish_date',title: '完成日期', Width: 200}
+                ,{field: 'process_note', title: '最近处理信息', width: 200}
+                ,{field: 'status', title: '进度', width: 200}
             ]]
-            ,data: [{
-                "id": "10001"
-                ,"username": "杜甫"
-                ,"email": "xianxin"
-                ,"sex": "男"
-                ,"city": "浙江杭州"
-                ,"sign": "人生恰似一场修行"
-                ,"experience": "116"
-                ,"ip": "192.168.0.8"
-                ,"logins": "108"
-                ,"joinTime": "2016-10-14"
-            },
-                {
-                "id": "10002"
-                ,"username": "李白"
-                ,"email": "xianxin@layui.com"
-                ,"sex": "男"
-                ,"city": "浙江杭州"
-                ,"sign": "人生恰似一场修行"
-                ,"experience": "12"
-                ,"ip": "192.168.0.8"
-                ,"logins": "106"
-                ,"joinTime": "2016-10-14"
-                ,"LAY_CHECKED": true
-            }, {
-                "id": "10003"
-                ,"username": "王勃"
-                ,"email": "xianxin@layui.com"
-                ,"sex": "男"
-                ,"city": "浙江杭州"
-                ,"sign": "人生恰似一场修行"
-                ,"experience": "65"
-                ,"ip": "192.168.0.8"
-                ,"logins": "106"
-                ,"joinTime": "2016-10-14"
-            }]
+            ,data: []
             ,even: true
         });
 
