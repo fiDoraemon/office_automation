@@ -74,10 +74,10 @@
             <label class="layui-form-label input-title not-input">会议时间</label>
             <div class="layui-inline">
                 <div class="layui-input-inline">
-                    <input type="text" id="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input" disabled="disabled">
+                    <input type="text" id="date"  class="layui-input" disabled="disabled"/>
                 </div>
                 <div class="layui-input-inline">
-                    <input type="text" id="time" placeholder="hh:mm" autocomplete="off" class="layui-input" disabled="disabled">
+                    <input type="text" id="time" class="layui-input" disabled="disabled"/>
                 </div>
             </div>
         </div>
@@ -391,18 +391,9 @@
 
         //日期
         laydate.render({
-            elem: '#date'
-        });
-        //日期
-        laydate.render({
             elem: '.date'
         });
-        //时间范围选择
-        laydate.render({
-            elem: '#time'
-            ,type: 'time'
-            ,range: true //或 range: '~' 来自定义分割字符
-        });
+
 
         //文件上传
         var fileListView = $('#fileList')
