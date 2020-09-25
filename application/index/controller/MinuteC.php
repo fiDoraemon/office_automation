@@ -88,6 +88,7 @@ class MinuteC
         }
         $listMineMeet = $minutes -> field("minute_id,minute_theme,host_id,minute_date,minute_time,project,minute_type,review_status,project_stage")
                                  -> page($page,$limit)
+                                 -> order("minute_id","desc")
                                  -> select();
         foreach ($listMineMeet as $minute){
             $users = "";                                                        //所有应到的员工
@@ -319,6 +320,52 @@ class MinuteC
      */
     public function getAllMinute(){
 
+    }
+
+    /**
+     * 保存会议
+     */
+    public function saveMinute(){
+        $info = Session::get("info");
+        $minuteType = $_POST["minute_type"];        //会议类型
+        $hostId = $info["user_id"];           //会议主持id
+        $departmentId = $info["department_id"]; //所属部门id
+        $minuteTheme = $_POST["minute_theme"];     //会议标题
+        $projectCode = $_POST["project_code"];     //项目代号
+        $date = $_POST["date"];                     //会议时间
+        $time = $_POST["time"];
+        $place = $_POST["place"];                   //会议地点
+        $attendUsers = $_POST["attend_users"];     //应到人员列表
+        $minuteResolution = $_POST["minute_resolution"];   //会议决议
+        $minuteContext = $_POST["minute_context"];         //会议内容
+//        $attachmentList = $_POST["attachment_list"];
+//        $file = $_POST["file"];
+        //保存会议基本信息
+        $minute = new Minute();
+        $minute -> department_id = $departmentId;
+        $minute -> minute_theme = $minuteTheme;
+        $minute -> project = $projectCode;
+        $minute -> minute_date = $date;
+        $minute -> minute_time = $time;
+        $minute -> place = $place;
+        $minute -> host_id = $hostId;
+        $minute -> resolution = $minuteResolution;
+        $minute -> record = $minuteContext;
+        $minute -> minute_type = $minuteType;
+        $minute -> save();
+        $minuteId = $minute -> minute_id;
+        //保存会议应到人员
+        foreach ($attendUsers as $attend){
+            $minuteAttend = new MinuteAttend();
+            $minuteAttend -> minute_id = $minuteId;
+            $minuteAttend -> user_id = $attend;
+            $minuteAttend ->save();
+        }
+        //保存上传附件信息
+        if($minuteId != null){
+            return Result::returnResult(Result::SUCCESS,null);
+        }
+        return Result::returnResult(Result::ERROR,null);
     }
 
 }

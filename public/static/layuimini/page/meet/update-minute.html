@@ -233,9 +233,9 @@
                 <div class="layui-row layui-col-space10">
                     <div class="layui-col-md4"></div>
                     <div class="layui-col-md4">
-                        <button class="layui-btn" lay-submit="" lay-filter="demo1">立即提交</button>
-                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-                        <button class="layui-btn" lay-submit="" lay-filter="demo1">临时保存</button>
+                        <button class="layui-btn" id="save" lay-submit lay-filter="save">立即提交</button>
+                        <button type="reset" id="refresh" class="layui-btn layui-btn-primary">重置</button>
+                        <button class="layui-btn" id="temporarySave" lay-submit lay-filter="temporarySave">临时保存</button>
                     </div>
                     <div class="layui-col-md4"></div>
                 </div>
@@ -260,20 +260,16 @@
         elem: '#attended-user',	//定义输入框input对象 必填
         checkedKey: 'user_id', //表格的唯一建值，非常重要，影响到选中状态 必填
         searchKey: 'keyword',	//搜索输入框的name值 默认keyword
-        // searchPlaceholder: '员工搜索',	//搜索输入框的提示文字 默认关键词搜索
-        height:'500',  //自定义高度
-        width:'500',  //自定义宽度
-        // searchType: 'more', //开启多条件搜索
         searchList: [
             {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
         ],
         table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
             url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=1&minuteId='+minute_id,
             cols: [[
-                {type: "checkbox", width: 80},
-                {field: 'user_id', width: 140, title: '员工工号'},
-                {field: 'user_name', width: 140, title: '姓名'},
-                {field: 'department_name', width: 140, title: '部门'},
+                {type: "checkbox"},
+                {field: 'user_id', title: '员工工号'},
+                {field: 'user_name', title: '姓名'},
+                {field: 'department_name', title: '部门'},
             ]]
         },
         done: function (elem, data) {
@@ -293,20 +289,16 @@
         elem: '#new-attend-users',	//定义输入框input对象 必填
         checkedKey: 'user_id', //表格的唯一建值，非常重要，影响到选中状态 必填
         searchKey: 'keyword',	//搜索输入框的name值 默认keyword
-        // searchPlaceholder: '员工搜索',	//搜索输入框的提示文字 默认关键词搜索
-        height:'500',  //自定义高度
-        width:'500',  //自定义宽度
-        // searchType: 'more', //开启多条件搜索
         searchList: [
             {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
         ],
         table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
             url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=2&minuteId='+minute_id,
             cols: [[
-                {type: "checkbox", width: 80},
-                {field: 'user_id', width: 140, title: '员工工号'},
-                {field: 'user_name', width: 140, title: '姓名'},
-                {field: 'department_name', width: 140, title: '部门'},
+                {type: "checkbox"},
+                {field: 'user_id', title: '员工工号'},
+                {field: 'user_name', title: '姓名'},
+                {field: 'department_name', title: '部门'},
             ]]
         },
         done: function (elem, data) {
@@ -326,18 +318,16 @@
         elem: '#add-mission',	    //定义输入框input对象 必填
         checkedKey: 'mission_id',   //表格的唯一建值，非常重要，影响到选中状态 必填
         searchKey: 'keyword',	    //搜索输入框的name值 默认keyword
-        height:'500',
-        width:'500',
         searchList: [
             {searchKey: 'keyword', searchPlaceholder: '任务名字/任务ID'},  //搜索条件
         ],
         table: {
             url:'/office_automation/public/index.php/index/minute_c/getMinuteMission',
             cols: [[
-                {type: "checkbox", width: 80},
-                {field: 'mission_id', width: 140, title: '任务号'},
-                {field: 'mission_name', width: 140, title: '任务标题'},
-                {field: 'assignee_name', width: 140, title: '负责人'},
+                {type: "checkbox"},
+                {field: 'mission_id', title: '任务号'},
+                {field: 'mission_name', title: '任务标题'},
+                {field: 'assignee_name', title: '负责人'},
             ]]
         },
         done: function (elem, data) {
@@ -357,18 +347,16 @@
         elem: '#add-minute-mission',	    //定义输入框input对象 必填
         checkedKey: 'mission_id',   //表格的唯一建值，非常重要，影响到选中状态 必填
         searchKey: 'keyword',	    //搜索输入框的name值 默认keyword
-        height:'500',
-        width:'500',
         searchList: [
             {searchKey: 'keyword', searchPlaceholder: '任务名字/任务ID'},  //搜索条件
         ],
         table: {
             url:'/office_automation/public/index.php/index/minute_c/getMinuteMission',
             cols: [[
-                {type: "checkbox", width: 80},
-                {field: 'mission_id', width: 140, title: '任务号'},
-                {field: 'mission_name', width: 140, title: '任务标题'},
-                {field: 'assignee_name', width: 140, title: '负责人'},
+                {type: "checkbox"},
+                {field: 'mission_id', title: '任务号'},
+                {field: 'mission_name', title: '任务标题'},
+                {field: 'assignee_name', title: '负责人'},
             ]]
         },
         done: function (elem, data) {
@@ -382,18 +370,17 @@
     });
 
     layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
-        var form = layui.form
-            , layer = layui.layer
+        var form      = layui.form
+            , layer   = layui.layer
             , layedit = layui.layedit
             , laydate = layui.laydate
-            , upload = layui.upload
-            , table = layui.table;
+            , upload  = layui.upload
+            , table   = layui.table;
 
         //日期
         laydate.render({
             elem: '.date'
         });
-
 
         //文件上传
         var fileListView = $('#fileList')
@@ -514,12 +501,17 @@
             return false;
         });
 
+        //重置
+        $("#refresh").on("click",function(){
+            location.reload();
+        });
+
 
         //展示会议纪要任务表已有数据
         table.render({
             elem: '#minute-table'
             ,cols: [[ //标题栏
-                {field: 'mission_id', title: 'ID', width: 200}
+                 {field: 'mission_id', title: 'ID', width: 200}
                 ,{field: 'mission_title', title: '标题', width: 200}
                 ,{field: 'assignee_name', title: '责任人', Width: 200}
                 ,{field: 'finish_date',title: '完成日期', Width: 200}

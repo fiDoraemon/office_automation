@@ -63,7 +63,7 @@
                 </div>
                 <label class="layui-form-label input-title required">项目代号</label>
                 <div class="layui-input-inline">
-                    <select lay-verify="required" lay-filter="project_code" id="select-project-code" >
+                    <select lay-verify="required" name="project_code" lay-filter="project_code" id="select-project-code" >
                         <option value="" selected>--请选择--</option>
                     </select>
                 </div>
@@ -76,7 +76,7 @@
                         <input type="text" name="date" id="date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
                     </div>
                     <div class="layui-input-inline">
-                        <input type="text" name="date" id="time" lay-verify="time" placeholder="hh:mm" autocomplete="off" class="layui-input">
+                        <input type="text" name="time" id="time" lay-verify="time" placeholder="hh:mm" autocomplete="off" class="layui-input">
                     </div>
                 </div>
             </div>
@@ -84,28 +84,28 @@
             <div class="layui-form-item">
                 <label class="layui-form-label input-title required">会议地点</label>
                 <div class="layui-input-block">
-                    <input type="text" id="" name="title" lay-verify="title" autocomplete="off" placeholder="请输入会议地点" class="layui-input">
+                    <input type="text" id="" name="place" lay-verify="title" autocomplete="off" placeholder="请输入会议地点" class="layui-input">
                 </div>
             </div>
 
             <div class="layui-form-item">
                 <label class="layui-form-label input-title required">应到人员</label>
                 <div class="layui-input-block">
-                    <textarea placeholder="请选择应到会议员工" class="layui-textarea" id="list-users" ts-selected="" ></textarea>
+                    <input  type="text" placeholder="请选择应到会议员工" name="attend_users" autocomplete="off" id="list-users" ts-selected="" class="layui-input"/>
                 </div>
             </div>
 
             <div class="layui-form-item layui-form-text">
                 <label class="layui-form-label input-title">会议决议</label>
                 <div class="layui-input-block">
-                    <textarea placeholder="请输入内容" id="minute-resolution" class="layui-textarea"></textarea>
+                    <textarea placeholder="请输入内容" name="minute_resolution" id="minute-resolution" class="layui-textarea"></textarea>
                 </div>
             </div>
 
             <div class="layui-form-item layui-form-text">
                 <label class="layui-form-label input-title">会议记录</label>
                 <div class="layui-input-block">
-                    <textarea placeholder="请输入内容" id="minute-context" class="layui-textarea" rows="10"></textarea>
+                    <textarea placeholder="请输入内容" name="minute_context" id="minute-context" class="layui-textarea" rows="10"></textarea>
                 </div>
             </div>
 
@@ -145,9 +145,9 @@
                     <div class="layui-row layui-col-space10">
                         <div class="layui-col-md4"></div>
                         <div class="layui-col-md4">
-                            <button class="layui-btn" lay-submit="" lay-filter="demo1">立即提交</button>
-                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-                            <button class="layui-btn" lay-submit="" lay-filter="demo1">临时保存</button>
+                            <button class="layui-btn" lay-submit id="save" lay-filter="save">立即提交</button>
+                            <button type="reset" class="layui-btn layui-btn-primary" id="refresh">重置</button>
+                            <button class="layui-btn" lay-submit id="temporarySave"  lay-filter="temporarySave">临时保存</button>
                         </div>
                         <div class="layui-col-md4"></div>
                     </div>
@@ -160,36 +160,33 @@
 <script src="../../js/meet/add-minutes.js" charset="utf-8"></script> <!--引入查询所有项目代码js-->
 <script type="text/javascript" src="../../js/lay-module/tableSelect/tableSelect.js"></script>
 <script>
+    var listUserId = []; //已经选择的应到会议员工id数组
     //开始使用下拉多个选择
     var tableSelect = layui.tableSelect;
     tableSelect.render({
         elem: '#list-users',	//定义输入框input对象 必填
         checkedKey: 'user_id', //表格的唯一建值，非常重要，影响到选中状态 必填
         searchKey: 'keyword',	//搜索输入框的name值 默认keyword
-        // searchPlaceholder: '员工搜索',	//搜索输入框的提示文字 默认关键词搜索
-        height:'500',  //自定义高度
-        width:'500',  //自定义宽度
-        // searchType: 'more', //开启多条件搜索
         searchList: [
             {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
         ],
         table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
             url:'/office_automation/public/index.php/index/minute_c/getAllUsers',
             cols: [[
-                {type: "checkbox", width: 80},
-                {field: 'user_id', width: 140, title: '员工工号'},
-                {field: 'user_name', width: 140, title: '姓名'},
-                {field: 'department_name', width: 140, title: '部门'},
-                // {title: '操作', minWidth: 50, align: "center"}
+                {type: "checkbox"},
+                {field: 'user_id', title: '员工工号'},
+                {field: 'user_name', title: '姓名'},
+                {field: 'department_name', title: '部门'},
             ]]
         },
         done: function (elem, data) {
-            var NEWJSON = []
+            var NEWJSON = []; //显示给用户看的员工名字
             console.log(data.data);
             layui.each(data.data, function (index, item) {
-                NEWJSON.push(item.user_name)
-            })
-            elem.val(NEWJSON.join(","))
+                NEWJSON.push(item.user_name);
+                listUserId.push(item.user_id)
+            });
+            elem.val(NEWJSON.join("，"))
         }
     });
 
@@ -199,7 +196,6 @@
             , layedit = layui.layedit
             , laydate = layui.laydate
             , upload = layui.upload;
-
         //日期
         laydate.render({
             elem: '#date'
@@ -390,11 +386,37 @@
             layer.tips('温馨提示：请注意开关状态的文字可以随意定义，而不仅仅是ON|OFF', data.othis)
         });
 
-        //监听提交
-        form.on('submit(demo1)', function (data) {
-            layer.alert(JSON.stringify(data.field), {
-                title: '最终的提交信息'
-            })
+        //确认提交
+        form.on('submit(save)', function (data) {
+            var minute_info = data.field;
+            minute_info.attend_users = listUserId;
+            console.log(JSON.stringify(minute_info));
+            $.ajax({
+                url: "/office_automation/public/index.php/index/minute_c/saveMinute",
+                type:'post',
+                timeout: 1000,
+                data: minute_info,
+                success: function(res){
+                    layer.alert('会议发起成功！', {title: '提示'},
+                        function (index) {
+                            layer.close(index);
+                            location.reload();
+                        }
+                    );
+                },
+                error: function(data){
+                }
+            });
+            return false;
+        });
+
+        //重置
+        $("#refresh").on("click",function(){
+            location.reload();
+        });
+
+        //临时保存
+        form.on('submit(temporarySave)', function (data) {
             return false;
         });
 
