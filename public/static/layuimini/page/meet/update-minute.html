@@ -52,9 +52,9 @@
             <div class="layui-input-inline">
                 <input type="text" name="title" id="minute-theme" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
             </div>
-            <label class="layui-form-label input-title not-input">完成情况</label>
+            <label class="layui-form-label input-title not-input">会议地点</label>
             <div class="layui-input-inline">
-                <input type="text" name="title" id="complete-status" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
+                <input type="text" name="title" id="minute-place" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
             </div>
         </div>
 
@@ -83,13 +83,11 @@
         </div>
 
         <div class="layui-form-item">
-            <label class="layui-form-label input-title not-input">会议地点</label>
+            <label class="layui-form-label input-title not-input">完成情况</label>
             <div class="layui-input-block">
-                <input type="text" name="title" id="minute-place" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
+                <input type="text" name="title" id="complete-status" lay-verify="title" autocomplete="off" placeholder="" class="layui-input" disabled="disabled">
             </div>
         </div>
-
-
 
         <div class="layui-form-item">
             <label class="layui-form-label input-title not-input">应到人员</label>
@@ -141,18 +139,12 @@
         </div>
 
         <div class="layui-form-item layui-form-text">
-            <label class="layui-form-label input-title">会议纪要任务表</label>
+            <label class="layui-form-label input-title not-input">会议纪要任务表</label>
             <div class="layui-input-block">
                 <table class="layui-hide" id="minute-table"></table>
             </div>
         </div>
 
-        <!--<script type="text/html" id="toolbarTop">-->
-            <!--<div class="layui-btn-container">-->
-                <!--<button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" id="addEvent" lay-event="addEvent"> 添加 </button>-->
-                <!--<button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="deleteAll"> 删除 </button>-->
-            <!--</div>-->
-        <!--</script>-->
         <div class="layui-form-item layui-form-text">
             <label class="layui-form-label input-title">添加会议纪要任务表</label>
             <div class="layui-input-block">
@@ -200,46 +192,53 @@
                 <button type="button" class="layui-btn layui-btn-primary layui-btn-fluid" id="addEvent">添加会议纪要任务</button>
             </div>
         </div>
+
         <script type="text/html" id="currentTableBar">
             <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="delete">删除</a>
         </script>
 
         <div class="layui-form-item layui-form-text">
-            <!--<label class="layui-form-label input-title">上传附件</label>-->
-            <!--<div class="layui-form-item">-->
-                <!--<div class="layui-fluid">-->
-                    <!--<div class="layui-row">-->
-                        <!--<div class="layui-col-sm3 layui-col-sm-offset1">-->
-                            <!--<div class="layui-upload-drag" id="attachment">-->
-                                <!--<i class="layui-icon"></i>-->
-                                <!--<p>点击上传，或将文件拖拽到此处</p>-->
-                                <!--<input type="hidden" id="attachment_list" name="attachment_list">-->
-                            <!--</div>-->
-                            <!--<button type="button" class="layui-btn move-btn" id="start_upload">开始上传</button>-->
-                        <!--</div>-->
-                        <!--<div class="layui-col-sm8">-->
-                            <!--<div class="layui-upload-list">-->
-                                <!--<table class="layui-table">-->
-                                    <!--<thead>-->
-                                    <!--<tr><th>文件名</th>-->
-                                        <!--<th>大小</th>-->
-                                        <!--<th>状态</th>-->
-                                        <!--<th>操作</th>-->
-                                    <!--</tr></thead>-->
-                                    <!--<tbody id="fileList"></tbody>-->
-                                <!--</table>-->
-                            <!--</div>-->
-                        <!--</div>-->
-                    <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
+            <label class="layui-form-label input-title">上传附件</label>
+            <div class="layui-form-item">
+                <div class="layui-fluid">
+                    <div class="layui-row">
+                        <div class="layui-col-sm3 layui-col-sm-offset1">
+                            <div class="layui-upload-drag" id="attachment">
+                                <i class="layui-icon"></i>
+                                <p>点击上传，或将文件拖拽到此处</p>
+                                <input type="hidden" id="attachment_list" name="attachment_list">
+                            </div>
+                            <button type="button" class="layui-btn move-btn" id="start_upload">开始上传</button>
+                        </div>
+                        <div class="layui-col-sm8">
+                            <div class="layui-upload-list">
+                                <table class="layui-table">
+                                    <thead>
+                                    <tr><th>文件名</th>
+                                        <th>大小</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr></thead>
+                                    <tbody id="fileList"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="layui-form-item">
-            <div class="layui-input-block" style="align-items: center;">
-                <button class="layui-btn" lay-submit="" lay-filter="demo1">立即提交</button>
-                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-                <button class="layui-btn" lay-submit="" lay-filter="demo1">临时保存</button>
+            <div class="layui-container">
+                <div class="layui-row layui-col-space10">
+                    <div class="layui-col-md4"></div>
+                    <div class="layui-col-md4">
+                        <button class="layui-btn" lay-submit="" lay-filter="demo1">立即提交</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        <button class="layui-btn" lay-submit="" lay-filter="demo1">临时保存</button>
+                    </div>
+                    <div class="layui-col-md4"></div>
+                </div>
             </div>
         </div>
 
@@ -269,7 +268,7 @@
             {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
         ],
         table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
-            url:'/office_automation/public/index.php/index/meeting_c/getAllUsers?type=1&minuteId='+minute_id,
+            url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=1&minuteId='+minute_id,
             cols: [[
                 {type: "checkbox", width: 80},
                 {field: 'user_id', width: 140, title: '员工工号'},
@@ -302,7 +301,7 @@
             {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
         ],
         table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
-            url:'/office_automation/public/index.php/index/meeting_c/getAllUsers?type=2&minuteId='+minute_id,
+            url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=2&minuteId='+minute_id,
             cols: [[
                 {type: "checkbox", width: 80},
                 {field: 'user_id', width: 140, title: '员工工号'},
@@ -333,7 +332,7 @@
             {searchKey: 'keyword', searchPlaceholder: '任务名字/任务ID'},  //搜索条件
         ],
         table: {
-            url:'/office_automation/public/index.php/index/meeting_c/getMinuteMission',
+            url:'/office_automation/public/index.php/index/minute_c/getMinuteMission',
             cols: [[
                 {type: "checkbox", width: 80},
                 {field: 'mission_id', width: 140, title: '任务号'},
@@ -364,7 +363,7 @@
             {searchKey: 'keyword', searchPlaceholder: '任务名字/任务ID'},  //搜索条件
         ],
         table: {
-            url:'/office_automation/public/index.php/index/meeting_c/getMinuteMission',
+            url:'/office_automation/public/index.php/index/minute_c/getMinuteMission',
             cols: [[
                 {type: "checkbox", width: 80},
                 {field: 'mission_id', width: 140, title: '任务号'},

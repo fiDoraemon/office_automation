@@ -21,11 +21,11 @@ use think\Session;
 
 /**
  * 会议纪要模块功能
- * Class MeetingC
+ * Class MinuteC
  * @package app\index\controller
  * @method getField($string, $true)
  */
-class MeetingC
+class MinuteC
 {
 
     /**
@@ -263,7 +263,7 @@ class MeetingC
             $mission = $mms -> mission;         //会议任务表对应的任务
             $assignee = $mission -> assignee;   //任务对应的负责人
             $missionStatus = $mission -> missionStatus;
-            $process = $mission -> processNew;
+            $process = $mission -> processNew;  //获得任务最近处理信息
             foreach ($process as $pro){
                 $mission -> process_note = $pro -> process_note;
             }
@@ -272,7 +272,6 @@ class MeetingC
         }
         return Result::returnResult(Result::SUCCESS,$resultMinute);
     }
-
 
     /**
      * 获取所有会议类型

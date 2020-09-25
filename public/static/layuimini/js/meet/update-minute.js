@@ -8,7 +8,7 @@ function getUrlParam(name)
 var minute_id = getUrlParam("minute_id");
 
 $.ajax({
-    url: "/office_automation/public/index.php/index/meeting_c/getMinuteInfo",
+    url: "/office_automation/public/index.php/index/minute_c/getMinuteInfo",
     type:'post',
     timeout: 1000,
     data: {
@@ -22,6 +22,11 @@ $.ajax({
         var missionArray = data.minuteMission;
         var attendusers = "";
         var attendedusers = "";
+        var $count = 0;
+        var $finish = 0;     //完成
+        var $notStarted = 0; //未开始
+        var $suspend = 0;    //暂停
+        var $processing = 0; //处理中
         for (var i = 0; i < attendArray.length; i++) {
             attendusers += attendArray[i].user.user_name + ";";
         }
@@ -32,7 +37,14 @@ $.ajax({
             var table = layui.table;
             var missiondata = table.cache["minute-table"];
             console.log(missiondata);
+            $count = missionArray.length;
             for (var i = 0; i < missionArray.length; i++) {
+                switch(missionArray[i].mission.status){
+                    case "未开始":  $notStarted++; break;
+                    case "处理中":  $processing++; break;
+                    case "已完成":  $finish++; break;
+                    case "已暂停":  $suspend++; break;
+                }
                 missiondata.push( missionArray[i].mission);
             }
             //下面表格需要重载一下 才会刷新显示.
@@ -41,9 +53,10 @@ $.ajax({
             });
             console.log();
         });
+        var finishStatus = "总数: " + $count + "|完成:" + $finish + "|未开始:" + $notStarted + "|暂停:" + $suspend + "|处理中:" + $processing;
         $("#department-name").val(data.department.department_name);
         $("#minute-theme").val(data.minute_theme);
-        $("#complete-status").val("完成个锤子");
+        $("#complete-status").val(finishStatus);
         $("#project-code").val(data.project);
         $("#project-stage").val(data.projectStage.stage_name);
         $("#date").val(data.minute_date);

@@ -15,5 +15,6 @@ return [
         'attachment' => 'index/AttachmentC',
         'mission' => 'index/MissionC',
         'project' => 'index/ProjectC',
+        'minute'  => 'index/MinuteC',
     ],
 ];

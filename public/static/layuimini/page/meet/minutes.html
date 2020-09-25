@@ -66,7 +66,7 @@
 </div>
 <script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="../../lib/layui-v2.5.5/layui.all.js" charset="utf-8"></script>
-<script src="../../js/meet/minutes-meeting.js" charset="utf-8"></script> <!--引入查询所有部门和所有会议类型信息js-->
+<script src="../../js/meet/minutes.js" charset="utf-8"></script> <!--引入查询所有部门和所有会议类型信息js-->
 <script>
     layui.use(['form', 'table'], function () {
         var $ = layui.jquery,
@@ -76,7 +76,7 @@
 
         table.render({
             elem: '#currentTableId',
-            url: '/office_automation/public/index.php/index/meeting_c/getAllMyMeet',
+            url: '/office_automation/public/index.php/index/minute_c/getAllMyMeet',
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter', 'exports', 'print', {
                 title: '提示',
@@ -195,7 +195,7 @@
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: 'update-meeting.html?minute_id='+minute_id,
+                    content: 'update-minute.html?minute_id='+minute_id,
                 });
                 $(window).on("resize", function () {
                     layer.full(index);

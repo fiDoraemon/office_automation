@@ -3,7 +3,7 @@
  */
 function selectInfo(form){
     $.ajax({
-        url: "/office_automation/public/index.php/index/meeting_c/getInfo",
+        url: "/office_automation/public/index.php/index/minute_c/getInfo",
         type:'post',
         timeout: 1000,
         data: {

@@ -287,13 +287,13 @@
           "child": [
             {
               "title": "纪要列表",
-              "href": "page/meet/minutes-meeting.html",
+              "href": "page/meet/minutes.html",
               "icon": "fa fa-snowflake-o",
               "target": "_self"
             },
             {
               "title": "新增纪要",
-              "href": "page/meet/add-meeting.html",
+              "href": "page/meet/add-minute.html",
               "icon": "fa fa-calendar",
               "target": "_self"
             }

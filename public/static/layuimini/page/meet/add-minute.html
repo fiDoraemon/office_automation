@@ -141,10 +141,16 @@
             </div>
 
             <div class="layui-form-item">
-                <div class="layui-input-block">
-                    <button class="layui-btn" lay-submit="" lay-filter="demo1">立即提交</button>
-                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
-                    <button class="layui-btn" lay-submit="" lay-filter="demo1">临时保存</button>
+                <div class="layui-container">
+                    <div class="layui-row layui-col-space10">
+                        <div class="layui-col-md4"></div>
+                        <div class="layui-col-md4">
+                            <button class="layui-btn" lay-submit="" lay-filter="demo1">立即提交</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                            <button class="layui-btn" lay-submit="" lay-filter="demo1">临时保存</button>
+                        </div>
+                        <div class="layui-col-md4"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -168,7 +174,7 @@
             {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
         ],
         table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
-            url:'/office_automation/public/index.php/index/meeting_c/getAllUsers',
+            url:'/office_automation/public/index.php/index/minute_c/getAllUsers',
             cols: [[
                 {type: "checkbox", width: 80},
                 {field: 'user_id', width: 140, title: '员工工号'},
