@@ -49,12 +49,13 @@
         </div>
     </div>
 </div>
+
 <table id="mission-tree" class="layui-table" lay-filter="mission-tree"></table>
 
 <!-- 操作列 -->
 <script type="text/html" id="auth-state">
-    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>
-    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="add"><i class="layui-icon"></i></a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon"></i></a>
 </script>
 
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
@@ -62,13 +63,13 @@
 <script src="../../js/common.js" charset="utf-8"></script>
 <script>
     layui.use(['table', 'treetable'], function () {
-        var $ = layui.jquery;
-        var table = layui.table;
-        var treetable = layui.treetable;
+        var $ = layui.jquery,
+            table = layui.table,
+            treetable = layui.treetable;
 
         // 渲染表格
         layer.load(2);
-        treetable.render({
+        var missionTree= treetable.render({
             treeColIndex: 1,
             treeSpid: -1,
             treeIdName: 'mission_id',
@@ -78,7 +79,7 @@
             page: false,
             cols: [[
                 {type: 'numbers'},
-                {field: 'mission_title', minWidth: 200, title: '任务名称'},
+                {field: 'mission_title', minWidth: 200, title: '任务标题'},
                 {field: 'mission_id', width: 80, title: '任务号', align: 'center'},
                 {field: 'assignee_name', width: 100, title: '处理人', align: 'center'},
                 {field: 'status', width: 100, title: '任务状态', align: 'center'},
@@ -115,10 +116,35 @@
             var data = obj.data;
             var layEvent = obj.event;
 
-            if (layEvent === 'del') {
-                layer.msg('删除' + data.id);
-            } else if (layEvent === 'edit') {
-                layer.msg('修改' + data.id);
+            if (layEvent === 'add') {
+                layer.open({
+                    title: '添加任务',
+                    type: 2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['100%', '100%'],
+                    content: '../../page/mission/tree-add.html?id=' + data.id
+                });
+            } else if (layEvent === 'del') {
+                if(data.parent_mission_id == -1 || data.is_parent == 1) {
+                    layer.msg('不允许直接删除父任务！');
+                } else {
+                    layer.confirm('确定删除？', {icon: 3, title:'提示'}, function(index) {
+                        layer.close(index);
+                        $.get(
+                            "/office_automation/public/index/mission_c/deleteTreeMission?id=" + data.mission_id,
+                            function (res) {
+                                if (res.code == 0) {
+                                    layer.msg('删除成功！');
+                                    obj.del();
+                                } else {
+                                    layer.msg('删除失败！');
+                                    console.log(res.msg);
+                                }
+                            }
+                        );
+                    });
+                }
             }
         });
     });

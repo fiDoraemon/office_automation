@@ -1,6 +1,7 @@
 <?php
 namespace app\index\controller;
 
+use app\index\model\Minute;
 use app\index\model\User;
 use app\common\Result;
 use app\index\service\AttachmentService;
@@ -17,17 +18,16 @@ class Index extends Controller
 //        return $this->fetch();
     }
 
-    // 显示用户列表
-    public function userList($page = 1, $limit = 10, $keyword = '') {
-        $user = new User();
-
-        if($keyword != '') {
-            $user->where('user_name','like',"%$keyword%");
+    // 获取选择会议列表
+    public function selectMinute($page = 1, $limit = 10, $keyword = '') {
+        $minute = new Minute();
+        $minutes = $minute->where('minute_id', $keyword)->field('minute_id,minute_theme,host_id')->select();
+        foreach ($minutes as $one) {
+            $one->host_name = $one->user->user_name;            // 关联处理人
+            unset($one->user);
         }
-        $data = $user->field('id, user_id, user_name')->page("$page, $limit")->select();
-        $count = $user->value('count(*)');
 
-        return Result::returnResult(Result::SUCCESS, $data, $count);
+        return Result::returnResult(Result::SUCCESS, $minutes, count($minutes));
     }
 
     public function test() {

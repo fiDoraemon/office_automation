@@ -251,7 +251,7 @@
 
                     //删除
                     tr.find('.delete').on('click', function(){
-                        delete files[index]; //删除对应的文件
+                        delete files[index];            // 删除对应的文件
                         tr.remove();
                         uploadListIns.config.elem.next()[0].value = '';         // 清空 input file 值，以免删除后出现同名文件不可选
                         if(!files) {
@@ -449,35 +449,38 @@
             }
         );
 
-        // 责任人下拉表格
+        // 处理人下拉表格
         tableSelect.render({
             elem: '#assignee_name',
             checkedKey: 'user_id',
+            searchPlaceholder: '用户/部门关键词',
             table: {
-                url: '/office_automation/public/index/index/userList'
+                url: '/office_automation/public/index.php/index/meeting_c/getAllUsers'
                 ,cols: [[
                     { type: 'radio' },
                     { field: 'user_id', title: '工号' },
-                    { field: 'user_name', title: '姓名' }
+                    { field: 'user_name', title: '姓名' },
+                    { field: 'department_name', title: '部门'}
                 ]]
             },
             done: function (elem, data) {
                 elem.val(data.data[0].user_name)
                 $('#assignee_id').val(data.data[0].user_id)
             }
-        })
+        });
         // 关注人下拉表格
         tableSelect.render({
             elem: '#invite_follow_names',
             checkedKey: 'user_id',
+            searchPlaceholder: '用户/部门关键词',
             table: {
-                url: '/office_automation/public/index/index/userList'
+                url: '/office_automation/public/index.php/index/meeting_c/getAllUsers'
                 ,cols: [[
                     { type: 'checkbox' },
                     { field: 'user_id', title: '工号' },
-                    { field: 'user_name', title: '姓名' }
+                    { field: 'user_name', title: '姓名' },
+                    { field: 'department_name', title: '部门'}
                 ]]
-                ,page: true
             },
             done: function (elem, data) {
                 var names = []

@@ -18,7 +18,7 @@ class MissionService
         $missionTree = array();
         $mission = new Mission();
         // 获取子任务列表
-        $childMissionList = $mission->where('parent_mission_id', $id)->field('mission_id,mission_title,assignee_id,status,finish_date,parent_mission_id')->select();         // 获取子任务列表
+        $childMissionList = $mission->where('parent_mission_id', $id)->field('mission_id,mission_title,assignee_id,status,finish_date,parent_mission_id')->select();
         if($childMissionList) {
             foreach ($childMissionList as $childMission) {
                 // 关联处理

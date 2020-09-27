@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>任务详情</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <style>
+    </style>
+</head>
+<body>
+
+<div class="layui-form  layuimini-form" id="add-mission">
+    <div class="layui-form-item">
+        <label class="layui-form-label">位置</label>
+        <div class="layui-input-block">
+            <input type="radio" name="position" value="child" title="子任务" checked="">
+            <input type="radio" name="position" value="sibling" title="同级任务">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">继承关注人</label>
+        <div class="layui-input-inline">
+            <input type="checkbox" name="extend-interest" lay-skin="switch" lay-text="ON|OFF" checked="">
+            <span id="interest-users"></span>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">方式</label>
+        <div class="layui-input-block">
+            <input type="radio" name="type" value="new" title="新增" lay-filter="type" checked="">
+            <input type="radio" name="type" value="exist" title="已有" lay-filter="type">
+            <input type="radio" name="type" value="minute" title="会议" lay-filter="type">
+        </div>
+    </div>
+    <div id="new">
+    <div class="layui-form-item">
+        <label class="layui-form-label required">任务标题</label>
+        <div class="layui-input-block">
+            <input type="text" name="mission_title" autocomplete="off" placeholder="请输入任务标题" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label required">处理人</label>
+        <div class="layui-input-inline">
+            <input type="text" name="assignee_name" id="assignee_name" autocomplete="off" placeholder="请选择处理人" class="layui-input">
+            <input type="hidden" name="assignee_id" id="assignee_id">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label required">开始日期</label>
+        <div class="layui-input-inline">
+            <input type="text" name="start_date" placeholder="请选择日期" autocomplete="off" class="layui-input date">
+        </div>
+        <label class="layui-form-label required">截止日期</label>
+        <div class="layui-input-inline">
+            <input type="text" name="finish_date" placeholder="请选择日期" autocomplete="off" class="layui-input date">
+        </div>
+    </div>
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">任务描述</label>
+        <div class="layui-input-block">
+            <textarea name="description" class="layui-textarea" placeholder="请输入任务描述"></textarea>
+        </div>
+    </div>
+    </div>
+    <div id="minute">
+    <div class="layui-form-item">
+        <label class="layui-form-label">会议号</label>
+        <div class="layui-input-inline">
+            <input type="text" name="minute_id" id="minute_id" autocomplete="off" placeholder="请选择会议号" class="layui-input">
+        </div>
+    </div>
+    </div>
+    <div id="exist">
+    <div class="layui-form-item">
+        <label class="layui-form-label">任务号</label>
+        <div class="layui-input-inline">
+            <input type="text" name="mission_id" id="mission_id" autocomplete="off" placeholder="请选择任务号" class="layui-input">
+        </div>
+    </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">提交</button>
+            <button class="layui-btn layui-btn-normal">取消</button>
+        </div>
+    </div>
+</div>
+
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script src="../../js/common.js" charset="utf-8"></script>
+<script>
+    layui.use(['laydate', 'tableSelect', 'form'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            laydate = layui.laydate,
+            tableSelect = layui.tableSelect;
+
+        //日期
+        lay('.date').each(function(){
+            laydate.render({
+                elem: this
+            });
+        });
+
+        // 处理人下拉表格
+        tableSelect.render({
+            elem: '#assignee_name',
+            checkedKey: 'user_id',
+            searchPlaceholder: '用户/部门关键词',
+            table: {
+                url: '/office_automation/public/index.php/index/meeting_c/getAllUsers'
+                ,cols: [[
+                    { type: 'radio' },
+                    { field: 'user_id', title: '工号' },
+                    { field: 'user_name', title: '姓名' },
+                    { field: 'department_name', title: '部门'}
+                ]]
+            },
+            done: function (elem, data) {
+                elem.val(data.data[0].user_name)
+                $('#assignee_id').val(data.data[0].user_id)
+            }
+        });
+
+        // 任务号下拉表格
+        tableSelect.render({
+            elem: '#mission_id',
+            checkedKey: 'mission_id',
+            searchPlaceholder: '任务号/任务标题',
+            height:'200',
+            width:'400',
+            table: {
+                url: '/office_automation/public/index/mission_c/selectIndex'
+                ,cols: [[
+                    { type: 'radio' },
+                    { field: 'mission_id', title: '任务号' },
+                    { field: 'mission_title', title: '任务标题' },
+                    { field: 'assignee_name', title: '处理人' }
+                ]]
+                ,page: false
+            },
+            done: function (elem, data) {
+                elem.val(data.data[0].mission_id)
+            }
+        });
+
+        // 会议号号下拉表格
+        tableSelect.render({
+            elem: '#minute_id',
+            checkedKey: 'minute_id',
+            searchPlaceholder: '请输入会议号',
+            height:'200',
+            width:'400',
+            table: {
+                url: '/office_automation/public/index/index/selectMinute'
+                ,cols: [[
+                    { type: 'radio' },
+                    { field: 'minute_id', title: '会议号' },
+                    { field: 'minute_theme', title: '会议主题' },
+                    { field: 'host_name', title: '主持人' }
+                ]]
+            },
+            done: function (elem, data) {
+                elem.val(data.data[0].minute_id)
+            }
+        });
+
+        // 监听单选
+        $('#exist').hide();
+        form.on('radio(type)', function(data){
+            if(data.value == 'new') {
+                $('#new, #minute').show();
+                $('#exist').hide();
+            } else if(data.value == 'exist') {
+                $('#exist').show();
+                $('#new, #minute').hide();
+            } else {
+                $('#minute').show();
+                $('#new, #exist').hide();
+            }
+        });
+
+        // 获取父任务关注人列表
+        $.get(
+            "/office_automation/public/index/mission_c/getInterestList?id=" + getQueryVariable('id'),
+            function (res) {
+                console.log(res.data);
+                if(res.code == 0) {
+                    $('#interest-users').text(res.data);
+                }
+            }
+        );
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            var result = data.field;
+            var verify = false;
+            var fields;
+
+            // 判断必填项是否填写
+            if(result.type == 'new') {
+                if(result.mission_title == '') {
+                    layer.msg('任务标题不能为空！');
+                } else if(result.assignee_name == '') {
+                    layer.msg('未选择处理人!');
+                } else if(result.start_date == '') {
+                    layer.msg('未选择开始日期!');
+                } else if(result.finish_date == '') {
+                    layer.msg('未选择截止日期!');
+                } else {
+                    verify = true;
+                    fields = {
+                        'mission_title': result.mission_title,
+                        'assignee_id': result.assignee_id,
+                        'start_date': result.start_date,
+                        'finish_date': result.finish_date,
+                        'description': result.description,
+                        'minute_id': result.minute_id
+                    };
+                }
+            } else if(result.type == 'exist') {
+                if(result.mission_id == '') {
+                    layer.msg('未选择任务号！');
+                } else {
+                    verify = true;
+                    fields = {
+                        'mission_id': result.mission_id
+                    };
+                }
+            } else {
+                if(result.minute_id == '') {
+                    layer.msg('未选择会议号！');
+                } else {
+                    verify = true;
+                    fields = {
+                        'minute_id': result.minute_id
+                    };
+                }
+            }
+            if(verify == false) {
+                return false;
+            }
+
+            layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
+                layer.close(index);
+                $.post(
+                    "/office_automation/public/mission",
+                    data.field,            // TODO
+                    function (res, status) {
+                        if (res.code == 0) {
+                            layer.alert('新建成功！', {title: '提示'},
+                                function (index) {
+                                    layer.close(index);
+                                    location.reload();
+                                }
+                            );
+                        } else {
+                            layer.msg('新建失败！');
+                        }
+                    }
+                );
+            });
+
+            return false;
+        });
+    });
+</script>
+</body>
+</html>

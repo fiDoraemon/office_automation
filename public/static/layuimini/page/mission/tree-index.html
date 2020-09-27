@@ -59,12 +59,14 @@
 
     </div>
 </div>
-<script src="../../lib/layui-v2.5.5/layui.all.js" charset="utf-8"></script>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script>
-    layui.use(['form', 'table'], function () {
+    layui.use(['form', 'table', 'miniTab'], function () {
         var $ = layui.jquery,
             form = layui.form,
-            table = layui.table;
+            table = layui.table,
+            miniTab = layui.miniTab;
 
         table.render({
             elem: '#missionList',
@@ -112,30 +114,6 @@
             return false;
         });
 
-        /**
-         * toolbar监听事件
-         */
-        // table.on('toolbar(currentTableFilter)', function (obj) {
-        //     if (obj.event === 'add') {  // 监听添加操作
-        //         var index = layer.open({
-        //             title: '新建任务',
-        //             type: 2,
-        //             shade: 0.2,
-        //             maxmin:true,
-        //             shadeClose: true,
-        //             area: ['100%', '100%'],
-        //             content: '../../page/mission/add.html',
-        //         });
-        //         $(window).on("resize", function () {
-        //             // layer.full(index);           TODO
-        //         });
-        //     } else if (obj.event === 'delete') {  // 监听删除操作
-        //         var checkStatus = table.checkStatus('currentTableId')
-        //             , data = checkStatus.data;
-        //         layer.alert(JSON.stringify(data));
-        //     }
-        // });
-
         // 监听表格复选框选择
         table.on('checkbox(currentTableFilter)', function (obj) {
             console.log(obj)
@@ -152,8 +130,13 @@
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '../../page/mission/tree-view.html?v=2&id=' + data.mission_id,
+                    content: '../../page/mission/tree-view.html?id=' + data.mission_id,
                 });
+                // 打开新的窗口
+                // miniTab.openNewTabByIframe({
+                //     href: "page/mission/tree-view.html?id=" + data.mission_id,
+                //     title: "任务树视图",
+                // });
 
                 return false;
             } else if (obj.event === 'relateChild') {

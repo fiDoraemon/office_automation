@@ -120,26 +120,26 @@
         /**
          * toolbar监听事件
          */
-        table.on('toolbar(missionListFilter)', function (obj) {
-            if (obj.event === 'add') {  // 监听添加操作
-                var index = layer.open({
-                    title: '新建任务',
-                    type: 2,
-                    shade: 0.2,
-                    maxmin:true,
-                    shadeClose: true,
-                    area: ['100%', '100%'],
-                    content: '../../page/mission/add.html',
-                });
-                $(window).on("resize", function () {
-                    // layer.full(index);           TODO
-                });
-            } else if (obj.event === 'delete') {  // 监听删除操作
-                var checkStatus = table.checkStatus('currentTableId')
-                    , data = checkStatus.data;
-                layer.alert(JSON.stringify(data));
-            }
-        });
+        // table.on('toolbar(missionListFilter)', function (obj) {
+        //     if (obj.event === 'add') {  // 监听添加操作
+        //         var index = layer.open({
+        //             title: '新建任务',
+        //             type: 2,
+        //             shade: 0.2,
+        //             maxmin:true,
+        //             shadeClose: true,
+        //             area: ['100%', '100%'],
+        //             content: '../../page/mission/add.html',
+        //         });
+        //         $(window).on("resize", function () {
+        //             // layer.full(index);           TODO
+        //         });
+        //     } else if (obj.event === 'delete') {  // 监听删除操作
+        //         var checkStatus = table.checkStatus('currentTableId')
+        //             , data = checkStatus.data;
+        //         layer.alert(JSON.stringify(data));
+        //     }
+        // });
 
         // 监听表格复选框选择
         table.on('checkbox(missionListFilter)', function (obj) {
@@ -159,9 +159,10 @@
                     area: ['100%', '100%'],
                     content: '../../page/mission/read.html?id=' + data.mission_id,
                 });
-                // $(window).on("resize", function () {            // TODO ?
-                //     layer.full(index);
-                // });
+                // 浏览器窗口改变大小时，把弹窗填满
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
                 return false;
             } else if (obj.event === 'stop') {
                 layer.confirm('真的删除行么', function (index) {
