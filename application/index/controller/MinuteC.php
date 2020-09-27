@@ -16,6 +16,7 @@ use app\index\model\User;
 use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
+use think\Exception;
 use think\exception\DbException;
 use think\Session;
 
@@ -307,19 +308,33 @@ class MinuteC
         }
     }
 
-
     /**
-     * 获取所有的基本任务
+     * 获取所有会议
      */
-    public function getMinuteMission(){
-
-    }
-
-    /**
-     * 新增复合任务清单,获取所有会议id和名字
-     */
-    public function getAllMinute(){
-
+    public function getAllMinute($limit = 10,$page = 1,$keyword = ""){
+        $minute = new Minute();
+        try {
+            if($keyword != ""){
+                $minute -> where("minute_id","like","%$keyword%")
+                        -> whereOr("minute_theme","like","%$keyword%");
+            }
+            $count = $minute -> count();
+            if($keyword != ""){
+                $minute -> where("minute_id","like","%$keyword%")
+                        -> whereOr("minute_theme","like","%$keyword%");
+            }
+            $minuteList = $minute -> field("minute_id,minute_theme,host_id")
+                    -> page($page,$limit)
+                    -> select();
+            foreach ($minuteList as $m){
+                $m ->host_name = $m -> user -> user_name;
+            }
+            return Result::returnResult(Result::SUCCESS,$minuteList,$count);
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        } catch (Exception $e) {
+        }
     }
 
     /**
@@ -366,6 +381,20 @@ class MinuteC
             return Result::returnResult(Result::SUCCESS,null);
         }
         return Result::returnResult(Result::ERROR,null);
+    }
+
+    /**
+     * 修改会议
+     */
+    public function updateMinute(){
+        $attended = ""; //实际到会人员
+        $newAttend = "";//新增应到人员
+        //新增基本任务清单（暂时不实现）
+        //新增基本任务清单（暂时不实现）
+        //会议决议
+        //会议记录
+        //添加会议任务纪要
+        //上传的附件
     }
 
 }
