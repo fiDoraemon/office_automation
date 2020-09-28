@@ -15,7 +15,8 @@ $.ajax({
         minuteId : minute_id,
     },
     success: function(res){
-        console.log(res)
+        console.log("getMinuteInfo");
+        console.log(res);
         var data = res.data;
         var attendArray = data.minuteAttends;
         var attendedArray = data.minuteAttendeds;
@@ -27,6 +28,7 @@ $.ajax({
         var $notStarted = 0; //未开始
         var $suspend = 0;    //暂停
         var $processing = 0; //处理中
+        var element = '';    //上传附件
         for (var i = 0; i < attendArray.length; i++) {
             attendusers += attendArray[i].user.user_name + ";";
         }
@@ -36,7 +38,6 @@ $.ajax({
         layui.use(['table'], function (){
             var table = layui.table;
             var missiondata = table.cache["minute-table"];
-            console.log(missiondata);
             $count = missionArray.length;
             for (var i = 0; i < missionArray.length; i++) {
                 switch(missionArray[i].mission.status){
@@ -51,7 +52,6 @@ $.ajax({
             table.reload("minute-table", {
                 data: missiondata,
             });
-            console.log();
         });
         var finishStatus = "总数: " + $count + "|完成:" + $finish + "|未开始:" + $notStarted + "|暂停:" + $suspend + "|处理中:" + $processing;
         $("#department-name").val(data.department.department_name);
@@ -67,6 +67,44 @@ $.ajax({
         $("#attended-user").val(attendedusers);
         $("#minute-resolution").val(data.resolution);
         $("#minute-context").val(data.record);
+
+        //上传附件
+        var attachmentList = data.attachments;
+        element = '';
+        for(i in attachmentList) {
+            element += `
+                        <tr>
+                            <td>${attachmentList[i].source_name}</td>
+                            <td>${attachmentList[i].file_size}</td>
+                            <td>已上传</td>
+                            <td>
+                                <a class="layui-btn layui-btn-xs" href="${attachmentList[i].save_path}" download="${attachmentList[i].source_name}">下载</a>
+                                <button class="layui-btn layui-btn-xs layui-btn-danger delete" attachment_id="${attachmentList[i].attachment_id}">删除</button>
+                            </td>
+                        </tr>
+                        `;
+        }
+        $('#fileList').append(element);
+        // 删除附件
+        $('#fileList').find('.delete').click(function () {
+            var attachment_id = $(this).attr('attachment_id');
+            var tr = $(this).parent().parent();
+            layer.confirm('确定删除？', {icon: 3, title:'提示'}, function(index) {
+                layer.close(index);
+                $.ajax({
+                    url: "/office_automation/public/attachment/" + attachment_id,
+                    type: 'delete',
+                    success: function (res) {
+                        if (res.code == 0) {
+                            layer.msg('删除成功！');
+                            tr.remove();
+                        } else {
+                            layer.msg('删除失败！');
+                        }
+                    }
+                });
+            });
+        });
     },
     error: function(res){
         console.log(res)

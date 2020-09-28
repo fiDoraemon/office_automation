@@ -118,7 +118,6 @@
                                 <div class="layui-upload-drag" id="attachment">
                                     <i class="layui-icon"></i>
                                     <p>点击上传，或将文件拖拽到此处</p>
-                                    <input type="hidden" id="attachment_list" name="attachment_list">
                                 </div>
                                 <button type="button" class="layui-btn move-btn" id="start_upload">开始上传</button>
                             </div>
@@ -160,7 +159,8 @@
 <script src="../../js/meet/add-minutes.js" charset="utf-8"></script> <!--引入查询所有项目代码js-->
 <script type="text/javascript" src="../../js/lay-module/tableSelect/tableSelect.js"></script>
 <script>
-    var listUserId = []; //已经选择的应到会议员工id数组
+    var userIdList = []; //已经选择的应到会议员工id数组
+    var uploadList = [];
     //开始使用下拉多个选择
     var tableSelect = layui.tableSelect;
     tableSelect.render({
@@ -181,10 +181,9 @@
         },
         done: function (elem, data) {
             var NEWJSON = []; //显示给用户看的员工名字
-            console.log(data.data);
             layui.each(data.data, function (index, item) {
                 NEWJSON.push(item.user_name);
-                listUserId.push(item.user_id)
+                userIdList.push(item.user_id)
             });
             elem.val(NEWJSON.join("，"))
         }
@@ -248,7 +247,7 @@
                         delete files[index]; //删除对应的文件
                         tr.remove();
                         uploadListIns.config.elem.next()[0].value = '';         // 清空 input file 值，以免删除后出现同名文件不可选
-                        if(!files) {
+                        if($.isEmptyObject(files)) {
                             $("#start_upload").attr("disabled", true);
                         }
                     });
@@ -262,16 +261,7 @@
             ,done: function(res, index, upload){
                 if(res.code == 0){
                     // 写入附件 id
-                    if($('#attachment_list').val() == '') {
-                        $('#attachment_list').val(res.data.id);
-                    } else {
-                        var ids = $('#attachment_list').val().split(';');
-                        if(!ids.includes(res.data.id)) {
-                            ids.push(res.data.id);
-                        }
-                        $('#attachment_list').val(ids.join(';'));
-                    }
-
+                    uploadList.push(res.data.id);
                     var tr = fileListView.find('tr#upload-'+ index)
                         ,tds = tr.children();
                     tds.eq(2).html('<span style="color: #5FB878;">上传成功</span>');
@@ -388,9 +378,11 @@
 
         //确认提交
         form.on('submit(save)', function (data) {
-            var minute_info = data.field;
-            minute_info.attend_users = listUserId;
-            console.log(JSON.stringify(minute_info));
+            console.log(data);
+            var minute_info             = data.field;
+            minute_info.attend_users    = userIdList;
+            minute_info.file            = uploadList;
+            console.log(minute_info.file);
             $.ajax({
                 url: "/office_automation/public/index.php/index/minute_c/saveMinute",
                 type:'post',
@@ -400,7 +392,7 @@
                     layer.alert('会议发起成功！', {title: '提示'},
                         function (index) {
                             layer.close(index);
-                            location.reload();
+                            window.location = 'minutes.html';
                         }
                     );
                 },

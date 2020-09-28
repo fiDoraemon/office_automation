@@ -80,5 +80,11 @@ class Minute extends Model
         return $this->hasMany('MinuteMission',"minute_id","minute_id")->field('mission_id');
     }
 
+    /**
+     * 与附件一对多对应
+     */
+    public function attachments(){
+        return $this->hasMany('Attachment', 'related_id', 'minute_id')->where('attachment_type', 'minute')->field('attachment_id, source_name, uploader_id, file_size, save_path, upload_date');
+    }
 
 }

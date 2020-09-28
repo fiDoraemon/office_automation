@@ -9,9 +9,11 @@
 namespace app\index\controller;
 
 use app\common\Result;
+use app\index\model\Attachment;
 use app\index\model\Department;
 use app\index\model\Minute;
 use app\index\model\MinuteAttend;
+use app\index\model\MinuteMission;
 use app\index\model\User;
 use think\Db;
 use think\db\exception\DataNotFoundException;
@@ -70,7 +72,7 @@ class MinuteC
             }
         }
         //查询共有多少条符合条件的数据(分页需要使用到)
-        $count =  $minutes ->count();
+        $count =  $minutes -> count();
         $minutes -> where("minute_id","in",$listMeetId);
         if($isMyLaunch == 1){
             $minutes -> where("host_id",$userId);
@@ -119,7 +121,7 @@ class MinuteC
         $listMeet = $this -> getMinutes();
         $resultArray = [
             "projectType" => $listCodes,   //项目类型
-            "minuteType" => $listMeet            //会议类型
+            "minuteType"  => $listMeet            //会议类型
         ];
         return Result::returnResult(Result::SUCCESS,$resultArray);
     }
@@ -258,6 +260,8 @@ class MinuteC
         foreach ($attendedUsers as $attended){
             $attended -> user;
         }
+        //关联多个附件
+        $resultMinute -> attachments;
         //关联一对多会议纪要任务表
         $minuteMissions = $resultMinute -> minuteMission;
         foreach ($minuteMissions as $mms){
@@ -309,18 +313,22 @@ class MinuteC
     }
 
     /**
-     * 获取所有会议
+     * 查询所有会议信息
+     * @param int $limit
+     * @param int $page
+     * @param string $keyword
+     * @return array
      */
     public function getAllMinute($limit = 10,$page = 1,$keyword = ""){
         $minute = new Minute();
         try {
             if($keyword != ""){
-                $minute -> where("minute_id","like","%$keyword%")
+                $minute -> where("minute_id",$keyword)
                         -> whereOr("minute_theme","like","%$keyword%");
             }
             $count = $minute -> count();
             if($keyword != ""){
-                $minute -> where("minute_id","like","%$keyword%")
+                $minute -> where("minute_id","like",$keyword)
                         -> whereOr("minute_theme","like","%$keyword%");
             }
             $minuteList = $minute -> field("minute_id,minute_theme,host_id")
@@ -341,20 +349,20 @@ class MinuteC
      * 保存会议
      */
     public function saveMinute(){
-        $info = Session::get("info");
-        $minuteType = $_POST["minute_type"];        //会议类型
-        $hostId = $info["user_id"];           //会议主持id
-        $departmentId = $info["department_id"]; //所属部门id
-        $minuteTheme = $_POST["minute_theme"];     //会议标题
-        $projectCode = $_POST["project_code"];     //项目代号
-        $date = $_POST["date"];                     //会议时间
-        $time = $_POST["time"];
-        $place = $_POST["place"];                   //会议地点
-        $attendUsers = $_POST["attend_users"];     //应到人员列表
-        $minuteResolution = $_POST["minute_resolution"];   //会议决议
-        $minuteContext = $_POST["minute_context"];         //会议内容
+        $info               = Session::get("info");
+        $minuteType         = $_POST["minute_type"];        //会议类型
+        $hostId             = $info["user_id"];           //会议主持id
+        $departmentId       = $info["department_id"]; //所属部门id
+        $minuteTheme        = $_POST["minute_theme"];     //会议标题
+        $projectCode        = $_POST["project_code"];     //项目代号
+        $date               = $_POST["date"];                     //会议时间
+        $time               = $_POST["time"];
+        $place              = $_POST["place"];                   //会议地点
+        $attendUsers        = $_POST["attend_users"];     //应到人员列表
+        $minuteResolution   = $_POST["minute_resolution"];   //会议决议
+        $minuteContext      = $_POST["minute_context"];         //会议内容
 //        $attachmentList = $_POST["attachment_list"];
-//        $file = $_POST["file"];
+        $uploadList         = input('post.file/a');//$_POST["file"];
         //保存会议基本信息
         $minute = new Minute();
         $minute -> department_id = $departmentId;
@@ -377,6 +385,13 @@ class MinuteC
             $minuteAttend ->save();
         }
         //保存上传附件信息
+        if(is_array($uploadList)){
+            foreach ($uploadList as $file){
+                $attachment = new Attachment();
+                $attachment -> where("attachment_id",$file)
+                    ->update(['attachment_type' => "minute","related_id" => $minuteId]);
+            }
+        }
         if($minuteId != null){
             return Result::returnResult(Result::SUCCESS,null);
         }
@@ -387,14 +402,52 @@ class MinuteC
      * 修改会议
      */
     public function updateMinute(){
-        $attended = ""; //实际到会人员
-        $newAttend = "";//新增应到人员
-        //新增基本任务清单（暂时不实现）
-        //新增基本任务清单（暂时不实现）
-        //会议决议
-        //会议记录
-        //添加会议任务纪要
-        //上传的附件
+        $minuteId           = $_POST["minuteId"];
+        $attended           = input('post.attendList/a');//$_POST["attendList"];                     //实际到会人员
+        $newAttend          = input('post.newAttended/a');//$_POST["newAttended"];                 //新增应到人员
+        $newMission         = input('post.newMission/a');//$_POST["newMission"];                 //新增基本任务清单
+        $minuteResolution   = $_POST["minuteResolution"];     //会议决议
+        $minuteContext      = $_POST["minuteContext"];           //会议记录
+//        $minuteMission      = $_POST["minuteMission"];           //添加会议任务纪要(前端页面未实现)
+        $uploadList         = input('post.uploadList/a');//$_POST["uploadList"];                 //上传的附件
+        //保存会议基本信息
+        $minute = new Minute();
+        $minute -> where("minute_id",$minuteId);
+        $minute -> resolution = $minuteResolution;
+        $minute -> record = $minuteContext;
+        $minute -> save();
+        if(is_array($attended)){
+            foreach ($attended as $att){
+                $minuteAttend = new MinuteAttend();
+                $minuteAttend -> where("minute_id",$minuteId)
+                    -> where("user_id",$att)
+                    -> setField('status', 1);
+            }
+        }
+        if(is_array($newAttend)){
+            foreach ($newAttend as $att){
+                $minuteAttend = new MinuteAttend();
+                $minuteAttend -> minute_id = $minuteId;
+                $minuteAttend -> user_id = $att;
+                $minuteAttend -> save();
+            }
+        }
+        if(is_array($newMission)){
+            foreach ($newMission as $mis){
+                $minuteMission = new MinuteMission();
+                $minuteMission -> minute_id = $minuteId;
+                $minuteMission -> mission_id = $mis;
+                $minuteMission ->save();
+            }
+        }
+        if(is_array($uploadList)){
+            foreach ($uploadList as $file){
+                $attachment = new Attachment();
+                $attachment -> where("attachment_id",$file)
+                    ->update(['attachment_type' => "minute","related_id" => $minuteId]);
+            }
+        }
+        return Result::returnResult(Result::SUCCESS,null);
     }
 
 }
