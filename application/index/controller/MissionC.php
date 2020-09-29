@@ -2,7 +2,9 @@
 
 namespace app\index\controller;
 
+use app\common\util\dateUtil;
 use app\index\model\Attachment;
+use app\index\model\Minute;
 use app\index\service\MissionService;
 use app\index\common\DataEnum;
 use app\index\model\Mission;
@@ -25,6 +27,7 @@ class MissionC extends Controller
     public function index($page = 1, $limit = 10, $keyword = '')
     {
         $mission = new Mission();
+        $userId = '1110023';          // TODO
         // 如果传入关键词、项目代号、标签
         if($keyword != '') {            // 标题
             $mission->where('mission_title','like',"%$keyword%");
@@ -40,7 +43,7 @@ class MissionC extends Controller
             $mission->order(input('get.field') . ' ' . input('get.order'));
         }
         $count = $mission->count();
-        // 如果传入关键词、项目代号、标签、根任务 TODO
+        // 如果传入关键词、项目代号、标签 TODO
         if($keyword != '') {            // 标题
             $mission->where('mission_title','like',"%$keyword%");
         }
@@ -367,6 +370,57 @@ class MissionC extends Controller
         }
     }
 
+    /** 添加任务树任务
+     * @param $id
+     * @return array
+     * @throws \think\exception\DbException
+     */
+    public function addTreeMission($id)
+    {
+        $mission = Mission::get($id);
+        $type = input('post.type');
+
+        // 位置
+        if(input('post.position') == 'sibling') {
+            $id = $mission->parent_mission_id;
+        }
+        // 方式
+        if($type == 'new') {            // 新增任务
+            $minute_id = input('post.minute_id')? input('post.minute_id') : 0;
+            $infoArray = array_merge($_POST, [
+                'reporter_id' => '1110023',          // TODO
+                'minute_id' => $minute_id,
+                'parent_mission_id' => $id,
+                'create_time' => date('Y-m-d H:i:s', time())
+            ]);
+            $mission = new Mission($infoArray);
+            $mission->allowField(true)->save();
+        } else if($type == 'exist') {           // 已存在任务
+            $existMission = Mission::get(input('post.mission_id'));
+            if($existMission->parent_mission_id != 0) {
+                return Result::returnResult(Result::PARENT_EXIST);
+            }
+            $existMission->parent_mission_id = $id;
+            $existMission->save();
+        } else {            // 从会议信息中导入
+            $minute = Minute::get(input('post.minute_id'));
+            $mission = new Mission();
+            $mission->save([
+                'mission_title' => $minute->minute_theme,
+                'reporter_id' => '1110023',         // TODO
+                'assignee_id' => $minute->host_id,
+                'status' => 2,         // 任务状态：已完成 TODO
+                'start_date' => date("Y-m-d", time()),
+                'finish_date' => $minute->minute_date,
+                'description' => $minute->record,
+                'minute_id' => input('post.minute_id'),
+                'parent_mission_id' => $id
+            ]);
+        }
+
+        return Result::returnResult(Result::SUCCESS);
+    }
+
     // 获取任务关注人列表
     public function getInterestList($id) {
 
@@ -383,16 +437,56 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS, $interestNames);
     }
 
-    public function addTreeMission($id)
+    /** 获取工作日历任务
+     * @param string $type 我头上的、我发起的、我关注的任务
+     * @param $offset 月偏移量
+     * @return array|false|\PDOStatement|string|\think\Collection
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function getCalendarMission($type, $offset = 0)
     {
-        // 插入任务信息
-        $infoArray = array_merge($_POST, [
-            'reporter_id' => '1110023',          // TODO
-            'create_time' => date('Y-m-d H:i:s', time())
-        ]);
-        $mission = new Mission($infoArray);
-        $mission->allowField(true)->save();
+        $mission = new Mission();
+        $userId = '1110023';          // TODO
+        $dateArray = dateUtil::getMonthFirstAndLast($offset);           // 获取月份第一天和最后一天
 
-        return Result::returnResult(Result::SUCCESS);
+        // 我头上的、我发起的、我关注的
+        if(input('get.type') == 'assign') {
+            $mission->where('assignee_id', $userId);
+        } else if(input('get.type') == 'report') {
+            $mission->where('reporter_id', $userId);
+        } else if(input('get.type') == 'interest') {
+            $missionList = array();
+            $missionInterest = new MissionInterest();
+            $interestList = $missionInterest->where('user_id', $userId)->field('mission_id')->select();
+            foreach ($interestList as $interest) {
+                $missionInfo = $interest->mission()->where('finish_date', 'between', implode(',', $dateArray))->find();
+                if($missionInfo) {
+                    // 转换日期格式（不带前导 0）
+                    $date = date_create($missionInfo->finish_date);
+                    $missionInfo->finish_date = date_format($date,"Y-n-j");
+                    array_push($missionList, $missionInfo);
+                }
+            }
+
+            return Result::returnResult(Result::SUCCESS, $missionList, count($missionList));
+        }
+
+        $missions = $mission->where('finish_date', 'between', implode(',', $dateArray))
+            ->field('mission_id,mission_title,assignee_id,status,finish_date')
+            ->select();
+
+        // 处理结果集
+        foreach ($missions as $one) {
+            $one->assignee_name = $one->assignee->user_name;            // 关联查找用户名
+            $one->status = DataEnum::$missionStatus[$one->status];          // 转换状态码成信息
+            unset($one->assignee);
+            // 转换日期格式（不带前导 0）
+            $date = date_create($one->finish_date);
+            $one->finish_date = date_format($date,"Y-n-j");
+        }
+
+        return Result::returnResult(Result::SUCCESS, $missions, count($missions));
     }
 }

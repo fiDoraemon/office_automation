@@ -113,6 +113,7 @@
                             <i class="layui-icon"></i>
                             <p>点击上传，或将文件拖拽到此处</p>
                             <input type="hidden" id="attachment_list" name="attachment_list">
+                            <input type="hidden" id="delete_list" name="delete_list">
                         </div>
                         <button type="button" class="layui-btn move-btn" id="start_upload">开始上传</button>
                     </div>
@@ -431,18 +432,20 @@
                         var tr = $(this).parent().parent();
                         layer.confirm('确定删除？', {icon: 3, title:'提示'}, function(index) {
                             layer.close(index);
-                            $.ajax({
-                                url: "/office_automation/public/attachment/" + attachment_id,
-                                type: 'delete',
-                                success: function (res) {
-                                    if (res.code == 0) {
-                                        layer.msg('删除成功！');
-                                        tr.remove();
-                                    } else {
-                                        layer.msg('删除失败！');
-                                    }
-                                }
-                            });
+                            tr.remove();
+
+                            // $.ajax({
+                            //     url: "/office_automation/public/attachment/" + attachment_id,
+                            //     type: 'delete',
+                            //     success: function (res) {
+                            //         if (res.code == 0) {
+                            //             layer.msg('删除成功！');
+                            //             tr.remove();
+                            //         } else {
+                            //             layer.msg('删除失败！');
+                            //         }
+                            //     }
+                            // });
                         });
                     });
                 }
@@ -455,7 +458,7 @@
             checkedKey: 'user_id',
             searchPlaceholder: '用户/部门关键词',
             table: {
-                url: '/office_automation/public/index.php/index/meeting_c/getAllUsers'
+                url: '/office_automation/public/index.php/index/minute_c/getAllUsers'
                 ,cols: [[
                     { type: 'radio' },
                     { field: 'user_id', title: '工号' },
@@ -474,7 +477,7 @@
             checkedKey: 'user_id',
             searchPlaceholder: '用户/部门关键词',
             table: {
-                url: '/office_automation/public/index.php/index/meeting_c/getAllUsers'
+                url: '/office_automation/public/index.php/index/minute_c/getAllUsers'
                 ,cols: [[
                     { type: 'checkbox' },
                     { field: 'user_id', title: '工号' },
