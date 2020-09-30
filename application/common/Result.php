@@ -29,8 +29,9 @@ class Result
     const USER_SELECT_SUCCESS           = 21;
     const USER_SELECT_ERROR             = 22;
     const DELETE_ATTACHMENT             = 23;
-    const FORBID_DELETE_PARENT             = 24;
+    const FORBID_DELETE_PARENT          = 24;
     const PARENT_EXIST                  = 25;
+    const NOT_MINUTE_TEMP               = 26;
 
 
     // 对应结果
@@ -59,7 +60,8 @@ class Result
         self::USER_SELECT_ERROR         => '查询用户失败',
         self::DELETE_ATTACHMENT         => '删除附件失败',
         self::FORBID_DELETE_PARENT      => '不允许删除父任务',
-        self::PARENT_EXIST              => '该任务已有父任务！'
+        self::PARENT_EXIST              => '该任务已有父任务！',
+        self::NOT_MINUTE_TEMP           => '不存在临时会议信息！'
     ];
 
     // 返回结果

@@ -14,6 +14,7 @@ use app\index\model\Department;
 use app\index\model\Minute;
 use app\index\model\MinuteAttend;
 use app\index\model\MinuteMission;
+use app\index\model\MinuteTemp;
 use app\index\model\Mission;
 use app\index\model\User;
 use think\Db;
@@ -459,6 +460,27 @@ class MinuteC
                       -> field("user_id,user_name")
                       -> select();
             return Result::returnResult(Result::ERROR,$userList);
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+    }
+
+    /**
+     * 查看是否有临时保存的会议信息
+     */
+    public function hasTempMinute(){
+        $info = Session::get("info");
+        $user_id = $info["user_id"];
+        $minuteTemp =  new MinuteTemp();
+        try {
+            $resuleMinute = $minuteTemp->where("host_id", $user_id)
+                ->where("status", 0)
+                ->find();
+            if($resuleMinute!=null){
+                return Result::returnResult(Result::SUCCESS,$resuleMinute);
+            }
+            return Result::returnResult(Result::NOT_MINUTE_TEMP,null);
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {

@@ -15,10 +15,10 @@
         .not-input{
             color: #999999;
         }
-        .move-btn {
+        .upload-btn {
             position: absolute;
-            top: 126px;
-            right: 132px;
+            top: 77%;
+            right: 29%;
         }
         .layui-upload-drag {
             padding: 40px;
@@ -119,7 +119,7 @@
                                     <i class="layui-icon"></i>
                                     <p>点击上传，或将文件拖拽到此处</p>
                                 </div>
-                                <button type="button" class="layui-btn move-btn" id="start_upload">开始上传</button>
+                                <button type="button" class="layui-btn upload-btn" id="start_upload">开始上传</button>
                             </div>
                             <div class="layui-col-sm8">
                                 <div class="layui-upload-list">
@@ -159,6 +159,28 @@
 <script src="../../js/meet/add-minutes.js" charset="utf-8"></script> <!--引入查询所有项目代码js-->
 <script type="text/javascript" src="../../js/lay-module/tableSelect/tableSelect.js"></script>
 <script>
+    //进入页面先判断是否有临时保存的会议信息
+    $.ajax({
+        url: "/office_automation/public/index.php/index/minute_c/hasTempMinute",
+        type:'post',
+        timeout: 1000,
+        data: {},
+        success: function(res){
+            console.log(res);
+            if(res.code === 200){
+                layer.confirm('是否读取临时保存的会议纪要？', {
+                    btn: ['读取','取消'] //按钮
+                }, function(){
+                    //给页面填充值
+
+                }, function(){
+                });
+            }
+        },
+        error: function(data){
+        }
+    });
+
     var userIdList = []; //已经选择的应到会议员工id数组
     var uploadList = [];
     //开始使用下拉多个选择
