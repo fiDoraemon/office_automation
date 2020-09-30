@@ -45,6 +45,26 @@ class UserC extends CommonController
         return Result::returnResult(Result::OLD_PASSWORLD_ERROR,null);
     }
 
+    /**
+     * 查询某个部门的所有员工
+     * @param int $departmentId 部门id
+     * @return array
+     */
+    public function getUserByDepartment($departmentId = 0){
+        if($departmentId != 0){
+            $user = new User();
+            try {
+                $userList = $user->where("department_id", $departmentId)
+                    ->where("user_status", 1)
+                    ->field("user_id,user_name")
+                    ->select();
+                return Result::returnResult(Result::SUCCESS,$userList);
+            } catch (DataNotFoundException $e) {
+            } catch (ModelNotFoundException $e) {
+            } catch (DbException $e) {
+            }
+        }
+    }
 
     /**
      * 获取用户信息

@@ -40,13 +40,13 @@ $.ajax({
             var missiondata = table.cache["minute-table"];
             $count = missionArray.length;
             for (var i = 0; i < missionArray.length; i++) {
-                switch(missionArray[i].mission.status){
+                switch(missionArray[i].status){
                     case "未开始":  $notStarted++; break;
                     case "处理中":  $processing++; break;
                     case "已完成":  $finish++; break;
                     case "已暂停":  $suspend++; break;
                 }
-                missiondata.push( missionArray[i].mission);
+                missiondata.push( missionArray[i]);
             }
             //下面表格需要重载一下 才会刷新显示.
             table.reload("minute-table", {
@@ -67,7 +67,6 @@ $.ajax({
         $("#attended-user").val(attendedusers);
         $("#minute-resolution").val(data.resolution);
         $("#minute-context").val(data.record);
-
         //上传附件
         var attachmentList = data.attachments;
         element = '';
@@ -108,6 +107,15 @@ $.ajax({
     },
     error: function(res){
         console.log(res)
+    }
+});
+
+//临时保存
+$(window).keydown(function(e) {
+    if (e.keyCode == 83 && e.ctrlKey) {
+        e.preventDefault();
+        layer.msg('临时保存成功');
+        //dosomething
     }
 });
 

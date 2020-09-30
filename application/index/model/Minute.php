@@ -77,7 +77,7 @@ class Minute extends Model
      * 与关联任务一对多对应
      */
     public function minuteMission(){
-        return $this->hasMany('MinuteMission',"minute_id","minute_id")->field('mission_id');
+        return $this->hasMany('Mission',"minute_id","minute_id")->field('mission_id,mission_title,assignee_id,finish_date,status');
     }
 
     /**

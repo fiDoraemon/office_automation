@@ -34,6 +34,15 @@ function selectAddInfo(form){
     });
 }
 
+//临时保存
+$(window).keydown(function(e) {
+    if (e.keyCode == 83 && e.ctrlKey) {
+        e.preventDefault();
+        layer.msg('临时保存成功');
+        //dosomething
+    }
+});
+
 
 
 

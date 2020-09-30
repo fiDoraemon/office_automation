@@ -14,6 +14,7 @@ use app\index\model\Department;
 use app\index\model\Minute;
 use app\index\model\MinuteAttend;
 use app\index\model\MinuteMission;
+use app\index\model\Mission;
 use app\index\model\User;
 use think\Db;
 use think\db\exception\DataNotFoundException;
@@ -262,54 +263,20 @@ class MinuteC
         }
         //关联多个附件
         $resultMinute -> attachments;
-        //关联一对多会议纪要任务表
+        //关联一对多会议纪要任务
         $minuteMissions = $resultMinute -> minuteMission;
         foreach ($minuteMissions as $mms){
             //任务和任务负责人一对一关联
-            $mission = $mms -> mission;         //会议任务表对应的任务
-            $assignee = $mission -> assignee;   //任务对应的负责人
-            $missionStatus = $mission -> missionStatus;
-            $process = $mission -> processNew;  //获得任务最近处理信息
+            $assignee = $mms -> assignee;   //任务对应的负责人
+            $missionStatus = $mms -> missionStatus;
+            $process = $mms -> processNew;  //获得任务最近处理信息
             foreach ($process as $pro){
-                $mission -> process_note = $pro -> process_note;
+                $mms -> process_note = $pro -> process_note;
             }
-            $mission -> assignee_name = $assignee -> user_name;
-            $mission -> status = $missionStatus -> status_name;
+            $mms -> assignee_name = $assignee -> user_name;
+            $mms -> status = $missionStatus -> status_name;
         }
         return Result::returnResult(Result::SUCCESS,$resultMinute);
-    }
-
-    /**
-     * 获取所有会议类型
-     * @return false|\PDOStatement|string|\think\Collection
-     */
-    private function getMinutes(){
-        //查询会议类型
-        try {
-            $listMeet = Db::table('oa_minute_type')
-                ->field("type_id,type_name")
-                ->select();
-            return $listMeet;
-        } catch (DataNotFoundException $e) {
-        } catch (ModelNotFoundException $e) {
-        } catch (DbException $e) {
-        }
-    }
-
-    /**
-     * 查询所有项目代号
-     * @return false|\PDOStatement|string|\think\Collection
-     */
-    private function getProjectCode(){
-        try {
-            $listProjectCodes = Db::table('oa_project')
-                ->field("project_id,project_code")
-                ->select();
-            return $listProjectCodes;
-        } catch (DataNotFoundException $e) {
-        } catch (ModelNotFoundException $e) {
-        } catch (DbException $e) {
-        }
     }
 
     /**
@@ -346,7 +313,8 @@ class MinuteC
     }
 
     /**
-     * 保存会议
+     * 保存新发起的会议
+     * @return array
      */
     public function saveMinute(){
         $info               = Session::get("info");
@@ -408,7 +376,7 @@ class MinuteC
         $newMission         = input('post.newMission/a');//$_POST["newMission"];                 //新增基本任务清单
         $minuteResolution   = $_POST["minuteResolution"];     //会议决议
         $minuteContext      = $_POST["minuteContext"];           //会议记录
-//        $minuteMission      = $_POST["minuteMission"];           //添加会议任务纪要(前端页面未实现)
+        $minuteMission      = input('post.minuteMission/a');           //添加会议任务纪要(前端页面未实现)
         $uploadList         = input('post.uploadList/a');//$_POST["uploadList"];                 //上传的附件
         //保存会议基本信息
         $minute = new Minute();
@@ -440,6 +408,17 @@ class MinuteC
                 $minuteMission ->save();
             }
         }
+        if(is_array($minuteMission)){
+            foreach($minuteMission as $mis){
+                $mission = new Mission();
+                $mission -> mission_title = $mis['missionTitle'];
+                $mission -> assignee_id   = $mis['assigneeId'];
+                $mission -> finish_date   = $mis['finishDate'];
+                $mission -> description   = $mis['description'];
+                $mission -> minute_id     = $minuteId;
+                $mission -> save();
+            }
+        }
         if(is_array($uploadList)){
             foreach ($uploadList as $file){
                 $attachment = new Attachment();
@@ -448,6 +427,75 @@ class MinuteC
             }
         }
         return Result::returnResult(Result::SUCCESS,null);
+    }
+
+    /**
+     * 查询所有部门id和部门名字
+     * @return array
+     */
+    public function getAllDepartment(){
+        $department = new Department();
+        try {
+            $departmentList = $department -> field("department_id,department_name")
+                                          -> select();
+            return Result::returnResult(Result::SUCCESS,$departmentList);
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+        return Result::returnResult(Result::ERROR,null);
+    }
+
+    /**
+     * 根据部门id查询员工
+     * @param $departmentId
+     * @return array
+     */
+    public function getUserByDepartment($departmentId){
+        $userList =  new User();
+        try {
+            $userList -> where("department_id", $departmentId)
+                      -> where("user_status", 1)
+                      -> field("user_id,user_name")
+                      -> select();
+            return Result::returnResult(Result::ERROR,$userList);
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+    }
+
+    /**
+     * 获取所有会议类型
+     * @return false|\PDOStatement|string|\think\Collection
+     */
+    private function getMinutes(){
+        //查询会议类型
+        try {
+            $listMeet = Db::table('oa_minute_type')
+                ->field("type_id,type_name")
+                ->select();
+            return $listMeet;
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+    }
+
+    /**
+     * 查询所有项目代号
+     * @return false|\PDOStatement|string|\think\Collection
+     */
+    private function getProjectCode(){
+        try {
+            $listProjectCodes = Db::table('oa_project')
+                ->field("project_id,project_code")
+                ->select();
+            return $listProjectCodes;
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
     }
 
 }
