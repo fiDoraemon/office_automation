@@ -30,6 +30,7 @@ class Result
     const USER_SELECT_ERROR             = 22;
     const DELETE_ATTACHMENT             = 23;
     const FORBID_DELETE_PARENT             = 24;
+    const PARENT_EXIST                  = 25;
 
 
     // 对应结果
@@ -57,7 +58,8 @@ class Result
         self::USER_SELECT_SUCCESS       => '查询用户成功',
         self::USER_SELECT_ERROR         => '查询用户失败',
         self::DELETE_ATTACHMENT         => '删除附件失败',
-        self::FORBID_DELETE_PARENT         => '不允许删除父任务'
+        self::FORBID_DELETE_PARENT      => '不允许删除父任务',
+        self::PARENT_EXIST              => '该任务已有父任务！'
     ];
 
     // 返回结果

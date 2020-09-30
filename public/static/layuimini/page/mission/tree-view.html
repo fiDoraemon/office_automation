@@ -123,7 +123,10 @@
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '../../page/mission/tree-add.html?id=' + data.id
+                    content: '../../page/mission/tree-add.html?id=' + data.id,
+                    cancel: function() {
+                        // location.reload();
+                    }
                 });
             } else if (layEvent === 'del') {
                 if(data.parent_mission_id == -1 || data.is_parent == 1) {

@@ -60,13 +60,11 @@
     </div>
 </div>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
-<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script>
-    layui.use(['form', 'table', 'miniTab'], function () {
+    layui.use(['form', 'table'], function () {
         var $ = layui.jquery,
             form = layui.form,
-            table = layui.table,
-            miniTab = layui.miniTab;
+            table = layui.table;
 
         table.render({
             elem: '#missionList',
@@ -132,11 +130,6 @@
                     area: ['100%', '100%'],
                     content: '../../page/mission/tree-view.html?id=' + data.mission_id,
                 });
-                // 打开新的窗口
-                // miniTab.openNewTabByIframe({
-                //     href: "page/mission/tree-view.html?id=" + data.mission_id,
-                //     title: "任务树视图",
-                // });
 
                 return false;
             } else if (obj.event === 'relateChild') {
