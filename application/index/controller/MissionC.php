@@ -70,20 +70,19 @@ class MissionC extends Controller
 
     // 获取选择任务列表
     public function selectIndex($page = 1, $limit = 10, $keyword = '') {
-        if($keyword == '') {
-            return Result::returnResult(Result::SUCCESS);
-        }
         $mission = new Mission();
-
         // 获取查询结果任务数目
-        $count = $mission->where('mission_id', $keyword)
-            ->whereOr('mission_title', 'like', "%$keyword%")
-            ->count();
+        if($keyword == '') {
+            $mission->where('mission_id', $keyword)->whereOr('mission_title', 'like', "%$keyword%");
+        }
+        $count = $mission->count();
 
         // 获取查询结果任务列表
-        $missions = $mission->where('mission_id', $keyword)
-            ->whereOr('mission_title', 'like', "%$keyword%")
-            ->field('mission_id,mission_title,assignee_id')
+        if($keyword == '') {
+            $mission->where('mission_id', $keyword)->whereOr('mission_title', 'like', "%$keyword%");
+        }
+        $missions = $mission->field('mission_id,mission_title,assignee_id')
+            ->order('mission_id desc')
             ->page("$page, $limit")
             ->select();
         foreach ($missions as $one) {
