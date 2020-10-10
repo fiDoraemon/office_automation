@@ -472,20 +472,20 @@
          */
         $("#addEvent").on("click",function () {
             var $missionInfo = "<tr class='missionItem'>\n" +
-                "                        <td><input type=\"text\" name=\"title\" placeholder=\"请输入标题\" autocomplete=\"off\" class=\"layui-input title\"></td>\n" +
+                "                        <td><input type=\"text\" name=\"title\" lay-verify=\"required\" placeholder=\"请输入标题\" autocomplete=\"off\" class=\"layui-input title\"></td>\n" +
                 "                        <td>\n" +
-                "                            <select class=\"departmentSelect\" name=\"departmentSelect\" lay-filter=\"departmentSelect\">\n" +
+                "                            <select class=\"departmentSelect\" name=\"departmentSelect\" lay-verify=\"required\" lay-filter=\"departmentSelect\">\n" +
                 "                                <option value=\"\">--选择部门--</option>\n" +
                                                     departmentInfo +
                 "                            </select>\n" +
                 "                        </td>\n" +
                 "                        <td>\n" +
-                "                            <select class=\"userSelect responsible\" name=\"userSelect\" lay-filter=\"userSelect\">\n" +
+                "                            <select class=\"userSelect responsible\" name=\"userSelect\" lay-verify=\"required\" lay-filter=\"userSelect\">\n" +
                 "                                <option value=\"\">--请先选择部门--</option>\n" +
                 "                            </select>\n" +
                 "                        </td>\n" +
-                "                        <td><input type=\"date\" name=\"dateTime\" autocomplete=\"off\" class=\"layui-input finish-date\"></td>\n" +
-                "                        <td><input type=\"text\" name=\"title\" placeholder=\"请输入任务描述\" autocomplete=\"off\" class=\"layui-input describe\"></td>\n" +
+                "                        <td><input type=\"date\" name=\"dateTime\" autocomplete=\"off\" lay-verify=\"required\" class=\"layui-input finish-date\"></td>\n" +
+                "                        <td><input type=\"text\" name=\"title\" placeholder=\"请输入任务描述\" autocomplete=\"off\" lay-verify=\"required\" class=\"layui-input describe\"></td>\n" +
                 "                        <td> <a class=\"layui-btn layui-btn-xs layui-btn-danger data-count-delete deleteMission\">删除</a></td>\n" +
                 "                    </tr>";
             $("#addMissionTable").append($missionInfo);
@@ -506,7 +506,6 @@
                     departmentId : department_id,
                 },
                 success: function(res){
-                    console.log(res.data);
                     var userArray = res.data;
                     var userOptions = "";
                     $userSelect.empty();//先清空子节点
@@ -547,7 +546,6 @@
                 var mis = {"missionTitle":missionTitle,"assigneeId":assigneeId,"finishDate":finishDate,"description":description};
                 missionInfos.push(mis);
             });
-            console.log(missionInfos);
             return missionInfos;
         }
         //监听提交

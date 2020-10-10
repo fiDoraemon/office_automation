@@ -15,8 +15,6 @@ $.ajax({
         minuteId : minute_id,
     },
     success: function(res){
-        console.log("getMinuteInfo");
-        console.log(res);
         var data = res.data;
         var attendArray = data.minuteAttends;
         var attendedArray = data.minuteAttendeds;
@@ -106,7 +104,6 @@ $.ajax({
         });
     },
     error: function(res){
-        console.log(res)
     }
 });
 
