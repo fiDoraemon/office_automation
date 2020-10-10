@@ -32,8 +32,9 @@ class Result
     const FORBID_DELETE_PARENT          = 24;
     const PARENT_EXIST                  = 25;
     const NOT_MINUTE_TEMP               = 26;
-    const NOT_ROOT_MISSION              = 27;
-
+    const NOT_MODIFY_PERMISSION         = 27;
+    const NOT_TEMP                      = 28;
+    const NOT_ROOT_MISSION              = 29;
     // 对应结果
     public static $resultMsg = [
         self::SUCCESS                   => '请求成功！',
@@ -62,7 +63,10 @@ class Result
         self::FORBID_DELETE_PARENT      => '不允许删除父任务',
         self::PARENT_EXIST              => '该任务已有父任务！',
         self::NOT_MINUTE_TEMP           => '不存在临时会议信息！',
-        self::NOT_ROOT_MISSION           => '任务不是根任务'
+        self::NOT_MODIFY_PERMISSION     => '没有修改权限！',
+        self::NOT_TEMP                  => '没有临时保存的信息！',
+        self::NOT_ROOT_MISSION          => '任务不是根任务'
+
     ];
 
     // 返回结果

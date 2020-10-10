@@ -8,7 +8,7 @@ layui.use(['form'], function () {
 
 //进入页面先判断是否有临时保存的会议信息
 $.ajax({
-    url: "/office_automation/public/index.php/index/minute_c/hasTempMinute",
+    url: "/office_automation/public/index.php/index/minute_c/hasNewTempMinute",
     type:'get',
     timeout: 1000,
     data: {},
@@ -119,7 +119,7 @@ function saveTemp(){
     var minute_resolution = $("#minute-resolution").val();
     var minute_context = $("#minute-context").val();
     $.ajax({ //临时保存
-        url: "/office_automation/public/index.php/index/minute_c/saveTemp",
+        url: "/office_automation/public/index.php/index/minute_c/saveNewTemp",
         type: 'post',
         timeout: 1000,
         data: {

@@ -17,6 +17,7 @@ use app\index\model\MinuteAttendTemp;
 use app\index\model\MinuteMission;
 use app\index\model\MinuteTemp;
 use app\index\model\Mission;
+use app\index\model\MissionTemp;
 use app\index\model\User;
 use think\Db;
 use think\db\exception\DataNotFoundException;
@@ -271,7 +272,7 @@ class MinuteC
             //任务和任务负责人一对一关联
             $assignee = $mms -> assignee;   //任务对应的负责人
             $missionStatus = $mms -> missionStatus;
-            $process = $mms -> processNew;  //获得任务最近处理信息
+            $process = $mms -> process;  //获得任务最近处理信息
             foreach ($process as $pro){
                 $mms -> process_note = $pro -> process_note;
             }
@@ -385,13 +386,13 @@ class MinuteC
         $info = Session::get("info");
         $user_id = $info["user_id"];
         $minuteId           = $_POST["minuteId"];
-        $attended           = input('post.attendList/a');//$_POST["attendList"];                     //实际到会人员
-        $newAttend          = input('post.newAttended/a');//$_POST["newAttended"];                 //新增应到人员
-        $newMission         = input('post.newMission/a');//$_POST["newMission"];                 //新增基本任务清单
-        $minuteResolution   = $_POST["minuteResolution"];     //会议决议
-        $minuteContext      = $_POST["minuteContext"];           //会议记录
-        $minuteMission      = input('post.minuteMission/a');           //添加会议任务纪要(前端页面未实现)
-        $uploadList         = input('post.uploadList/a');//$_POST["uploadList"];                 //上传的附件
+        $attended           = input('post.attendList/a');      //实际到会人员
+        $newAttend          = input('post.newAttended/a');     //新增应到人员
+        $newMission         = input('post.newMission/a');      //新增基本任务清单
+        $minuteResolution   = $_POST["minuteResolution"];           //会议决议
+        $minuteContext      = $_POST["minuteContext"];              //会议记录
+        $minuteMission      = input('post.minuteMission/a');   //添加会议任务纪要
+        $uploadList         = input('post.uploadList/a');      //上传的附件
         //保存会议基本信息
         $minute = new Minute();
         $minute -> where("minute_id",$minuteId);
@@ -481,9 +482,9 @@ class MinuteC
     }
 
     /**
-     * 查看是否有临时保存的会议信息
+     * 查看新增会议页面是否有临时保存的会议信息
      */
-    public function hasTempMinute(){
+    public function hasNewTempMinute(){
         $info = Session::get("info");
         $user_id = $info["user_id"];
         $minuteTemp =  new MinuteTemp();
@@ -506,9 +507,146 @@ class MinuteC
     }
 
     /**
-     * 临时保存新增页面会议信息到临时会议表
+     * 修改会议页面，查看当前会议是否有临时保存的信息
+     */
+    public function hasTempMinute(){
+        $info = Session::get("info");
+        $userId = $info["user_id"];
+        $minuteId = $_GET["minuteId"];
+        $hasPerm = $this -> verifyPermission($minuteId,$userId);//判断是否有权限修改会议信息
+        if(!$hasPerm){  //没有修改权限
+            return Result::returnResult(Result::NOT_MODIFY_PERMISSION);
+        }
+        //查看是否有临时保存的会议信息
+        $hasTemp = $this -> hasTemp($minuteId);
+        if($hasTemp){
+            return Result::returnResult(Result::SUCCESS);
+        }
+        return Result::returnResult(Result::NOT_TEMP);
+    }
+
+    /**
+     * 获取临时保存的会议信息
+     */
+//    public function getTempMinute(){
+//        $minuteId = $_GET["minuteId"];
+//        $minute = new MinuteTemp();
+//        $minute -> department();
+//        $resultMinute = $minute -> where("minute_id", $minuteId)
+//            -> field("minute_id,department_id,minute_theme,minute_date,minute_time,place,project,host_id,resolution,record,minute_type,review_status,project_stage")
+//            -> find();
+//        //关联对应发起会议的员工所属部门
+//        $resultMinute -> department;
+//        //关联项目
+//        $resultMinute -> projectStage;
+//        //关联主持人
+//        $resultMinute -> user;
+//        //关联多个应到会人员
+//        $attendUsers = $resultMinute -> minuteAttends;
+//        foreach ($attendUsers as $attend){
+//            $attend -> user;
+//        }
+//        //关联多个已经到会人员
+//        $attendedUsers = $resultMinute -> minuteAttendeds;
+//        foreach ($attendedUsers as $attended){
+//            $attended -> user;
+//        }
+//        //关联多个附件
+//        $resultMinute -> attachments;
+//        //关联一对多会议纪要任务
+//        $minuteMissions = $resultMinute -> minuteMission;
+//        foreach ($minuteMissions as $mms){
+//            //任务和任务负责人一对一关联
+//            $assignee = $mms -> assignee;   //任务对应的负责人
+//            $missionStatus = $mms -> missionStatus;
+//            $process = $mms -> processNew;  //获得任务最近处理信息
+//            foreach ($process as $pro){
+//                $mms -> process_note = $pro -> process_note;
+//            }
+//            $mms -> assignee_name = $assignee -> user_name;
+//            $mms -> status = $missionStatus -> status_name;
+//        }
+//        return Result::returnResult(Result::SUCCESS,$resultMinute);
+//
+//
+//    }
+
+    /**
+     * 修改会议页面临时保存信息
+     * @throws DbException
      */
     public function saveTemp(){
+        $info               = Session::get("info");
+        $user_id            = $info["user_id"];
+        $minuteId           = $_POST["minuteId"];
+        $attended           = input('post.attendList/a');      //实际到会人员
+        $newAttend          = input('post.newAttended/a');     //新增应到人员
+        $newMission         = input('post.newMission/a');      //新增基本任务清单
+        $minuteResolution   = $_POST["minuteResolution"];           //会议决议
+        $minuteContext      = $_POST["minuteContext"];              //会议记录
+        $minuteMission      = input('post.minuteMission/a');   //添加会议任务纪要
+        //判断数据库中是否含有对应的临时保存的信息
+        $minuteTemp = MinuteTemp::get(['minute_id' => $minuteId]);  //临时数据表
+        $minute  = MInute::get(['minute_id' => $minuteId]);         //真实数据表
+        if($minuteTemp == null){//没有，需要创建一条
+            $minuteTemp = new MinuteTemp();
+        }
+        $minuteTemp -> minute_id        = $minuteId;
+        $minuteTemp -> department_id    = $minute -> department_id;
+        $minuteTemp -> minute_theme     = $minute -> minute_theme;
+        $minuteTemp -> project          = $minute -> project;
+        $minuteTemp -> minute_date      = $minute -> minute_date;
+        $minuteTemp -> minute_time      = $minute -> minute_time;
+        $minuteTemp -> place            = $minute -> place;
+        $minuteTemp -> host_id          = $minute -> host_id;
+        $minuteTemp -> minute_type      = $minute -> minute_type;
+        $minuteTemp -> review_status    = $minute -> review_status;
+        $minuteTemp -> project_stage    = $minute -> project_stage;
+        $minuteTemp -> resolution       = $minuteResolution;
+        $minuteTemp -> record           = $minuteContext;
+        $minuteTemp -> save();
+        if(is_array($attended)){  //应到
+            foreach ($attended as $att){
+                $attendTemp = new MinuteAttendTemp();
+                $attendTemp -> where("minute_id",$minuteId)
+                            -> where("user_id",$att)
+                            -> setField('status', 1);
+            }
+        }
+        if(is_array($newAttend)){   //新增已到
+            foreach ($newAttend as $att){
+                $attendTemp = new MinuteAttendTemp();
+                $attendTemp -> minute_id = $minuteId;
+                $attendTemp -> user_id = $att;
+                $attendTemp -> save();
+            }
+        }
+//            if(is_array($newMission)){
+//                foreach ($newMission as $mis){
+//                    $minuteMission = Mission::get($mis);
+//                    $minuteMission -> minute_id = $minuteId;
+//                    $minuteMission ->save();
+//                }
+//            }
+        if(is_array($minuteMission)){
+            foreach($minuteMission as $mis){
+                $missionTemp = new MissionTemp();
+                $missionTemp -> mission_title = $mis['missionTitle'];
+                $missionTemp -> reporter_id   = $user_id;
+                $missionTemp -> assignee_id   = $mis['assigneeId'];
+                $missionTemp -> finish_date   = $mis['finishDate'];
+                $missionTemp -> description   = $mis['description'];
+                $missionTemp -> minute_id     = $minuteId;
+                $missionTemp -> save();
+            }
+        }
+        return Result::returnResult(Result::SUCCESS,null);
+    }
+
+    /**
+     * 临时保存新增页面会议信息到临时会议表
+     */
+    public function saveNewTemp(){
         $info               = Session::get("info");
         $minuteType         = $_POST["minute_type"];        //会议类型
         $hostId             = $info["user_id"];           //会议主持id
@@ -555,6 +693,34 @@ class MinuteC
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
         }
+    }
+
+    /**
+     * 验证是否有权限修改
+     * @param $minuteId 会议id
+     * @param $userId   用户id
+     * @return bool
+     */
+    private function verifyPermission($minuteId,$userId){
+        $minuteHost = Minute::where('minute_id',$minuteId)->value('host_id');
+        if($minuteHost == $userId){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 根据会议id查看是否存在临时保存的会议信息
+     * @param $minuteId  会议id
+     * @return bool
+     * @throws DbException
+     */
+    private function hasTemp($minuteId){
+        $minuteTemp = MinuteTemp::get(['minute_id' => $minuteId]);
+        if($minuteTemp == null){
+            return false;
+        }
+        return true;
     }
 
     /**

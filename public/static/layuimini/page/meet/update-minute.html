@@ -214,7 +214,7 @@
                     <div class="layui-col-md4">
                         <button class="layui-btn" id="save" lay-submit lay-filter="save">立即提交</button>
                         <button type="reset" id="refresh" class="layui-btn layui-btn-primary">重置</button>
-                        <button class="layui-btn" id="temporarySave" lay-submit lay-filter="temporarySave">临时保存</button>
+                        <button class="layui-btn" id="temporarySave">临时保存</button>
                     </div>
                     <div class="layui-col-md4"></div>
                 </div>
@@ -222,141 +222,110 @@
         </div>
 
     </div>
-
 <script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
-<script type="text/javascript" src="../../lib/layui-v2.5.5/layui.all.js"></script>
+<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script type="text/javascript" src="../../js/meet/update-minute.js"></script>
 <script type="text/javascript" src="../../js/lay-module/tableSelect/tableSelect.js"></script>
 <script>
-    //开始使用下拉多个选择
-    var tableSelect = layui.tableSelect;
-    //添加实际到会人员
-    var attended = [];
-    //添加应到会人员
-    var newAttended = [];
-    //新增基本任务清单
-    var newMission = [];
-    //已上传文件
-    var uploadList = [];
-
-    var departmentInfo = "";
-    /**
-     * 获取部门信息
-     */
-    $.ajax({
-        url: "/office_automation/public/index.php/index/minute_c/getAllDepartment",
-        type:'get',
-        timeout: 2000,
-        data: {
-        },
-        success: function(res){
-            var departmentArray = res.data;;
-            for (var i = 0; i < departmentArray.length; i++){
-                departmentInfo += "<option value='" + departmentArray[i]["department_id"] + "'>" + departmentArray[i]["department_name"] + "</option>";
-            }
-        },
-        error: function(res){
-        }
-    });
-
-    /**
-     * 选择已到会员工
-     */
-    tableSelect.render({
-        elem: '#attended-user',	//定义输入框input对象 必填
-        checkedKey: 'user_id', //表格的唯一建值，非常重要，影响到选中状态 必填
-        searchKey: 'keyword',	//搜索输入框的name值 默认keyword
-        searchList: [
-            {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
-        ],
-        table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
-            url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=1&minuteId='+minute_id,
-            cols: [[
-                {type: "checkbox"},
-                {field: 'user_id', title: '员工工号'},
-                {field: 'user_name', title: '姓名'},
-                {field: 'department_name', title: '部门'},
-            ]]
-        },
-        done: function (elem, data) {
-            var NEWJSON = []
-            layui.each(data.data, function (index, item) {
-                NEWJSON.push(item.user_name);
-                attended.push(item.user_id);
-            })
-            elem.val(NEWJSON.join(","))
-        }
-    });
-
-    /**
-     * 选择新添需要到会员工
-     */
-    tableSelect.render({
-        elem: '#new-attend-users',
-        checkedKey: 'user_id',
-        searchKey: 'keyword',
-        searchList: [
-            {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},
-        ],
-        table: {
-            url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=2&minuteId='+minute_id,
-            cols: [[
-                {type : "checkbox"},
-                {field: 'user_id', title: '员工工号'},
-                {field: 'user_name', title: '姓名'},
-                {field: 'department_name', title: '部门'},
-            ]]
-        },
-        done: function (elem, data) {
-            var NEWJSON = [];
-            layui.each(data.data, function (index, item) {
-                NEWJSON.push(item.user_name);
-                newAttended.push(item.user_id);
-            })
-            elem.val(NEWJSON.join(","))
-        }
-    });
-
-    /**
-     * 选择基本任务清单
-     */
-    tableSelect.render({
-        elem: '#add-mission',
-        checkedKey: 'mission_id',
-        searchKey: 'keyword',
-        searchList: [
-            {searchKey: 'keyword', searchPlaceholder: '任务标题/任务ID'},  //搜索条件
-        ],
-        table: {
-            url:'/office_automation/public/index/mission_c/selectIndex',
-            cols: [[
-                {type: "checkbox"},
-                {field: 'mission_id', title: '任务号'},
-                {field: 'mission_title', title: '任务标题'},
-                {field: 'assignee_name', title: '负责人'},
-            ]]
-        },
-        done: function (elem, data) {
-            var NEWJSON = [];
-            layui.each(data.data, function (index, item) {
-                NEWJSON.push(item.mission_id);
-            });
-            newMission = NEWJSON;
-            elem.val(NEWJSON.join(","))
-        }
-    });
-
     layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         var   form    = layui.form
             , layer   = layui.layer
             , layedit = layui.layedit
             , laydate = layui.laydate
             , upload  = layui.upload
-            , table   = layui.table;
+            , table   = layui.table
+            , tableSelect = layui.tableSelect;
 
         laydate.render({
             elem: '#dateTime'
+        });
+
+        /**
+         * 选择已到会员工
+         */
+        tableSelect.render({
+            elem: '#attended-user',	//定义输入框input对象 必填
+            checkedKey: 'user_id', //表格的唯一建值，非常重要，影响到选中状态 必填
+            searchKey: 'keyword',	//搜索输入框的name值 默认keyword
+            searchList: [
+                {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
+            ],
+            table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
+                url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=1&minuteId='+minute_id,
+                cols: [[
+                    {type: "checkbox"},
+                    {field: 'user_id', title: '员工工号'},
+                    {field: 'user_name', title: '姓名'},
+                    {field: 'department_name', title: '部门'},
+                ]]
+            },
+            done: function (elem, data) {
+                var NEWJSON = []
+                layui.each(data.data, function (index, item) {
+                    NEWJSON.push(item.user_name);
+                    attended.push(item.user_id);
+                })
+                elem.val(NEWJSON.join(","))
+            }
+        });
+
+        /**
+         * 选择新添需要到会员工
+         */
+        tableSelect.render({
+            elem: '#new-attend-users',
+            checkedKey: 'user_id',
+            searchKey: 'keyword',
+            searchList: [
+                {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},
+            ],
+            table: {
+                url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=2&minuteId='+minute_id,
+                cols: [[
+                    {type : "checkbox"},
+                    {field: 'user_id', title: '员工工号'},
+                    {field: 'user_name', title: '姓名'},
+                    {field: 'department_name', title: '部门'},
+                ]]
+            },
+            done: function (elem, data) {
+                var NEWJSON = [];
+                layui.each(data.data, function (index, item) {
+                    NEWJSON.push(item.user_name);
+                    newAttended.push(item.user_id);
+                })
+                elem.val(NEWJSON.join(","))
+            }
+        });
+
+        /**
+         * 选择基本任务清单
+         */
+        tableSelect.render({
+            elem: '#add-mission',
+            checkedKey: 'mission_id',
+            searchKey: 'keyword',
+            searchList: [
+                {searchKey: 'keyword', searchPlaceholder: '任务标题/任务ID'},  //搜索条件
+            ],
+            table: {
+                url:'/office_automation/public/index/mission_c/selectIndex',
+                cols: [[
+                    {type: "checkbox"},
+                    {field: 'mission_id', title: '任务号'},
+                    {field: 'mission_title', title: '任务标题'},
+                    {field: 'assignee_name', title: '负责人'},
+                ]]
+            },
+            done: function (elem, data) {
+                var NEWJSON = [];
+                layui.each(data.data, function (index, item) {
+                    NEWJSON.push(item.mission_id);
+                });
+                newMission = NEWJSON;
+                elem.val(NEWJSON.join(","))
+            }
         });
 
         //文件上传
@@ -535,19 +504,6 @@
             $(this).parent().parent().remove();
         });
 
-
-        function getMissionInfo(){
-            var missionInfos = [];
-            $('.missionItem').each(function(){
-                var missionTitle= $(this).find(".title").val();
-                var assigneeId  = $(this).find(".responsible").val();
-                var finishDate  = $(this).find(".finish-date").val();
-                var description = $(this).find(".describe").val();
-                var mis = {"missionTitle":missionTitle,"assigneeId":assigneeId,"finishDate":finishDate,"description":description};
-                missionInfos.push(mis);
-            });
-            return missionInfos;
-        }
         //监听提交
         form.on('submit(save)', function (data) {
             var minuteResolution  = $("#minute-resolution").val();
@@ -584,14 +540,6 @@
         //重置
         $("#refresh").on("click",function(){
             location.reload();
-        });
-
-        //监听临时保存
-        form.on('submit(temporarySave)', function (data) {
-            layer.alert(JSON.stringify(data.field), {
-                title: '最终的提交信息'
-            });
-            return false;
         });
 
     });
