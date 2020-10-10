@@ -414,9 +414,8 @@ class MinuteC
         }
         if(is_array($newMission)){
             foreach ($newMission as $mis){
-                $minuteMission = new MinuteMission();
+                $minuteMission = Mission::get($mis);
                 $minuteMission -> minute_id = $minuteId;
-                $minuteMission -> mission_id = $mis;
                 $minuteMission ->save();
             }
         }

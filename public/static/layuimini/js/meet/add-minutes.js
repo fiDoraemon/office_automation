@@ -61,7 +61,6 @@ function selectAddInfo(form){
         timeout: 1000,
         data: {},
         success: function(res){
-            console.log(res);
             var hostName = res["data"]["hostName"];
             var departmentName = res["data"]["departmentName"];
             hostId = res["data"]["hostId"];
@@ -82,7 +81,6 @@ function selectAddInfo(form){
                 $("#select-project-code").append($option);
             }
             if( $('#list-users').val() === null ||  $('#list-users').val() === ""){
-                console.log(hostId)
                 $('#list-users').attr('ts-selected', hostId);
                 $('#list-users').val(hostName);
             }
@@ -111,8 +109,6 @@ function saveTemp(){
     if($.inArray(hostId , userIdList) === -1){
         userIdList.push(hostId);
     }
-    console.log("-----");
-    console.log(userIdList);
     var minute_type  = $("#select-minute-type").val();
     var minute_theme = $("#minute-theme").val();
     var project_code = $("#select-project-code").val();
@@ -138,8 +134,6 @@ function saveTemp(){
             minute_context  : minute_context
         },
         success: function (res) {
-            console.log("result");
-            console.log(res);
             if(res.code === 0){
                 layer.msg('临时保存成功');
             }else{
