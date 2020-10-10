@@ -382,6 +382,8 @@ class MinuteC
      * 修改会议
      */
     public function updateMinute(){
+        $info = Session::get("info");
+        $user_id = $info["user_id"];
         $minuteId           = $_POST["minuteId"];
         $attended           = input('post.attendList/a');//$_POST["attendList"];                     //实际到会人员
         $newAttend          = input('post.newAttended/a');//$_POST["newAttended"];                 //新增应到人员
@@ -423,10 +425,12 @@ class MinuteC
             foreach($minuteMission as $mis){
                 $mission = new Mission();
                 $mission -> mission_title = $mis['missionTitle'];
+                $mission -> reporter_id   = $user_id;
                 $mission -> assignee_id   = $mis['assigneeId'];
                 $mission -> finish_date   = $mis['finishDate'];
                 $mission -> description   = $mis['description'];
                 $mission -> minute_id     = $minuteId;
+                $mission -> create_time   = date('Y-m-d H:i:s', time());
                 $mission -> save();
             }
         }
