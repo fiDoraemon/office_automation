@@ -13,6 +13,7 @@ use app\index\model\Attachment;
 use app\index\model\Department;
 use app\index\model\Minute;
 use app\index\model\MinuteAttend;
+use app\index\model\MinuteAttendTemp;
 use app\index\model\MinuteMission;
 use app\index\model\MinuteTemp;
 use app\index\model\Mission;
@@ -316,6 +317,9 @@ class MinuteC
     /**
      * 保存新发起的会议
      * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function saveMinute(){
         $info               = Session::get("info");
@@ -361,6 +365,13 @@ class MinuteC
                     ->update(['attachment_type' => "minute","related_id" => $minuteId]);
             }
         }
+        //删除临时保存的会议信息
+        //删除临时表里的应到人员
+        $minuteTemp = new MinuteTemp();
+        $m = $minuteTemp -> where(['minute_id' => 0,'host_id' => $hostId]) ->find();
+        $m -> minuteAttends;
+        $m -> minuteAttends()->delete();
+        $m -> delete();
         if($minuteId != null){
             return Result::returnResult(Result::SUCCESS,null);
         }
@@ -474,13 +485,69 @@ class MinuteC
         $user_id = $info["user_id"];
         $minuteTemp =  new MinuteTemp();
         try {
-            $resuleMinute = $minuteTemp->where("host_id", $user_id)
-                ->where("status", 0)
-                ->find();
+            $resuleMinute = $minuteTemp -> where("host_id", $user_id)
+                                        -> where("status", 0)
+                                        -> find();
             if($resuleMinute!=null){
+                $resuleMinutes = $resuleMinute -> minuteAttends;
+                foreach ($resuleMinutes as $rm){
+                    $rm -> user;
+                }
                 return Result::returnResult(Result::SUCCESS,$resuleMinute);
             }
             return Result::returnResult(Result::NOT_MINUTE_TEMP,null);
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+    }
+
+    /**
+     * 临时保存新增页面会议信息到临时会议表
+     */
+    public function saveTemp(){
+        $info               = Session::get("info");
+        $minuteType         = $_POST["minute_type"];        //会议类型
+        $hostId             = $info["user_id"];           //会议主持id
+        $departmentId       = $info["department_id"]; //所属部门id
+        $minuteTheme        = $_POST["minute_theme"];     //会议标题
+        $projectCode        = $_POST["project_code"];     //项目代号
+        $date               = $_POST["date"];                     //会议时间
+        $time               = $_POST["time"];
+        $place              = $_POST["place"];                   //会议地点
+        $attendUsers        = input('post.attend_users/a');    //应到人员列表
+        $minuteResolution   = $_POST["minute_resolution"];   //会议决议
+        $minuteContext      = $_POST["minute_context"];         //会议内容
+        $minuteTemp = MinuteTemp::get(['host_id' => $hostId,'status' => 0]);
+        try {
+            if( $minuteTemp == null){
+                $minuteTemp = new MinuteTemp();
+            }
+            $minuteTemp -> department_id = $departmentId;
+            $minuteTemp -> minute_theme = $minuteTheme;
+            $minuteTemp -> project = $projectCode;
+            $minuteTemp -> minute_date = $date;
+            $minuteTemp -> minute_time = $time;
+            $minuteTemp -> place = $place;
+            $minuteTemp -> host_id = $hostId;
+            $minuteTemp -> resolution = $minuteResolution;
+            $minuteTemp -> record = $minuteContext;
+            $minuteTemp -> minute_type = $minuteType;
+            $result = $minuteTemp -> save();
+            if(is_array($attendUsers)){
+                //保存之前先把之前的删除，否则会有人员重复现象
+                MinuteAttendTemp::destroy(['minute_id' => $minuteTemp -> id]);
+                foreach ($attendUsers as $att){
+                    $minuteAttendTemp = new MinuteAttendTemp();
+                    $minuteAttendTemp -> minute_id = $minuteTemp -> id;
+                    $minuteAttendTemp -> user_id = $att;
+                    $minuteAttendTemp -> save();
+                }
+            }
+            if($result == 1){
+                return Result::returnResult(Result::SUCCESS,null);
+            }
+            return Result::returnResult(Result::ERROR,null);
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {

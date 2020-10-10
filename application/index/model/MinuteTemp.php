@@ -13,5 +13,12 @@ use think\Model;
 
 class MinuteTemp extends Model
 {
-
+    /**
+     * 与应到人员会议表一对多关联
+     * @return \think\model\relation\HasMany
+     */
+    public function minuteAttends()
+    {
+        return $this->hasMany('MinuteAttendTemp','minute_id','id')->field('user_id');
+    }
 }
