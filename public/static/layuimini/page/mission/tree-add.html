@@ -24,7 +24,7 @@
     <div class="layui-form-item">
         <label class="layui-form-label">继承关注人</label>
         <div class="layui-input-inline">
-            <input type="checkbox" name="extend-interest" lay-skin="switch" lay-text="ON|OFF" checked="">
+            <input type="checkbox" name="extend-interest" lay-skin="switch" lay-text="是|否" checked="">
             <span id="interest-users"></span>
         </div>
     </div>
@@ -133,8 +133,8 @@
             elem: '#mission_id',
             checkedKey: 'mission_id',
             searchPlaceholder: '任务号/任务标题',
-            height:'200',
-            width:'400',
+            // height:'200',
+            // width:'400',
             table: {
                 url: '/office_automation/public/index/mission_c/selectIndex'
                 ,cols: [[
@@ -155,8 +155,8 @@
             elem: '#minute_id',
             checkedKey: 'minute_id',
             searchPlaceholder: '会议号/会议标题',
-            height:'200',
-            width:'400',
+            // height:'200',
+            // width:'400',
             table: {
                 url: '/office_automation/public/index/minute_c/getAllMinute'
                 ,cols: [[

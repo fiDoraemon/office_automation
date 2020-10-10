@@ -10,6 +10,21 @@
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <style>
 
+        /* 上传附件 */
+        .layui-upload-drag {
+            margin-top: 10px;
+            padding-bottom: 0;
+        }
+        .upload-btn {
+            margin-top: 20px;
+        }
+        .tip {
+            width: 85%;
+            color: #999;
+            font-size: 10px;
+            padding-top: 10px;
+        }
+        /* 返回按钮 */
         .return-btn {
             margin: 40px 0;
         }
@@ -33,7 +48,6 @@
                 <label class="layui-form-label required">处理人</label>
                 <div class="layui-input-inline">
                     <input type="text" id="assignee_name" class="layui-input" lay-verify="required" lay-reqtext="未选择处理人" autocomplete="off" placeholder="请选择处理人">
-                    <input type="hidden" name="assignee_id" id="assignee_id" lay-verify="required" lay-reqtext="请手动选择处理人">
                 </div>
             </div>
             <div class="layui-form-item">
@@ -74,14 +88,13 @@
                 </div>
             </div>
             <div class="layui-form-item">
-            <label class="layui-form-label">邀请关注</label>
-            <div class="layui-input-block">
-                <input type="text" id="invite_follow_names" class="layui-input" autocomplete="off" placeholder="请选择要邀请关注任务的人">
-                <input type="hidden" name="invite_follow_ids" id="invite_follow_ids">
+                <label class="layui-form-label">邀请关注</label>
+                <div class="layui-input-block">
+                    <input type="text" name="invite_follow" id="invite_follow" class="layui-input" autocomplete="off" placeholder="请选择要邀请关注任务的人">
+                </div>
             </div>
-        </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">标签</label>
+                <label class="layui-form-label">任务标签</label>
                 <div class="layui-input-block">
                     <input type="text" name="label" class="layui-input" placeholder="请输入任务标签" disabled>
                 </div>
@@ -90,6 +103,16 @@
                 <label class="layui-form-label">父任务号</label>
                 <div class="layui-input-inline">
                     <input type="text" name="parent_mission_id" id="parent_mission_id" class="layui-input" autocomplete="off" placeholder="请选择父任务号">
+                </div>
+                <label class="layui-form-label">设为根任务</label>
+                <div class="layui-input-inline">
+                    <input type="checkbox" name="is-root" lay-skin="switch" lay-text="是|否" lay-filter="is-root">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">关联会议号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="minute_id" id="minute_id" class="layui-input" autocomplete="off" placeholder="请选择会议号">
                 </div>
                 <label class="layui-form-label">关联需求号</label>
                 <div class="layui-input-inline">
@@ -107,12 +130,13 @@
                 <div class="layui-fluid">
                     <div class="layui-row">
                         <div class="layui-col-sm3 layui-col-sm-offset1">
-                            <div class="layui-upload-drag" id="attachment" style="margin-top: 10px">
+                            <div class="layui-upload-drag" id="attachment">
                                 <i class="layui-icon"></i>
                                 <p>点击上传，或将文件拖拽到此处</p>
                                 <input type="hidden" id="attachment_list" name="attachment_list">
                                 <button type="button" class="layui-btn upload-btn" id="start_upload" onclick="stopPropagation()" style="margin-top: 20px">开始上传</button>
                             </div>
+                            <div class="tip">提示：1.选择文件后请先点击“开始上传”按钮再提交；2.最多上传10个文件</div>
                         </div>
                         <div class="layui-col-sm8">
                             <div class="layui-upload-list">
@@ -145,7 +169,7 @@
 
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
-<script src="../../js/common.js?v=1" charset="utf-8"></script>
+<script src="../../js/common.js" charset="utf-8"></script>
 <script>
     layui.use(['form', 'laydate', 'upload', 'tableSelect'], function () {
         var form = layui.form,
@@ -156,10 +180,12 @@
             $ = layui.$;
 
         //日期
+        var date = new Date().toLocaleDateString().replace(/\//g, '-');
         laydate.render({
-            elem: '#start_date'
+            elem: '#start_date',
+            value: date
         });
-        var date = (getQueryVariable('date') != false)? getQueryVariable('date') : '';
+        date = (getQueryVariable('date') != false)? getQueryVariable('date') : date;
         laydate.render({
             elem: '#finish_date',
             value: date
@@ -172,7 +198,6 @@
             ,url: '/office_automation/public/attachment'
             ,auto: false
             ,multiple: true
-            ,number: 3          // 同时可上传的文件数量
             ,size: 51200            // 单位 KB，最大 50MB
             ,accept: 'file'
             ,bindAction: '#start_upload'
@@ -208,7 +233,6 @@
                         if($.isEmptyObject(files)) {
                             $("#start_upload").attr("disabled", true);
                         }
-
                     });
 
                     fileListView.append(tr);
@@ -257,7 +281,7 @@
         // 获取项目列表
         $.get(
             "/office_automation/public/project",
-            function (res, status) {
+            function (res) {
                 if(res.code == 0) {
                     // 填充项目下拉框
                     var projectList = res.data;
@@ -287,12 +311,11 @@
             },
             done: function (elem, data) {
                 elem.val(data.data[0].user_name)
-                $('#assignee_id').val(data.data[0].user_id)
             }
         });
         // 关注人下拉表格
         tableSelect.render({
-            elem: '#invite_follow_names',
+            elem: '#invite_follow',
             checkedKey: 'user_id',
             searchPlaceholder: '用户/部门关键词',
             table: {
@@ -305,15 +328,11 @@
                 ]]
             },
             done: function (elem, data) {
-                var names = []
-                var ids = []
-
+                var NEWJSON = []
                 layui.each(data.data, function (index, item) {
-                    names.push(item.user_name)
-                    ids.push(item.user_id)
+                    NEWJSON.push(item.user_name)
                 })
-                elem.val(names.join("，"))
-                $('#invite_follow_ids').val(ids.join(";"))
+                elem.val(NEWJSON.join("，"))
             }
         });
 
@@ -322,8 +341,8 @@
             elem: '#parent_mission_id',
             checkedKey: 'mission_id',
             searchPlaceholder: '任务号/任务标题',
-            height:'200',
-            width:'400',
+            // height:'200',
+            // width:'400',
             table: {
                 url: '/office_automation/public/index/mission_c/selectIndex'
                 ,cols: [[
@@ -335,21 +354,71 @@
                 ,page: false
             },
             done: function (elem, data) {
-                elem.val(data.data[0].mission_id)
+                elem.val(data.data[0].mission_id);
+            }
+        });
+
+        // 会议号号下拉表格
+        tableSelect.render({
+            elem: '#minute_id',
+            checkedKey: 'minute_id',
+            searchPlaceholder: '会议号/会议标题',
+            table: {
+                url: '/office_automation/public/index/minute_c/getAllMinute'
+                ,cols: [[
+                    { type: 'radio' },
+                    { field: 'minute_id', title: '会议号' },
+                    { field: 'minute_theme', title: '会议主题' },
+                    { field: 'host_name', title: '主持人' }
+                ]]
+            },
+            done: function (elem, data) {
+                elem.val(data.data[0].minute_id);
+            }
+        });
+
+        // 监听开关
+        form.on('switch(is-root)', function(data){
+            if(data.elem.checked) {
+                $('#parent_mission_id').attr('disabled', true);
+            } else {
+                $('#parent_mission_id').attr('disabled', false);
             }
         });
 
         //监听提交
         form.on('submit(saveBtn)', function (data) {
             var result = data.field;
-            if($('#invite_follow_names').val() != '' && result.invite_follow_ids == '') {
+
+            if(!$('#assignee_name').attr('ts-selected')) {
+                layer.msg('请手动选择处理人', {icon: 5});
+
+                return false;
+            }
+            if(result.invite_follow != '' && !$('#invite_follow').attr('ts-selected')) {
                 layer.msg('请手动选择关注人', {icon: 5});
+
+                return false;
+            }
+            if(result.parent_mission_id != '' && !$('#parent_mission_id').attr('ts-selected')) {
+                layer.msg('请手动选择父任务号', {icon: 5});
+
+                return false;
+            }
+            if(result.minute_id != '' && !$('#minute_id').attr('ts-selected')) {
+                layer.msg('请手动选择会议号', {icon: 5});
+
                 return false;
             }
             if(result.finish_date < result.start_date) {
                 layer.msg('截止日期不能在开始日期之前', {icon: 5});
                 return false;
             }
+            result.assignee_id = $('#assignee_name').attr('ts-selected');
+            result.invite_follow = result.invite_follow? $('#invite_follow').attr('ts-selected') : '';
+            result.parent_mission_id = result.parent_mission_id? $('#parent_mission_id').attr('ts-selected') : '';
+            result.minute_id = result.minute_id? $('#minute_id').attr('ts-selected') : '';
+
             layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
                 layer.close(index);
                 $.post(

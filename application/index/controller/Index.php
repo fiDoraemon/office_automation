@@ -31,8 +31,6 @@ class Index extends Controller
     }
 
     public function test() {
-        $missionInterest = new MissionInterest();
-        $result = $missionInterest->where('mission_id', 12)->column('user_id');
-        return $result;
+        echo date('Y-m-d H:i:s',time());
     }
 }

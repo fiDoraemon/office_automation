@@ -8,30 +8,46 @@
 
 namespace app\index\service;
 
-// 任务服务类
 use app\index\model\Mission;
 
+// 任务服务类
 class MissionService
 {
-    // 获取子任务树列表
+    // 获取任务树列表
     public function getMissionTree($id) {
+        $rootMission = Mission::where('mission_id', $id)->field('mission_id,mission_title,assignee_id,status,finish_date,parent_mission_id')->find();
+
+        // 关联处理
+        $rootMission->assignee_name = $rootMission->assignee->user_name;
+        $rootMission->status_name = $rootMission->missionStatus->status_name;
+        unset($rootMission->assignee, $rootMission->missionStatus);
+        // 获取子任务树列表
+        $missionTree = $this->getChildList($id);
+        array_unshift($missionTree, $rootMission);
+
+        return $missionTree;
+    }
+
+    // 获取子任务树列表
+    public function getChildList($id) {
         $missionTree = array();
         $mission = new Mission();
+
         // 获取子任务列表
         $childMissionList = $mission->where('parent_mission_id', $id)->field('mission_id,mission_title,assignee_id,status,finish_date,parent_mission_id')->select();
         if($childMissionList) {
             foreach ($childMissionList as $childMission) {
                 // 关联处理
                 $childMission->assignee_name = $childMission->assignee->user_name;
-                $childMission->status = $childMission->missionStatus->status_name;
+                $childMission->status_name = $childMission->missionStatus->status_name;
                 unset($childMission->assignee, $childMission->missionStatus);
 
-                $result = $this->getMissionTree($childMission->mission_id);
+                $result = $this->getChildList($childMission->mission_id);
                 if($result == false) {
-                    $childMission->is_parent = 0;
+//                    $childMission->is_parent = 0;
                     array_push($missionTree, $childMission);
                 } else {
-                    $childMission->is_parent = 1;
+//                    $childMission->is_parent = 1;
                     array_push($missionTree, $childMission);
                     $missionTree = array_merge($missionTree, $result);
                 }
@@ -39,6 +55,7 @@ class MissionService
         } else {
             return false;
         }
+
         return $missionTree;
     }
 }

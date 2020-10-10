@@ -32,7 +32,7 @@ class Result
     const FORBID_DELETE_PARENT          = 24;
     const PARENT_EXIST                  = 25;
     const NOT_MINUTE_TEMP               = 26;
-
+    const NOT_ROOT_MISSION              = 27;
 
     // 对应结果
     public static $resultMsg = [
@@ -61,7 +61,8 @@ class Result
         self::DELETE_ATTACHMENT         => '删除附件失败',
         self::FORBID_DELETE_PARENT      => '不允许删除父任务',
         self::PARENT_EXIST              => '该任务已有父任务！',
-        self::NOT_MINUTE_TEMP           => '不存在临时会议信息！'
+        self::NOT_MINUTE_TEMP           => '不存在临时会议信息！',
+        self::NOT_ROOT_MISSION           => '任务不是根任务'
     ];
 
     // 返回结果

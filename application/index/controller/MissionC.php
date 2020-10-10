@@ -5,6 +5,7 @@ namespace app\index\controller;
 use app\common\util\dateUtil;
 use app\index\model\Attachment;
 use app\index\model\Minute;
+use app\index\model\MissionTree;
 use app\index\service\MissionService;
 use app\index\common\DataEnum;
 use app\index\model\Mission;
@@ -32,30 +33,30 @@ class MissionC extends Controller
         if($keyword != '') {            // 标题
             $mission->where('mission_title','like',"%$keyword%");
         }
-        if(input('get.related_project') != '') {            // 关联项目
-            $mission->where('related_project',input('get.related_project'));
+        if(input('get.project_id') != '') {            // 关联项目
+            $mission->where('project_id',input('get.project_id'));
         }
         if(input('get.label') != '') {          // 标签
             $label = input('get.label');
             $mission->where('label', 'like', "%$label%");
         }
-        if(input('get.field') != '') {          // 分页
-            $mission->order(input('get.field') . ' ' . input('get.order'));
-        }
-        $count = $mission->count();
+        $count = $mission->where('status', 'in', '0,1')->count();
         // 如果传入关键词、项目代号、标签 TODO
         if($keyword != '') {            // 标题
             $mission->where('mission_title','like',"%$keyword%");
         }
-        if(input('get.related_project') != '') {            // 关联项目
-            $mission->where('related_project',input('get.related_project'));
+        if(input('get.project_id') != '') {            // 关联项目
+            $mission->where('project_id',input('get.project_id'));
         }
         if(input('get.label') != '') {          // 标签
             $label = input('get.label');
             $mission->where('label', 'like', "%$label%");
         }
-        if(input('get.field') != '') {          // 分页
+        $mission->where('status', 'in', '0,1');
+        if(input('get.field') != '') {          // 排序
             $mission->order(input('get.field') . ' ' . input('get.order'));
+        } else {
+            $mission->order('priority desc');
         }
         $missions = $mission->field('mission_id,mission_title,reporter_id,status,priority,label,start_date,finish_date')->page("$page, $limit")->select();
 
@@ -63,6 +64,16 @@ class MissionC extends Controller
         foreach ($missions as $one) {
             $one->reporter_name = $one->reporter->user_name;            // 关联查找用户名
             $one->status = DataEnum::$missionStatus[$one->status];          // 转换状态码成信息
+            // 获取最近一条任务处理信息
+            if($one->process) {
+                $one->process_note = $one->process[0]->process_note;
+                $one->process_time = explode(' ', $one->process[0]->process_time)[0];
+            } else {
+                $one->process_note = '';
+                $one->process_time = '';
+            }
+
+            unset($one->process);
         }
 
         return Result::returnResult(Result::SUCCESS, $missions, $count);
@@ -72,13 +83,13 @@ class MissionC extends Controller
     public function selectIndex($page = 1, $limit = 10, $keyword = '') {
         $mission = new Mission();
         // 获取查询结果任务数目
-        if($keyword == '') {
+        if($keyword != '') {
             $mission->where('mission_id', $keyword)->whereOr('mission_title', 'like', "%$keyword%");
         }
         $count = $mission->count();
 
         // 获取查询结果任务列表
-        if($keyword == '') {
+        if($keyword != '') {
             $mission->where('mission_id', $keyword)->whereOr('mission_title', 'like', "%$keyword%");
         }
         $missions = $mission->field('mission_id,mission_title,assignee_id')
@@ -111,17 +122,30 @@ class MissionC extends Controller
      */
     public function save(Request $request)
     {
+        $userId = '1110023';          // TODO
+        $_POST['parent_mission_id'] = input('post.is-root')? -1 : input('post.parent_mission_id');
         // 插入任务信息
         $infoArray = array_merge($_POST, [
-            'reporter_id' => '1110023',          // TODO
+            'reporter_id' => $userId,
             'create_time' => date('Y-m-d H:i:s', time())
         ]);
         $mission = new Mission($infoArray);
         $mission->allowField(true)->save();
 
+        // 插入初始任务处理信息
+        $missionProcess = new MissionProcess();
+        $missionProcess->data([
+            'mission_id'  =>  $mission->mission_id,
+            'handler_id' =>  $userId,
+            'process_note' => '初始处理任务信息',
+            'post_assignee_id' => input('post.assignee_id'),
+            'post_finish_date' => input('post.finish_date')
+        ]);
+        $missionProcess->save();
+
         // 插入任务和关注人对应信息
-        if(input('post.invite_follow_ids')) {
-            $userIds = explode(';', input('post.invite_follow_ids'));
+        if(input('post.invite_follow')) {
+            $userIds = explode(',', input('post.invite_follow'));
             foreach ($userIds as $userId) {
                 $missionInterest = new MissionInterest();
                 $missionInterest->mission_id = $mission->mission_id;
@@ -130,13 +154,13 @@ class MissionC extends Controller
             }
         }
 
-        // 任务关联附件
+        // 任务c处理关联附件
         if(input('post.attachment_list')) {
             $attachmentIds = explode(';', input('post.attachment_list'));
             foreach ($attachmentIds as $attachmentId) {
                 $attachment = Attachment::get($attachmentId);
                 $attachment->attachment_type = 'mission';
-                $attachment->related_id = $mission->mission_id;
+                $attachment->related_id = $missionProcess->process_id;
                 $attachment->save();
             }
         }
@@ -152,8 +176,14 @@ class MissionC extends Controller
      */
     public function read($id)
     {
+        // 判断用户是否有权限查看任务详情 TODO
         // 获取任务详情
         $mission = Mission::get($id);
+        // 处理编号为 0 问题
+        $mission->parent_mission_id = ($mission->parent_mission_id == 0)? '' : $mission->parent_mission_id;
+        $mission->minute_id = ($mission->minute_id == 0)? '' : $mission->minute_id;
+        $mission->requirement_id = ($mission->requirement_id == 0)? '' : $mission->requirement_id;
+        $mission->problem_id = ($mission->problem_id == 0)? '' : $mission->problem_id;
         // 关联查找用户名和转换状态码成信息
         $mission->reporter_id = $mission->reporter->user_name;
         $mission->assignee;
@@ -183,12 +213,12 @@ class MissionC extends Controller
         ];
 
         // 获取任务附件列表
-        foreach ($mission->attachments as $attachment) {
-            $attachment->save_path = DataEnum::uploadDir . $attachment->save_path;
-            $attachment->uploader;
-        }
-        $attachmentList = $mission->attachments;         // 需要定义一个临时变量
-        unset($mission->attachments);
+//        foreach ($mission->attachments as $attachment) {
+//            $attachment->save_path = DataEnum::uploadDir . $attachment->save_path;
+//            $attachment->uploader;
+//        }
+//        $attachmentList = $mission->attachments;         // 需要定义一个临时变量
+//        unset($mission->attachments);
 
         // 获取任务处理记录
         foreach ($mission->processList as $process) {
@@ -198,14 +228,14 @@ class MissionC extends Controller
             // 整合任务处理附件到任务任务附件列表
             foreach ($process->attachments as $attachment) {
                 $attachment->save_path = DataEnum::uploadDir . $attachment->save_path;
-                $attachment->uploader;
-                array_push($attachmentList, $attachment);
-                array_push($tempArray, $attachment->source_name);
+//                $attachment->uploader;
+//                array_push($attachmentList, $attachment);
+//                array_push($tempArray, $attachment->source_name);
             }
-            unset($process->attachments);
-            $process->attachment = implode('，', $tempArray);           // 附件信息
+//            unset($process->attachments);
+//            $process->attachment = implode('，', $tempArray);           // 附件信息
         }
-        $mission->attachmentList = $attachmentList;
+//        $mission->attachmentList = $attachmentList;
 
         return Result::returnResult(Result::SUCCESS, $data);
     }
@@ -231,19 +261,21 @@ class MissionC extends Controller
     public function update($id)
     {
         $mission = Mission::get($id);
+        $sessionUserId = '1110023';
+        // 更新任务信息
         $fields = input('put.');
-        // 更新任务
-        $mission->allowField(true)->save($_POST);
+        $fields['parent_mission_id'] = input('put.is_root')? -1 : input('parent_mission_id');
+        $mission->allowField(true)->save($fields);
 
         // 处理关注人列表
-        if(input('put.invite_follow_ids')) {
-            $userIds = explode(';', input('put.invite_follow_ids'));
+        if(input('put.invite_follow')) {
+            $userIds = explode(',', input('put.invite_follow'));
             // 获取关注人工号列表数组
             $missionInterest = new MissionInterest();
-            $interestUserIds = $missionInterest->where('mission_id', 12)->column('user_id');
+            $interestUserIds = $missionInterest->where('mission_id', $id)->column('user_id');
             foreach ($userIds as $userId) {
                 // 如果未存在 任务-关注人 对应关系就插入
-                if(in_array($userId, $interestUserIds)) {
+                if(!in_array($userId, $interestUserIds)) {
                     $missionInterest = new MissionInterest();
                     $missionInterest->mission_id = $id;
                     $missionInterest->user_id = $userId;
@@ -253,25 +285,27 @@ class MissionC extends Controller
         }
 
         // 插入任务处理记录
-        $missionProcess = new MissionProcess();
-        $missionProcess->data([
-            'mission_id'  =>  $id,
-            'handler_id' =>  '1110023',          // TODO
-            'process_note' => input('put.process_note'),
-            'post_assignee_id' => input('put.assignee_id'),
-            'post_status' => input('put.status'),
-            'post_finish_date' => input('put.finish_date')
-        ]);
-        $missionProcess->save();
+        if(input('put.process_note') != '' || input('put.attachment_list') != '') {
+            $missionProcess = new MissionProcess();
+            $missionProcess->data([
+                'mission_id'  =>  $id,
+                'handler_id' =>  $sessionUserId,
+                'process_note' => input('put.process_note'),
+                'post_assignee_id' => input('put.assignee_id'),
+                'post_status' => input('put.status'),
+                'post_finish_date' => input('put.finish_date')
+            ]);
+            $missionProcess->save();
 
-        // 任务处理关联附件
-        if(input('put.attachment_list')) {
-            $attachmentIds = explode(';', input('put.attachment_list'));
-            foreach ($attachmentIds as $attachmentId) {
-                $attachment = Attachment::get($attachmentId);
-                $attachment->attachment_type = 'mission_process';
-                $attachment->related_id = $missionProcess->process_id;
-                $attachment->save();
+            // 任务处理关联附件
+            if(input('put.attachment_list')) {
+                $attachmentIds = explode(';', input('put.attachment_list'));
+                foreach ($attachmentIds as $attachmentId) {
+                    $attachment = Attachment::get($attachmentId);
+                    $attachment->attachment_type = 'mission';
+                    $attachment->related_id = $missionProcess->process_id;
+                    $attachment->save();
+                }
             }
         }
 
@@ -289,65 +323,187 @@ class MissionC extends Controller
         //
     }
 
-    // 获取根任务列表
+    // 修改任务优先级
+    public function modifyPriority($id)
+    {
+        $mission = Mission::get($id);
+
+        if(input('post.type') == 'reduce') {
+            $mission->priority = ($mission->priority == 0)? 0 : $mission->priority - 1;
+        } else {
+            $mission->priority += 1;
+        }
+        $mission->save();
+
+        return Result::returnResult(Result::SUCCESS);
+    }
+
+    // 获取关注的根任务列表
     public function treeIndex($page = 1, $limit = 10)
     {
         $mission = new Mission();
+        $userId = '1110023';
         // 如果传入关键词、项目代号、标签、根任务
-        if(input('get.related_project') != '') {            // 关联项目
-            $mission->where('related_project',input('get.related_project'));
+        if(input('get.project_id') != '') {            // 关联项目
+            $mission->where('project_id',input('get.project_id'));
         }
         if(input('get.label') != '') {          // 标签
             $label = input('get.label');
             $mission->where('label', 'like', "%$label%");
         }
-        if(input('get.is_root') == 1) {         // 根任务
-            $mission->where('parent_mission_id', -1);
-        }
-        if(input('get.field') != '') {          // 分页
-            $mission->order(input('get.field') . ' ' . input('get.order'));
-        }
-        $count = $mission->where('parent_mission_id', -1)->count();
+        $count = $mission->where('parent_mission_id', -1)->alias('m')->join('oa_mission_interest mi',"mi.user_id= '$userId' and m.mission_id = mi.mission_id")->count();
         // 如果传入关键词、项目代号、标签、根任务 TODO
-        $mission->where('parent_mission_id', -1);
-        if(input('get.related_project') != '') {            // 关联项目
-            $mission->where('related_project',input('get.related_project'));
+        if(input('get.project_id') != '') {            // 关联项目
+            $mission->where('project_id',input('get.project_id'));
         }
         if(input('get.label') != '') {          // 标签
             $label = input('get.label');
             $mission->where('label', 'like', "%$label%");
         }
-        if(input('get.is_root') == 1) {         // 根任务
-            $mission->where('parent_mission_id', -1);
-        }
-        if(input('get.field') != '') {          // 分页
+        $mission->where('parent_mission_id', -1);
+        if(input('get.field') != '') {          // 排序
             $mission->order(input('get.field') . ' ' . input('get.order'));
+        } else {
+            $mission->order('mission_id desc');
         }
-        $missions = $mission->field('mission_id,mission_title,assignee_id,status,related_project,label')->page("$page, $limit")->select();
+        $missions = $mission->alias('m')->join('oa_mission_interest mi',"mi.user_id= '$userId' and m.mission_id = mi.mission_id")->field('m.mission_id,mission_title,assignee_id,status,project_id,label')->page("$page, $limit")->select();
 
         // 处理结果集
         foreach ($missions as $one) {
             $one->assignee_name = $one->assignee->user_name;            // 关联处理人
             $one->status = $one->missionStatus->status_name;          // 转换状态码成信息
-            $one->related_project = $one->project->project_code;            // 关联项目
+            $one->project_id = $one->project->project_code;            // 关联项目
             unset($one->assignee, $one->missionStatus, $one->project);
         }
 
         return Result::returnResult(Result::SUCCESS, $missions, $count);
     }
 
-    // 获取任务树列表
-    public function missionTree($id) {
-        $rootMission = Mission::where('mission_id', $id)->field('mission_id,mission_title,assignee_id,status,finish_date,parent_mission_id')->find();
-        // 关联处理
-        $rootMission->assignee_name = $rootMission->assignee->user_name;
-        $rootMission->status = $rootMission->missionStatus->status_name;
-        unset($rootMission->assignee, $rootMission->missionStatus);
+    // 获取任务树时间戳列表
+    public function getTreeRecordList($id) {
+        // 判断任务是否为根任务
+        $mission = Mission::get($id);
+        if($mission->parent_mission_id != -1) {
+            return Result::returnResult(Result::NOT_ROOT_MISSION);
+        }
 
+        $missionTree = new MissionTree();
+        $recordDate = $missionTree->where('root_mission_id', $id)->field('distinct record_date')->select();
+
+        return Result::returnResult(Result::SUCCESS, $recordDate);
+    }
+
+    // 盖时间戳
+    public function recordTree($id) {
+        // 验证是否有管理员权限 TODO
+        $record_date = date('Y-m-d',time());
+        $rootMission = Mission::where('mission_id', $id)->field('mission_id,mission_title,assignee_id,description,status,finish_date,parent_mission_id')->find();
         // 获取子任务树列表
         $missionService = new MissionService();
         $missionTree = $missionService->getMissionTree($id);
-        array_unshift($missionTree,$rootMission);
+        array_unshift($missionTree, $rootMission);
+
+        foreach ($missionTree as $mission) {
+            $treeModel = new MissionTree();
+            $create_time = date('Y-m-d H:i:s',time());
+            // 如果任务已在今日记录里
+            $treeMission = $treeModel->where('mission_id', $mission->mission_id)->where('root_mission_id', $rootMission->mission_id)->where('record_date', $record_date)->find();
+            if($treeMission) {
+                $tempModel = $treeMission;
+            } else {
+                $tempModel = $treeModel;
+            }
+            $tempModel->data([
+                'mission_id'  =>  $mission->mission_id,
+                'mission_title' =>  $mission->mission_title,
+                'assignee_id' => $mission->assignee_id,
+                'status' => $mission->status,
+                'finish_date' => $mission->finish_date,
+                'root_mission_id' => $rootMission->mission_id,
+                'record_date' => $record_date,
+                'create_time' => $create_time,
+            ]);
+            $tempModel->save();
+        }
+
+        return Result::returnResult(Result::SUCCESS);
+    }
+
+    // 获取任务树进展详情
+    public function getProgressReport($id = 12, $date = '2020-10-09') {
+        $treeModel = new MissionTree();
+        $changeList = array();            // 信息变化的任务列表
+        $addList = array();            // 增加的任务列表
+        $deleteList = array();            // 删除的任务列表
+
+        // 获取指定日期任务树信息
+        $treeRecord = $treeModel->where('root_mission_id', $id)->where('record_date', $date)->field('mission_id,mission_title,assignee_id,status,finish_date')->select();
+        // 获取当前任务树信息
+        $missionService = new MissionService();
+        $treeNow = $missionService->getMissionTree($id);
+
+        foreach ($treeNow as $missionNow) {
+            $new = 1;
+            foreach ($treeRecord as $missionRecord) {
+                if($missionRecord->mission_id == $missionNow->mission_id) {
+                    $new = 0;
+                    $change = 0;
+                    // 如果处理人、任务状态、截止时间有变化
+                    if($missionRecord->assignee_id != $missionNow->assignee_id) {
+                        $missionNow->assignee_change = [$missionRecord->assignee->user_name, $missionNow->assignee->user_name];
+                        $change = 1;
+                    } else {
+                        $missionNow->assignee_change = '';
+                    }
+                    if($missionRecord->status != $missionNow->status) {
+                        $missionNow->status_change = [$missionRecord->missionStatus->status_name, $missionNow->missionStatus->status_name];
+                        $change = 1;
+                    } else {
+                        $missionNow->status_change = '';
+                    }
+                    if($missionRecord->finish_date != $missionNow->finish_date) {
+                        $missionNow->date_change = [$missionRecord->finish_date, $missionNow->finish_date];
+                        $change = 1;
+                    } else {
+                        $missionNow->date_change = '';
+                    }
+                    if($change == 1) {
+                        array_push($changeList, $missionNow);
+                    }
+                    break;
+                }
+            }
+            if($new == 1) {          // 如果是增加的任务
+                $missionNow->type = 'add';
+                array_push($addList, $missionNow);
+            }
+        }
+        foreach ($treeRecord as $missionRecord) {
+            $delete = 1;
+            foreach ($treeNow as $missionNow) {
+                if($missionNow->mission_id == $missionRecord->mission_id) {         // 如果是删除的任务
+                    $delete = 0;
+                    break;
+                }
+            }
+            if($delete == 1) {
+                $missionNow->type = 'delete';
+                array_push($deleteList, $missionNow);
+            }
+        }
+
+        $data = [
+            'changeList' => collection($changeList)->visible(['mission_id','mission_title','assignee_change','status_change','date_change'])->toArray(),
+            'addList' => collection($addList)->visible(['mission_id','mission_title','type'])->toArray(),
+            'deleteList' => collection($deleteList)->visible(['mission_id','mission_title','type'])->toArray()
+        ];
+        return Result::returnResult(Result::SUCCESS, $data);
+    }
+
+    // 获取任务树列表
+    public function missionTree($id) {
+        $missionService = new MissionService();
+        $missionTree = $missionService->getMissionTree($id);
 
         return Result::returnResult(Result::SUCCESS, $missionTree, count($missionTree));
     }
@@ -371,8 +527,6 @@ class MissionC extends Controller
 
     /** 添加任务树任务
      * @param $id
-     * @return array
-     * @throws \think\exception\DbException
      */
     public function addTreeMission($id)
     {
@@ -420,6 +574,38 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS);
     }
 
+    // 关注任务树所有任务
+    public function interestTree() {
+        $missionId = input('post.missionId');
+        $userIds = explode(',', input('post.userIds'));
+        $type = input('post.type');
+
+        // 获取任务树列表
+        $missionService = new MissionService();
+        $missionTree = $missionService->getMissionTree($missionId);
+
+        foreach ($missionTree as $mission) {
+            foreach ($userIds as $userId) {
+                $missionInterest = MissionInterest::get(['mission_id' => $mission->mission_id, 'user_id' => $userId]);
+                if ($type == 'allInterest') {
+                    if (!$missionInterest) {
+                        $missionInterest = new MissionInterest();
+
+                        $missionInterest->mission_id = $mission->mission_id;
+                        $missionInterest->user_id = $userId;
+                        $missionInterest->save();
+                    }
+                } else {
+                    if ($missionInterest) {
+                        $missionInterest->delete();
+                    }
+                }
+            }
+        }
+
+        return Result::returnResult(Result::SUCCESS);
+    }
+
     // 获取任务关注人列表
     public function getInterestList($id) {
 
@@ -439,10 +625,6 @@ class MissionC extends Controller
     /** 获取工作日历任务
      * @param string $type 我头上的、我发起的、我关注的任务
      * @param $offset 月偏移量
-     * @return array|false|\PDOStatement|string|\think\Collection
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
      */
     public function getCalendarMission($type, $offset = 0)
     {

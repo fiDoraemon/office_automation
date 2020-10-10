@@ -8,6 +8,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
+
+    <style>
+
+        /* 时间戳列表 */
+        .record-list li {
+            text-align: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 20px;
+            color: #c2c2c2;
+        }
+        .record-list li:hover {
+            background-color: #dddddd;
+            color: #333;
+        }
+
+    </style>
 </head>
 <body>
 <div class="layuimini-container">
@@ -21,7 +38,7 @@
                         <div class="layui-inline">
                             <label class="layui-form-label">关联项目</label>
                             <div class="layui-input-inline">
-                                <select id="related_project" name="related_project">
+                                <select id="project_id" name="project_id">
                                     <option value=""></option>
                                 </select>
                             </div>
@@ -40,53 +57,52 @@
             </div>
         </fieldset>
 
-        <!--<script type="text/html" id="toolbarDemo">-->
+        <!--<script type="text/html" id="toolbar">-->
         <!--<div class="layui-btn-container">-->
         <!--<button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>-->
         <!--<button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>-->
         <!--</div>-->
         <!--</script>-->
 
-        <table class="layui-hide" id="missionList" lay-filter="missionListFilter"></table>
+        <table class="layui-hide" id="missionList" lay-filter="missionList"></table>
 
         <script type="text/html" id="missionListBar">
             <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="treeView">任务树视图</a>
-            <a class="layui-btn layui-btn-xs" lay-event="relateChild">关联子任务</a>
+            <!--<a class="layui-btn layui-btn-xs" lay-event="relateChild">关联子任务</a>-->
             <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="addTime">盖时间戳</a>
-            <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="progressDetail">进展详情</a>
-            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="export">导出</a>
+            <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="progressDatail">进展详情</a>
+            <!--<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="export">导出</a>-->
         </script>
 
     </div>
 </div>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script>
-    layui.use(['form', 'table'], function () {
+    layui.use(['form', 'table', 'miniTab'], function () {
         var $ = layui.jquery,
             form = layui.form,
-            table = layui.table;
+            table = layui.table,
+            miniTab = layui.miniTab;
 
         table.render({
             elem: '#missionList',
             url: '/office_automation/public/index/mission_c/treeIndex',
-            toolbar: '#toolbarDemo',
-            defaultToolbar: ['filter', 'exports', 'print', {
-                title: '提示',
-                layEvent: 'LAYTABLE_TIPS',
-                icon: 'layui-icon-tips'
-            }],
+            toolbar: '#toolbar',
+            defaultToolbar: ['filter', 'exports', 'print'],
             cols: [[
                 {type: "checkbox", width: 50},
                 {field: 'mission_id', width: 60, title: 'ID', sort: true},
                 {field: 'mission_title', minWidth: 150, title: '任务标题'},
                 {field: 'assignee_name', width: 80, title: '处理人', align: "center"},
                 {field: 'status', width: 100, title: '任务状态', align: "center"},
-                {field: 'related_project', width: 120, title: '项目代号', sort: true, align: "center"},
+                {field: 'project_id', width: 120, title: '项目代号', sort: true, align: "center"},
                 {field: 'label', width: 100, title: '标签', align: "center"},
                 {title: '操作', minWidth: 150, toolbar: '#missionListBar', align: "center"}
             ]],
             id: 'missionList',
             autoSort: false,
+            initSort: {field:'mission_id', type:'desc'},
             limits: [10, 15, 20, 25, 50, 100],
             limit: 10,
             page: true,
@@ -103,9 +119,8 @@
                     curr: 1
                 },
                 where: {
-                    related_project: result.related_project,
+                    project_id: result.project_id,
                     label: result.label,
-                    is_root: 1
                 }
             }, 'data');
 
@@ -113,12 +128,12 @@
         });
 
         // 监听表格复选框选择
-        table.on('checkbox(currentTableFilter)', function (obj) {
+        table.on('checkbox(missionList)', function (obj) {
             console.log(obj)
         });
 
         // 监听操作按钮
-        table.on('tool(missionListFilter)', function (obj) {
+        table.on('tool(missionList)', function (obj) {
             var data = obj.data;
             if (obj.event === 'treeView') {
                 var index = layer.open({
@@ -132,17 +147,67 @@
                 });
 
                 return false;
-            } else if (obj.event === 'relateChild') {
-                layer.confirm('真的删除行么', function (index) {
-                    obj.del();
-                    layer.close(index);
-                });
+            // } else if (obj.event === 'relateChild') {
+            //     layer.confirm('真的删除行么', function (index) {
+            //         obj.del();
+            //         layer.close(index);
+            //     });
             } else if (obj.event === 'addTime') {
+                layer.confirm('确定要盖上今日的时间戳吗', {icon: 3, title:'提示'}, function (index) {
+                    layer.close(index);
+                    var index = layer.load(2);
+                    $.get(
+                        "/office_automation/public/index/mission_c/recordTree?id=" + data.mission_id,
+                        function (res) {
+                            if(res.code == 0) {
+                                layer.close(index);
+                                layer.msg('已盖上', {icon: 1});
+                            }
+                        }
+                    );
+                });
+            } else if (obj.event === 'progressDatail') {
+                // 获取时间戳列表
+                var element = '';
+                var index = layer.load(2);
+                $.ajax({
+                    url: "/office_automation/public/index/mission_c/getTreeRecordList?id=" + data.mission_id,
+                    type: 'get',
+                    async: false,
+                    success: function(res){
+                        if (res.code == 0) {
+                            var result = res.data;
+                            if(result) {
+                                element = `<ul class="record-list">`;
+                                for(i in result) {
+                                    element += `<li class="to-record" mission-id="${data.mission_id}">${result[i].record_date}</li>`
+                                }
+                                element += `</ul>`;
+                            } else {
+                                element = `<div>任务还没打过时间戳</div>`;
+                            }
+                        }
+                        layer.close(index);
+                    }
+                });
 
-            } else if (obj.event === 'progress') {
-
-            } else if (obj.event === 'export') {
-
+                layer.open({
+                    'title': '时间戳列表',
+                    content: element,
+                    btn: ['关闭'],
+                    shadeClose: true,
+                    area: ['250px', '80%'],
+                    offset: 'r',
+                    // yes: function(index, layero){
+                    //     // 打开新的窗口
+                    //     miniTab.openNewTabByIframe({
+                    //         href: "page/mission/progress-report.html?id=" + id + "&date=" + date,
+                    //         title: "进展详情",
+                    //     });
+                    //
+                    //     return false;
+                    // }
+                });
             }
         });
 
@@ -157,19 +222,43 @@
                     for(i in projectList) {
                         element += `<option value="${projectList[i].project_id}">${projectList[i].project_code}</option>`;
                     }
-                    $('#related_project').append(element);
+                    $('#project_id').append(element);
                     form.render('select');          // 刷新select选择框渲染
                 }
             }
         );
 
         //监听排序事件
-        table.on('sort(missionListFilter)', function(obj){
+        table.on('sort(missionList)', function(obj){
             table.reload('missionList', {
                 initSort: obj           // 记录初始排序
                 ,where: {
                     field: obj.field            // 排序字段
                     ,order: obj.type            // 排序方式
+                }
+            });
+        });
+
+        // 查看进展详情
+        $('body').on('click', '.to-record', function () {
+            layer.open({
+                title: '进展详情',
+                type: 2,
+                content: "progress-report.html?v=1&id=" + $(this).attr('mission-id') + "&date=" + $(this).text(),
+                btn: ['返回'],
+                shade: 0.2,
+                maxmin:true,
+                shadeClose: true,
+                area: ['100%', '100%'],
+                yes: function(index, layero){
+                    var iframeWin = window[layero.find('iframe')[0]['name']];           //得到iframe页的窗口对象
+                    var array = iframeWin['location'].pathname.split('/');
+
+                    if(array[array.length - 1] == 'progress-report.html') {
+                        return false;
+                    } else {
+                        window.history.go(-1);
+                    }
                 }
             });
         });

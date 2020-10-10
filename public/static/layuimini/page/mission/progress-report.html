@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>进展详情</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <link rel="stylesheet" href="../../lib/font-awesome-4.7.0/css/font-awesome.min.css" media="all">
+
+    <style>
+
+        body {
+            background-color: white;
+        }
+
+    </style>
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-row">
+        <div class="layui-col-sm12">
+            <fieldset class="layui-elem-field layui-field-title">
+                <legend>任务信息变化情况</legend>
+            </fieldset>
+            <table class="layui-hide" id="changeList" lay-filter="changeList"></table>
+            <script type="text/html" id="missionDetail">
+                <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="read">详情</a>
+                <!--<a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="stop">暂停</a>-->
+            </script>
+        </div>
+    </div>
+    <div class="layui-row">
+        <div class="layui-col-sm5">
+            <fieldset class="layui-elem-field layui-field-title">
+                <legend>新增的任务</legend>
+            </fieldset>
+            <table class="layui-hide" id="addList" lay-filter="changeList"></table>
+        </div>
+        <div class="layui-col-sm5 layui-col-sm-offset2">
+            <fieldset class="layui-elem-field layui-field-title">
+                <legend>删除的任务</legend>
+            </fieldset>
+            <table class="layui-hide" id="deleteList" lay-filter="changeList"></table>
+        </div>
+    </div>
+</div>
+
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script src="../../js/common.js" charset="utf-8"></script>
+<script>
+    layui.use(['table'], function () {
+        var $ = layui.jquery,
+            table = layui.table;
+
+        // 获取指定日期任务树信息
+        $.get(
+            "/office_automation/public/index/mission_c/getProgressReport?id=" + getQueryVariable('id') + '&date=' + getQueryVariable('date'),
+            function (res) {
+                if(res.code == 0) {
+                    // 任务信息变化表格
+                    var changeList = res.data.changeList;
+                    table.render({
+                        elem: '#changeList'
+                        ,cols: [[
+                            {field:'mission_id', width: '10%', title: '任务号', align: "center", sort: true}
+                            ,{field:'mission_title', width: '20%', title: '任务标题'}
+                            ,{field:'assignee_change', width: '18%', title: '处理人', align: "center",
+                                templet: function(d){
+                                    if(d.assignee_change) {
+                                        return d.assignee_change[0] + ' <i class="fa fa-long-arrow-right"></i> '+ d.assignee_change[1]
+                                    } else {
+                                        return '';
+                                    }
+                                }
+                            }
+                            ,{field:'status_change', width: '18%', title: '任务状态', align: "center",
+                                templet: function(d){
+                                    if(d.status_change) {
+                                        return d.status_change[0] + ' <i class="fa fa-long-arrow-right"></i> '+ d.status_change[1]
+                                    } else {
+                                        return '';
+                                    }
+                                }
+                            }
+                            ,{field:'date_change', title: '截止日期', width: '18%', align: "center",
+                                templet: function(d){
+                                    if(d.date_change) {
+                                        return d.date_change[0] + ' <i class="fa fa-long-arrow-right"></i> '+ d.date_change[1]
+                                    } else {
+                                        return '';
+                                    }
+                                }
+                            }
+                            ,{title: '操作', width: '16%', toolbar: '#missionDetail', align: "center"}
+                        ]]
+                        ,size: 'sm'
+                        ,data: changeList
+                    });
+                    // 增加和删除的任务信息表格
+                    var addList = res.data.addList;
+                    table.render({
+                        elem: '#addList'
+                        ,cols: [[
+                            {field:'mission_id', width: '30%', title: '任务号', align: "center", sort: true}
+                            ,{field:'mission_title', width: '50%', title: '任务标题'}
+                            ,{title: '操作', width: '20%', toolbar: '#missionDetail', align: "center"}
+                        ]]
+                        ,size: 'sm'
+                        ,data: addList
+                    });
+                    var deleteList = res.data.deleteList;
+                    table.render({
+                        elem: '#deleteList'
+                        ,cols: [[
+                            {field:'mission_id', width: '30%', title: '任务号', align: "center", sort: true}
+                            ,{field:'mission_title', width: '50%', title: '任务标题'}
+                            ,{title: '操作', width: '20%', toolbar: '#missionDetail', align: "center"}
+                        ]]
+                        ,size: 'sm'
+                        ,data: deleteList
+                    });
+                }
+            }
+        );
+
+        // 监听操作按钮
+        table.on('tool(changeList)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'read') {
+                location.href = '../../page/mission/read.html?id=' + data.mission_id;
+
+                return false;
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
