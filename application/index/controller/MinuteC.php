@@ -283,6 +283,64 @@ class MinuteC
     }
 
     /**
+     * 获取临时保存的会议信息
+     */
+    public function getTempMinuteInfo(){
+        $minuteId = $_GET["minuteId"];
+        $minute = new MinuteTemp();
+        $minute -> department();
+        $resultMinute = $minute -> where("minute_id", $minuteId)
+            -> field("minute_id,department_id,minute_theme,minute_date,minute_time,place,project,host_id,resolution,record,minute_type,review_status,project_stage")
+            -> find();
+        //关联对应发起会议的员工所属部门
+        $resultMinute -> department;
+        //关联项目
+        $resultMinute -> projectStage;
+        //关联主持人
+        $resultMinute -> user;
+        //关联多个应到会人员
+        $attendUsers = $resultMinute -> minuteAttends;
+        foreach ($attendUsers as $attend){
+            $attend -> user;
+        }
+        //关联多个已经到会人员
+        $attendedUsers = $resultMinute -> minuteAttendeds;
+        foreach ($attendedUsers as $attended){
+            $attended -> user;
+        }
+        //关联多个附件
+        $resultMinute -> attachments;
+        //关联一对多会议纪要任务
+        $minuteMissions = $resultMinute -> minuteMission;
+        foreach ($minuteMissions as $mms){
+            //任务和任务负责人一对一关联
+            $assignee = $mms -> assignee;   //任务对应的负责人
+            $missionStatus = $mms -> missionStatus;
+            $process = $mms -> process;  //获得任务最近处理信息
+            foreach ($process as $pro){
+                $mms -> process_note = $pro -> process_note;
+            }
+            $mms -> assignee_name = $assignee -> user_name;
+            $mms -> status = $missionStatus -> status_name;
+        }
+        //关联一对多临时会议纪要任务
+        $minuteTempMissions = $resultMinute -> minuteTempMission;
+        foreach ($minuteTempMissions as $mms){
+            //任务和任务负责人一对一关联
+            $assignee = $mms -> assignee;   //任务对应的负责人
+            $process = $mms -> process;  //获得任务最近处理信息
+            foreach ($process as $pro){
+                $mms -> process_note = $pro -> process_note;
+            }
+            if($assignee != null){
+                $mms -> assignee_name = $assignee -> user_name;
+            }
+        }
+
+        return Result::returnResult(Result::SUCCESS,$resultMinute);
+    }
+
+    /**
      * 查询所有会议信息
      * @param int $limit
      * @param int $page
@@ -293,19 +351,20 @@ class MinuteC
         $minute = new Minute();
         try {
             if($keyword != ""){
-                $minute -> where("minute_id",$keyword)
+                $minute -> where("minute_id","like","%$keyword%")
                         -> whereOr("minute_theme","like","%$keyword%");
             }
             $count = $minute -> count();
             if($keyword != ""){
-                $minute -> where("minute_id","like",$keyword)
+                $minute -> where("minute_id","like","%$keyword%")
                         -> whereOr("minute_theme","like","%$keyword%");
             }
             $minuteList = $minute -> field("minute_id,minute_theme,host_id")
+                    -> order("minute_id desc")
                     -> page($page,$limit)
                     -> select();
             foreach ($minuteList as $m){
-                $m ->host_name = $m -> user -> user_name;
+                $m -> host_name = $m -> user -> user_name;
             }
             return Result::returnResult(Result::SUCCESS,$minuteList,$count);
         } catch (DataNotFoundException $e) {
@@ -370,8 +429,7 @@ class MinuteC
         //删除临时表里的应到人员
         $minuteTemp = new MinuteTemp();
         $m = $minuteTemp -> where(['minute_id' => 0,'host_id' => $hostId]) ->find();
-        $m -> minuteAttends;
-        $m -> minuteAttends()->delete();
+        $m -> minuteNewAttends()->delete();
         $m -> delete();
         if($minuteId != null){
             return Result::returnResult(Result::SUCCESS,null);
@@ -442,6 +500,13 @@ class MinuteC
                     ->update(['attachment_type' => "minute","related_id" => $minuteId]);
             }
         }
+        //删除临时保存的会议信息
+        //删除临时表里的应到人员
+        $minuteTemp = new MinuteTemp();
+        $m = $minuteTemp -> where(['minute_id' => $minuteId,'status' => 1]) ->find();
+        $m -> minuteAttends()->delete();
+        $m -> minuteTempMission()->delete();
+        $m -> delete();
         return Result::returnResult(Result::SUCCESS,null);
     }
 
@@ -526,52 +591,6 @@ class MinuteC
     }
 
     /**
-     * 获取临时保存的会议信息
-     */
-//    public function getTempMinute(){
-//        $minuteId = $_GET["minuteId"];
-//        $minute = new MinuteTemp();
-//        $minute -> department();
-//        $resultMinute = $minute -> where("minute_id", $minuteId)
-//            -> field("minute_id,department_id,minute_theme,minute_date,minute_time,place,project,host_id,resolution,record,minute_type,review_status,project_stage")
-//            -> find();
-//        //关联对应发起会议的员工所属部门
-//        $resultMinute -> department;
-//        //关联项目
-//        $resultMinute -> projectStage;
-//        //关联主持人
-//        $resultMinute -> user;
-//        //关联多个应到会人员
-//        $attendUsers = $resultMinute -> minuteAttends;
-//        foreach ($attendUsers as $attend){
-//            $attend -> user;
-//        }
-//        //关联多个已经到会人员
-//        $attendedUsers = $resultMinute -> minuteAttendeds;
-//        foreach ($attendedUsers as $attended){
-//            $attended -> user;
-//        }
-//        //关联多个附件
-//        $resultMinute -> attachments;
-//        //关联一对多会议纪要任务
-//        $minuteMissions = $resultMinute -> minuteMission;
-//        foreach ($minuteMissions as $mms){
-//            //任务和任务负责人一对一关联
-//            $assignee = $mms -> assignee;   //任务对应的负责人
-//            $missionStatus = $mms -> missionStatus;
-//            $process = $mms -> processNew;  //获得任务最近处理信息
-//            foreach ($process as $pro){
-//                $mms -> process_note = $pro -> process_note;
-//            }
-//            $mms -> assignee_name = $assignee -> user_name;
-//            $mms -> status = $missionStatus -> status_name;
-//        }
-//        return Result::returnResult(Result::SUCCESS,$resultMinute);
-//
-//
-//    }
-
-    /**
      * 修改会议页面临时保存信息
      * @throws DbException
      */
@@ -579,8 +598,8 @@ class MinuteC
         $info               = Session::get("info");
         $user_id            = $info["user_id"];
         $minuteId           = $_POST["minuteId"];
-        $attended           = input('post.attendList/a');      //实际到会人员
-        $newAttend          = input('post.newAttended/a');     //新增应到人员
+        $attended           = input('post.attendList/a');      //新增已到会人员
+        $newAttend          = input('post.newAttended/a');     //新增应到会人员
         $newMission         = input('post.newMission/a');      //新增基本任务清单
         $minuteResolution   = $_POST["minuteResolution"];           //会议决议
         $minuteContext      = $_POST["minuteContext"];              //会议记录
@@ -604,16 +623,22 @@ class MinuteC
         $minuteTemp -> project_stage    = $minute -> project_stage;
         $minuteTemp -> resolution       = $minuteResolution;
         $minuteTemp -> record           = $minuteContext;
+        $minuteTemp -> status           = 1;  //标记是修改会议页面临时保存的信息
         $minuteTemp -> save();
-        if(is_array($attended)){  //应到
+        if(is_array($attended)){  //新增已到会人员
+            //插入前删除所有已经保存的临时到会人员信息
+            MinuteAttendTemp::destroy(['minute_id' => $minuteId,"status" => 1]);
             foreach ($attended as $att){
                 $attendTemp = new MinuteAttendTemp();
-                $attendTemp -> where("minute_id",$minuteId)
-                            -> where("user_id",$att)
-                            -> setField('status', 1);
+                $attendTemp -> minute_id = $minuteId;
+                $attendTemp -> user_id = $att;
+                $attendTemp -> status  = 1;
+                $attendTemp -> save();
             }
         }
-        if(is_array($newAttend)){   //新增已到
+        if(is_array($newAttend)){   //新增应到
+            //插入前删除所有已经保存的临时到会人员信息
+            MinuteAttendTemp::destroy(['minute_id' => $minuteId,"status" => 0]);
             foreach ($newAttend as $att){
                 $attendTemp = new MinuteAttendTemp();
                 $attendTemp -> minute_id = $minuteId;
@@ -621,16 +646,20 @@ class MinuteC
                 $attendTemp -> save();
             }
         }
-//            if(is_array($newMission)){
-//                foreach ($newMission as $mis){
-//                    $minuteMission = Mission::get($mis);
-//                    $minuteMission -> minute_id = $minuteId;
-//                    $minuteMission ->save();
-//                }
-//            }
+        MissionTemp::destroy(['minute_id' => $minuteId]);
         if(is_array($minuteMission)){
             foreach($minuteMission as $mis){
                 $missionTemp = new MissionTemp();
+                if (is_array($newMission)) {
+                    $newTempList = "";
+                    for ($i = 0 ; $i <  count($newMission); $i++){
+                        if($i > 0){
+                            $newTempList = $newTempList . ",";
+                        }
+                        $newTempList = $newTempList . $newMission[$i];
+                    }
+                    $missionTemp -> new_temp_list = $newTempList;
+                }
                 $missionTemp -> mission_title = $mis['missionTitle'];
                 $missionTemp -> reporter_id   = $user_id;
                 $missionTemp -> assignee_id   = $mis['assigneeId'];
@@ -639,6 +668,18 @@ class MinuteC
                 $missionTemp -> minute_id     = $minuteId;
                 $missionTemp -> save();
             }
+        }elseif (is_array($newMission)){
+            $missionTemp = new MissionTemp();
+            $newTempList = "";
+            for ($i = 0 ; $i <  count($newMission); $i++){
+                if($i > 0){
+                    $newTempList = $newTempList . ",";
+                }
+                $newTempList = $newTempList . $newMission[$i];
+            }
+            $missionTemp -> minute_id     = $minuteId;
+            $missionTemp -> new_temp_list = $newTempList;
+            $missionTemp -> save();
         }
         return Result::returnResult(Result::SUCCESS,null);
     }
