@@ -86,7 +86,7 @@
     <div class="layui-form-item">
         <div class="layui-input-block">
             <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">提交</button>
-            <button class="layui-btn layui-btn-normal" onclick="closeWindow()">取消</button>
+            <button class="layui-btn layui-btn-normal" id="cancel">取消</button>
         </div>
     </div>
 </div>
@@ -259,6 +259,10 @@
                             layer.alert('添加成功！', {title: '提示'},
                                 function (index) {
                                     layer.close(index);
+                                    parent.location.reload();           // 刷新父窗口
+                                    // 关闭新增任务层
+                                    var index = parent.layer.getFrameIndex(window.name);
+                                    parent.layer.close(index);
                                 }
                             );
                         } else {
@@ -266,18 +270,17 @@
                         }
                     }
                 );
-                closeWindow();
             });
 
             return false;
         });
-    });
 
-    // 关闭新增任务层（放在里面无效）
-    function closeWindow() {
-        var index = parent.layer.getFrameIndex(window.name);
-        parent.layer.close(index);
-    }
+        // 取消按钮
+        $('#cancel').click(function () {
+            var index = parent.layer.getFrameIndex(window.name);
+            parent.layer.close(index);
+        });
+    });
 </script>
 </body>
 </html>

@@ -40,7 +40,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label required">任务号</label>
             <div class="layui-input-inline">
-                <input type="text" name="mission_id" class="layui-input" disabled>
+                <input type="text" name="mission_id" id="mission_id" class="layui-input" disabled>
             </div>
         </div>
         <div class="layui-form-item">
@@ -187,7 +187,7 @@
         <div class="layui-form-item">
             <div class="layui-input-block">
                 <button class="layui-btn layui-btn-normal return-btn" lay-submit lay-filter="saveBtn">提交</button>
-                <button class="layui-btn layui-btn-normal" id="mission-tree">显示任务树</button>
+                <!--<a class="layui-btn layui-btn-normal" id="mission-tree">显示任务树</a>-->
             </div>
         </div>
     </div>
@@ -228,14 +228,13 @@
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script src="../../js/common.js" charset="utf-8"></script>
 <script>
-    layui.use(['form', 'laydate', 'upload', 'tableSelect', 'miniTab'], function () {
+    layui.use(['form', 'laydate', 'upload', 'tableSelect'], function () {
         var $ = layui.$,
             form = layui.form,
             layer = layui.layer,
             laydate = layui.laydate,
             upload = layui.upload,
-            tableSelect = layui.tableSelect,
-            miniTab = layui.miniTab;
+            tableSelect = layui.tableSelect;
 
         //日期
         laydate.render({
@@ -615,10 +614,7 @@
 
         // 打开任务树
         // $('#mission-tree').click(function () {
-        //     miniTab.openNewTabByIframe({
-        //         href: "page/mission/tree-view.html?id=" + $('#mission_id').val(),
-        //         title: "任务树"
-        //     });
+        //     window.location.href = 'tree-view.html?id=' + $('#mission_id').val();
         // });
     });
 </script>

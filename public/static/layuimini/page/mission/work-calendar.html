@@ -18,7 +18,7 @@
         html,
         body {
             font-size: 13px;
-            background-color: #fff;
+            /*background-color: #fff;*/
         }
 
         a:link,
@@ -36,7 +36,7 @@
             position: relative;
             z-index: 1;
             margin: 1.5em auto;
-            height: 700px;
+            height: 600px;
             border: 1px solid #ddd;
             overflow: hidden;
         }
@@ -92,6 +92,25 @@
             background-color: rgba(0, 0, 0, .15);
         }
 
+         /* 头部 */
+        .cal-hd, .cal-ft {
+            height: calc(100% / 14);
+        }
+        .cal-hd .cal-switcher .cal-prev,.cal-next {
+            border-radius: 5px;
+        }
+        /* 周 */
+        .cal-week {
+            height: calc(100% / 14);
+        }
+        .cal-week .cal-text {
+            font-weight: bold;
+        }
+        /* 日期 */
+        .cal-dates {
+            height: calc((100% / 14) * 13);
+        }
+
         .cal-date{
             display: inline-block;
             border-radius: 10px;
@@ -103,12 +122,9 @@
         }
 
         .mission-title {
-            font-size: 12px;
+            font-size: 13px;
             max-width: 150px;
             text-align: left;
-        }
-        .mission-title i {
-            font-size: 8px;
         }
         .mission-list li {
             text-align: center;
@@ -131,30 +147,26 @@
 </head>
 <body>
 
-<div class="layui-form">
-    <div class="layui-form-item">
-        <label class="layui-form-label">类别</label>
-        <div class="layui-input-inline">
-            <select name="type" id="type" lay-filter="type">
-                <option value="assign">我头上的</option>
-                <option value="report">我发起的</option>
-                <option value="interest">我关注的</option>
-            </select>
-        </div>
-    </div>
-</div>
-<div class="layui-fluid">
-    <div class="layui-row">
-        <div class="layui-col-sm12">
-            <div class="demo">
-                <div class="demo-example" id="dates-view"></div>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <div class="layui-form">
+            <div class="layui-form-item">
+                <label class="layui-form-label"><strong>类别</strong></label>
+                <div class="layui-input-inline">
+                    <select name="type" id="type" lay-filter="type">
+                        <option value=""></option>
+                        <option value="assign">我头上的</option>
+                        <option value="report">我发起的</option>
+                        <option value="interest">我关注的</option>
+                    </select>
+                </div>
             </div>
         </div>
+        <div class="demo">
+            <div class="demo-example" id="dates-view"></div>
+        </div>
     </div>
 </div>
-<!--<div class="demo">-->
-    <!--<div class="demo-example" id="dates-view"></div>-->
-<!--</div>-->
 
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
@@ -166,11 +178,13 @@
             form = layui.form,
             miniTab = layui.miniTab;
 
+        var date = new Date().toLocaleDateString().replace(/\//g, '-');
         // 显示日历
         var calDates = new Calendar({
             parent: 'dates-view',
-            time: '2020-09-28',
+            time: date,
             viewMode: 0,
+            // hasSwitcher: false,
             hasFooter: false,
             // 日期选择事件：time - 选中的日期时间，$el - 点击的 DOM 节点，calendar - 日历控件的实例
             onDatePick: function(time, $el, calendar) {
@@ -204,45 +218,45 @@
             }
         })
 
-        var type = getQueryVariable('type') == undefined? 'assign' : getQueryVariable('type');
-
-        var dateList = new Array();         // 日期列表
+        var type = (getQueryVariable('type') == false || getQueryVariable('type') == undefined)? 'assign' : getQueryVariable('type');
+        $('#type').val(type);
+        form.render('select');
         // 获取任务信息
-        $.get(
-            "/office_automation/public/index/mission_c/getCalendarMission?type=" + type,
-            function (res) {
-                if(res.code == 0) {
-                    var missionList = res.data;
-                    dateList = [];
-                    var element;
-                    // 填充任务信息到日期格子
-                    for(i in missionList) {
-                        // 将任务信息保存到日期列表
-                        var date = missionList[i].finish_date;
-                        if(!dateList[date]) {
-                            dateList[date] = [];
+        function getMonthMission(type, offset = 0, layer) {
+            var dateList = [];
+            var index = layer.load(2);
+            $.get(
+                "/office_automation/public/index/mission_c/getCalendarMission?type=" + type + '&offset=' + offset,
+                function (res) {
+                    if(res.code == 0) {
+                        var missionList = res.data;
+                        // 填充任务信息到日期格子
+                        for(i in missionList) {
+                            // 将任务信息保存到日期列表
+                            var date = missionList[i].finish_date;
+                            if(!dateList[date]) {
+                                dateList[date] = [];
+                            }
+                            dateList[date].push([missionList[i].mission_id, missionList[i].mission_title]);
+                            // 每个格子限制3个
+                            if($("div[data-date='" + date + "'] span>div").length == 3) {
+                                continue;
+                            }
+                            var color = (missionList[i].status == '未开始')? 'red' : 'grey';
+                            var element = `<div class="mission-title layui-elip ${color}"><span class="layui-badge-dot layui-bg-black"></span> ${missionList[i].mission_title}</div>`;
+                            $("div[data-date='" + date + "']").find('.cal-text').append(element);
                         }
-                        dateList[date].push([missionList[i].mission_id, missionList[i].mission_title]);
-                        // 每个格子限制3个
-                        if($("div[data-date='" + date + "'] span>div").length == 3) {
-                            continue;
-                        }
-                        var color = missionList[i].status == '未开始'? 'red' : 'grey';
-                        element = `<div class="mission-title layui-elip ${color}"><i class="layui-icon layui-icon-log"></i> ${missionList[i].mission_title}</div>`;
-                        $("div[data-date='" + date + "']").find('span').append(element);
                     }
-                    console.log(dateList);
+                    layer.close(index);
                 }
-            }
-        );
+            );
 
-        form.on('select(type)', function(data){
-            location.href = '?type=' + data.value;
-        });
+            return dateList;
+        }
 
+        var dateList = getMonthMission(type, 0, layer);         // 日期列表
         // 查看任务详情
         $('body').on('click', '.to-mission', function () {
-            console.log($(this));
             var index = layer.open({
                 title: '任务详情',
                 type: 2,
@@ -255,6 +269,19 @@
         });
 
         // 日期改变
+        var offset = 0;
+        $('.cal-prev').click(function () {
+            dateList = getMonthMission(type, --offset, layer);
+        });
+        $('.cal-next').click(function () {
+            dateList = getMonthMission(type, ++offset, layer);
+        });
+        $('.cal-title').css('pointer-events', 'none');          // 点击无效
+
+        // 监听选择框
+        form.on('select(type)', function(data){
+            location.href = '?type=' + data.value;
+        });
     });
 </script>
 </body>

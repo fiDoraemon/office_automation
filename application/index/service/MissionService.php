@@ -23,7 +23,12 @@ class MissionService
         unset($rootMission->assignee, $rootMission->missionStatus);
         // 获取子任务树列表
         $missionTree = $this->getChildList($id);
-        array_unshift($missionTree, $rootMission);
+        if($missionTree != false) {
+            array_unshift($missionTree, $rootMission);
+        } else {
+            $rootMission->parent_mission_id = -1;
+            $missionTree = [$rootMission];
+        }
 
         return $missionTree;
     }
@@ -44,10 +49,10 @@ class MissionService
 
                 $result = $this->getChildList($childMission->mission_id);
                 if($result == false) {
-//                    $childMission->is_parent = 0;
+                    $childMission->is_parent = 0;
                     array_push($missionTree, $childMission);
                 } else {
-//                    $childMission->is_parent = 1;
+                    $childMission->is_parent = 1;
                     array_push($missionTree, $childMission);
                     $missionTree = array_merge($missionTree, $result);
                 }

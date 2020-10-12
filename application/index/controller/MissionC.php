@@ -79,18 +79,27 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS, $missions, $count);
     }
 
-    // 获取选择任务列表
-    public function selectIndex($page = 1, $limit = 10, $keyword = '') {
+    /*
+     * 获取选择任务列表
+     * $type 为1时增加会议号不为0的条件
+     */
+    public function selectIndex($page = 1, $limit = 10, $keyword = '', $type = 0) {
         $mission = new Mission();
         // 获取查询结果任务数目
         if($keyword != '') {
             $mission->where('mission_id', $keyword)->whereOr('mission_title', 'like', "%$keyword%");
+        }
+        if($type == 1) {
+            $mission->where('minute_id', 'neq', 0);
         }
         $count = $mission->count();
 
         // 获取查询结果任务列表
         if($keyword != '') {
             $mission->where('mission_id', $keyword)->whereOr('mission_title', 'like', "%$keyword%");
+        }
+        if($type == 1) {
+            $mission->where('minute_id', 'neq', 0);
         }
         $missions = $mission->field('mission_id,mission_title,assignee_id')
             ->order('mission_id desc')
@@ -154,7 +163,7 @@ class MissionC extends Controller
             }
         }
 
-        // 任务c处理关联附件
+        // 任务处理关联附件
         if(input('post.attachment_list')) {
             $attachmentIds = explode(';', input('post.attachment_list'));
             foreach ($attachmentIds as $attachmentId) {

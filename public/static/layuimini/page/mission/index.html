@@ -166,11 +166,22 @@
                 var index = layer.open({
                     title: '任务详情',
                     type: 2,
+                    content: '../../page/mission/read.html?id=' + data.mission_id,
+                    // btn: ['返回'],
                     shade: 0.2,
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '../../page/mission/read.html?id=' + data.mission_id,
+                    // yes: function(index, layero){
+                    //     var iframeWin = window[layero.find('iframe')[0]['name']];           //得到iframe页的窗口对象
+                    //     var array = iframeWin['location'].pathname.split('/');              // 分隔当前窗口的 url 为数组
+                    //
+                    //     if(array[array.length - 1] == 'read.html') {
+                    //         return false;
+                    //     } else {
+                    //         window.history.go(-1);
+                    //     }
+                    // }
                 });
                 // 浏览器窗口改变大小时，把弹窗填满
                 $(window).on("resize", function () {

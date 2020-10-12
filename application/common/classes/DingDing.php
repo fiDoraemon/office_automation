@@ -8,31 +8,63 @@ class DingDing
 {
     // 企业id
     private $corpId = 'ding16a17f0d360322f635c2f4657eb6378f';
+    private $accessToken;           // 凭证
+    private $app;           // 系统配置
 
     // OA系统配置
-    private $app = [
+    private $app1 = [
         'AgentId' => '619291922',
         'AppKey' => 'dingddzrt47ctvolkd3b',
         'AppSecret' => 'Kbz3cMdO_Y0B0DDGhXKYwoAkYF23JGiUwdIXCigcc-QGjVqGjPTqYQGUuNuhBSCP'
     ];
 
-    private $accessToken;           // 凭证
+    // 销售漏斗配置
+    private $app2 = [
+        'AppKey' => 'ding2medrtswtro9bxhv',
+        'AppSecret' => 'Ec7mCxZGUooenCNjM1iveevNaMMf_culJepFsDbW5cSUCOFY_f-O-8pL1JJc5kfK'
+    ];
 
-    // 获取企业id
+    // 用服系统配置
+    private $app3 = [
+        'AppKey' => 'ding5q1rzl0s3svlkxwr',
+        'AppSecret' => '3rMuIeQEoJki2hOjeQPTQGyTDG44HqEdd_JYCKOiyAWYwkxfcpfvULggXDaXBpBY'
+    ];
+
+    // 获取企业 id
     public function getCorpId()
     {
         return $this->corpId;
     }
 
     // 获取凭证
-    public function getAccessToken()
+//    public function getAccessToken()
+//    {
+//        $c = new DingTalkClient(DingTalkConstant::$CALL_TYPE_OAPI, DingTalkConstant::$METHOD_GET, DingTalkConstant::$FORMAT_JSON);
+//        $req = new OapiGettokenRequest;
+//
+//        $req->setAppkey($this->app3['AppKey']);
+//        $req->setAppsecret($this->app3['AppSecret']);
+//        $resp = $c->execute($req, null, "https://oapi.dingtalk.com/gettoken");
+//
+//        return $resp->access_token;
+//    }
+
+    // 获取凭证
+    public function getAccessToken($type = 1)
     {
         if($this->accessToken) {
             return $this->accessToken;
         }
+        if($type == 1) {
+            $this->app = $this->app1;
+        } else if($type == 2) {
+            $this->app = $this->app2;
+        } else {
+            $this->app = $this->app3;
+        }
+
         $c = new DingTalkClient(DingTalkConstant::$CALL_TYPE_OAPI, DingTalkConstant::$METHOD_GET, DingTalkConstant::$FORMAT_JSON);
         $req = new OapiGettokenRequest;
-
         $req->setAppkey($this->app['AppKey']);
         $req->setAppsecret($this->app['AppSecret']);
         $resp = $c->execute($req, null, "https://oapi.dingtalk.com/gettoken");
@@ -46,9 +78,9 @@ class DingDing
     }
 
     // 根据授权码获取用户userid
-    public function getNotLoginInfo($code)
+    public function getNotLoginInfo($code, $type = 3)
     {
-        $accessToken = $this->getAccessToken();
+        $accessToken = $this->getAccessToken($type);
         $c = new DingTalkClient(DingTalkConstant::$CALL_TYPE_OAPI, DingTalkConstant::$METHOD_GET, DingTalkConstant::$FORMAT_JSON);
         $req = new OapiUserGetuserinfoRequest;
 
@@ -84,7 +116,7 @@ class DingDing
                 $resp = $c->execute($req, $accessToken, "https://oapi.dingtalk.com/user/simplelist");
                 if ($resp->errcode == 0) {
                     $userlist = $resp->userlist;
-                    array_push($userInfo, $userlist);
+                    $userInfo = array_merge($userInfo, $userlist);
                 }
             }
         }
@@ -93,25 +125,8 @@ class DingDing
     }
 
     /*
-     * 发送钉钉消息
-     * $userList 用户 userid 列表，以分号分隔
-     * $data 数据数组
-     */
-    public function sendMessage($userList, $data)
-    {
-        $accessToken = $this->getAccessToken();
-        $c = new DingTalkClient(DingTalkConstant::$CALL_TYPE_OAPI, DingTalkConstant::$METHOD_POST , DingTalkConstant::$FORMAT_JSON);
-        $req = new OapiMessageCorpconversationAsyncsendV2Request;
-        $req->setAgentId($this->app['AgentId']);
-        $req->setUseridList($userList);
-        $req->setMsg($this->getMsg($data));
-
-        $resp = $c->execute($req, $accessToken, "https://oapi.dingtalk.com/topapi/message/corpconversation/asyncsend_v2");
-    }
-
-    /*
      * 获取消息对象
-     *
+     * $data 消息数据
      */
     public function getMsg($data) {
         $msg = new Msg;
@@ -138,18 +153,27 @@ class DingDing
 
         return $msg;
     }
-}
 
-// 示例
-//$dingding = new DingDing();
-//$data = [
-//    'head' => 'OA通知',
-//    'title' => '了解钉钉接口',
-//    'detail'=> [
-//        ['key' => '任务号', 'value' => '1'],
-//        ['key' => '描述', 'value' => '学习下如何使用钉钉接口']
-//    ],
-//    'file_count' => 3
-//];
-//$dingding->sendMessage('15717987769981419', $data);
+    /*
+     * 发送钉钉消息
+     * $userList 用户 userid 列表，以分号分隔
+     * $data 数据数组
+     */
+    public function sendMessage($userList, $data)
+    {
+        $accessToken = $this->getAccessToken();
+        $c = new DingTalkClient(DingTalkConstant::$CALL_TYPE_OAPI, DingTalkConstant::$METHOD_POST , DingTalkConstant::$FORMAT_JSON);
+        $req = new OapiMessageCorpconversationAsyncsendV2Request;
+        $req->setAgentId($this->app['AgentId']);
+        $req->setUseridList($userList);
+        $req->setMsg($this->getMsg($data));
+
+        $resp = $c->execute($req, $accessToken, "https://oapi.dingtalk.com/topapi/message/corpconversation/asyncsend_v2");
+        if($resp->errcode == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
 

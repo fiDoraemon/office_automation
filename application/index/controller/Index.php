@@ -7,7 +7,7 @@ use app\common\Result;
 use app\index\service\AttachmentService;
 use app\index\model\Mission;
 use app\index\model\MissionInterest;
-use think\captcha\Captcha;
+use app\common\util\curlUtil;
 use think\Controller;
 
 class Index extends Controller
@@ -31,6 +31,9 @@ class Index extends Controller
     }
 
     public function test() {
-        echo date('Y-m-d H:i:s',time());
+        $url = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/getAllUserId';
+        $result = curlUtil::post($url);
+
+        return $result;
     }
 }

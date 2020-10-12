@@ -27,7 +27,7 @@
         <fieldset class="layui-elem-field">
             <legend>操作</legend>
             <div class="layui-field-box">
-                <form class="layui-form layui-form-pane" action="">
+                <div class="layui-form layui-form-pane">
                     <div class="layui-form-item" style="margin: 10px 10px 10px 10px">
                         <div class="layui-inline">
                             <button type="button" class="layui-btn layui-btn-sm" id="expand-fold">展开/折叠</button>
@@ -45,20 +45,20 @@
                             </div>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </fieldset>
     </div>
     <div class="layui-row">
         <table id="mission-tree" class="layui-table" lay-filter="mission-tree"></table>
+
+        <script type="text/html" id="operate">
+            <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="add"><i class="layui-icon"></i></a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon"></i></a>
+            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="read" lay-event="del">详情</a>
+        </script>
     </div>
 </div>
-
-<!-- 操作列 -->
-<script type="text/html" id="auth-state">
-    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="add"><i class="layui-icon"></i></a>
-    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon"></i></a>
-</script>
 
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
@@ -80,13 +80,23 @@
             elem: '#mission-tree',
             url: '/office_automation/public/index/mission_c/missionTree?id=' + getQueryVariable('id'),
             page: false,
+            // tree: {
+            //     arrowType: 'arrow2',   // 自定义箭头风格
+            //     getIcon: function(d) {  // 自定义图标
+            //         if (d.haveChild) {  // 判断是否有子集
+            //             return '<i class="ew-tree-icon ew-tree-icon-folder"></i>';
+            //         } else {
+            //             return '<i class="ew-tree-icon ew-tree-icon-file"></i>';
+            //         }
+            //     }
+            // },
             cols: [[
-                {type: 'numbers'},
-                {field: 'mission_title', minWidth: 200, title: '任务标题'},
-                {field: 'mission_id', width: 80, title: '任务号', align: 'center'},
-                {field: 'assignee_name', width: 100, title: '处理人', align: 'center'},
-                {field: 'status_name', width: 100, title: '任务状态', align: 'center'},
-                {field: 'finish_date', width: 130, title: '截止日期', align: 'center'},
+                {type: 'numbers', width: '5%'},
+                {field: 'mission_title', width: '40%', title: '任务标题'},
+                {field: 'mission_id', width: '10%', title: '任务号', align: 'center'},
+                {field: 'assignee_name', width: '10%', title: '处理人', align: 'center'},
+                {field: 'status_name', width: '10%', title: '任务状态', align: 'center'},
+                {field: 'finish_date', width: '10%', title: '截止日期', align: 'center'},
                 // {
                 //     field: 'is_parent', width: 80, align: 'center', templet: function (d) {
                 //         if (d.is_parent == 0) {
@@ -99,7 +109,7 @@
                 //         }
                 //     }, title: '类型'
                 // },
-                {templet: '#auth-state', width: 120, align: 'center', title: '操作'}
+                {templet: '#operate', width: '15%', align: 'center', title: '操作'}
             ]],
             done: function () {
                 layer.closeAll('loading');
@@ -153,14 +163,14 @@
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '../../page/mission/tree-add.html?id=' + data.id,
+                    content: '../../page/mission/tree-add.html?v=2&id=' + data.id,
                     cancel: function() {
                         // location.reload();
                     }
                 });
             } else if (layEvent === 'del') {
                 if(data.parent_mission_id == -1 || data.is_parent == 1) {
-                    layer.msg('不允许直接删除父任务！');
+                    layer.msg('不允许直接删除父任务！', {icon: 2});
                 } else {
                     layer.confirm('确定删除？', {icon: 3, title:'提示'}, function(index) {
                         layer.close(index);
@@ -168,16 +178,20 @@
                             "/office_automation/public/index/mission_c/deleteTreeMission?id=" + data.mission_id,
                             function (res) {
                                 if (res.code == 0) {
-                                    layer.msg('删除成功！');
+                                    layer.msg('删除成功！', {icon: 1});
                                     obj.del();
                                 } else {
-                                    layer.msg('删除失败！');
+                                    layer.msg('删除失败！', {icon: 2});
                                     console.log(res.msg);
                                 }
                             }
                         );
                     });
                 }
+            } else if (layEvent === 'read') {
+                location.href = '../../page/mission/read.html?id=' + data.mission_id;
+
+                return false;
             }
         });
         

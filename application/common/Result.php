@@ -66,7 +66,6 @@ class Result
         self::NOT_MODIFY_PERMISSION     => '没有修改权限！',
         self::NOT_TEMP                  => '没有临时保存的信息！',
         self::NOT_ROOT_MISSION          => '任务不是根任务'
-
     ];
 
     // 返回结果
