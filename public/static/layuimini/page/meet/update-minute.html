@@ -9,31 +9,26 @@
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <style type="text/css">
+        /* 上传附件 */
+        .layui-upload-drag {
+            margin-top: 10px;
+            padding-bottom: 0;
+        }
+        .upload-btn {
+            margin-top: 20px;
+        }
+        .tip {
+            width: 85%;
+            color: #999;
+            font-size: 10px;
+            padding-top: 10px;
+        }
+
         .input-title{
             font-weight: bold;
         }
         .not-input{
             color: #999999;
-        }
-        .move-btn {
-            position: absolute;
-            top: 126px;
-            right: 132px;
-        }
-        .layui-upload-drag {
-            padding: 40px;
-            margin-top: 10px;
-        }
-        td .layui-form-select {
-            margin-top: -5px;
-            margin-left: -15px;
-            margin-right: -15px;
-        }
-        .layui-table-body .layui-table-box .layui-table-view{
-            overflow: visible;
-        }
-        .layui-table-cell, .layui-table-tool-panel li{
-            overflow:visible !important;
         }
     </style>
 </head>
@@ -43,7 +38,7 @@
     </blockquote>
 
     <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
-        <legend>编辑#<span id="minute-id"></span>会议纪要</legend>
+        <legend>编辑会议纪要(#<span id="minute-id"></span>)</legend>
     </fieldset>
 
     <div class="layui-form layuimini-form">
@@ -185,9 +180,10 @@
                             <div class="layui-upload-drag" id="attachment">
                                 <i class="layui-icon"></i>
                                 <p>点击上传，或将文件拖拽到此处</p>
-                                <!--<input type="hidden" id="attachment_list" name="attachment_list">-->
+                                <input type="hidden" id="attachment_list" name="attachment_list">
+                                <button type="button" class="layui-btn upload-btn" id="start_upload" onclick="stopPropagation()" style="margin-top: 20px">开始上传</button>
                             </div>
-                            <button type="button" class="layui-btn move-btn" id="start_upload">开始上传</button>
+                            <div class="tip">提示：1.选择文件后请先点击“开始上传”按钮再提交；2.最多上传10个文件</div>
                         </div>
                         <div class="layui-col-sm8">
                             <div class="layui-upload-list">

@@ -107,3 +107,58 @@ function pageCodeError(){
 
     });
 }
+
+
+layui.use(['form','jquery'], function () {
+    var $ = layui.jquery,
+        form = layui.form,
+        layer = layui.layer;
+
+    //跳转到找回密码页面
+    $('.forget-password').on('click', function () {
+        window.location = 'user/retrieve-passworld.html';
+    });
+
+    // 登录过期的时候，跳出ifram框架
+    if (top.location != self.location) top.location = self.location;
+
+    $('.bind-password').on('click', function () {
+        if ($(this).hasClass('icon-5')) {
+            $(this).removeClass('icon-5');
+            $("input[name='password']").attr('type', 'password');
+        } else {
+            $(this).addClass('icon-5');
+            $("input[name='password']").attr('type', 'text');
+        }
+    });
+
+    $('.icon-nocheck').on('click', function () {
+        if ($(this).hasClass('icon-check')) {
+            keep_login = 0;
+            $(this).removeClass('icon-check');
+        } else {
+            keep_login = 1;
+            $(this).addClass('icon-check');
+        }
+    });
+
+    // 进行登录操作
+    form.on('submit(login)', function (data) {
+        data = data.field;
+        if (data.username == '') {
+            layer.msg('用户名不能为空');
+            return false;
+        }
+        if (data.password == '') {
+            layer.msg('密码不能为空');
+            return false;
+        }
+        if (data.captcha == '') {
+            layer.msg('验证码不能为空');
+            return false;
+        }
+        sendData();
+        return false;
+    });
+
+});

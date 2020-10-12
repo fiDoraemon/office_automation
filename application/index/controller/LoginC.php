@@ -52,7 +52,7 @@ class LoginC
     }
 
     /**
-     * 用户登录（带验证码）
+     * 用户登录
      * @return array
      */
     public function login(){
@@ -113,9 +113,9 @@ class LoginC
      * 发送邮箱验证码
      */
     public function sendEmailCode(){
-        $userId = $_POST["userId"];
-        $userEmail = $_POST["userEmail"];
-        $codeType = $_POST["codeType"];
+        $userId     = $_POST["userId"];
+        $userEmail  = $_POST["userEmail"];
+        $codeType   = $_POST["codeType"];
         if($codeType == 1){  //邮箱验证
             $email = User::where('user_id',$userId)->value('email');
             if($email === $userEmail){
@@ -220,8 +220,8 @@ class LoginC
      */
     private function getCode(){
         //定义一个验证码池，验证码由其中几个字符组成
-        $pool='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $word_length=6;     //验证码长度
+        $pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $word_length = 6;     //验证码长度
         $code = '';         //验证码
         for ($i = 0, $mt_rand_max = strlen($pool) - 1; $i < $word_length; $i++)
         {
