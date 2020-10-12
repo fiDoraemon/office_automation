@@ -31,8 +31,20 @@ class Index extends Controller
     }
 
     public function test() {
-        $url = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/getAllUserId';
-        $result = curlUtil::post($url);
+        $url = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
+        $data = [
+            'userList' => '15717987769981419',
+            'data' => [
+                'head' => 'OA通知',
+                'title' => '了解钉钉接口1',
+                'detail'=> [
+                    ['key' => '任务号', 'value' => '1'],
+                    ['key' => '描述', 'value' => '学习下如何使用钉钉接口']
+                ],
+                'file_count' => 3
+            ]
+        ];
+        $result = curlUtil::post($url, $data);
 
         return $result;
     }

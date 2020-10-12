@@ -18,17 +18,28 @@ use think\Controller;
 use think\Request;
 use think\Session;
 
+/**
+ * 任务控制器
+ * Class MissionC
+ * @package app\index\controller
+ */
 class MissionC extends Controller
 {
     /**
      * 显示任务列表
-     *
-     * @return \think\Response
+     * @param int $page
+     * @param int $limit
+     * @param string $keyword
+     * @return array
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function index($page = 1, $limit = 10, $keyword = '')
     {
         $mission = new Mission();
-        $userId = '1110023';          // TODO
+        $userId = Session::get("info")["user_id"];
         // 如果传入关键词、项目代号、标签
         if($keyword != '') {            // 标题
             $mission->where('mission_title','like',"%$keyword%");
@@ -40,7 +51,7 @@ class MissionC extends Controller
             $label = input('get.label');
             $mission->where('label', 'like', "%$label%");
         }
-        $count = $mission->where('status', 'in', '0,1')->count();
+        $count = $mission->where('assignee_id', $userId)->where('status', 'in', '0,1')->count();
         // 如果传入关键词、项目代号、标签 TODO
         if($keyword != '') {            // 标题
             $mission->where('mission_title','like',"%$keyword%");
@@ -52,7 +63,7 @@ class MissionC extends Controller
             $label = input('get.label');
             $mission->where('label', 'like', "%$label%");
         }
-        $mission->where('status', 'in', '0,1');
+        $mission->where('assignee_id', $userId)->where('status', 'in', '0,1');
         if(input('get.field') != '') {          // 排序
             $mission->order(input('get.field') . ' ' . input('get.order'));
         } else {
@@ -79,9 +90,17 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS, $missions, $count);
     }
 
-    /*
+    /**
      * 获取选择任务列表
-     * $type 为1时增加会议号不为0的条件
+     * @param int $page
+     * @param int $limit
+     * @param string $keyword
+     * @param int $type
+     * @return array
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function selectIndex($page = 1, $limit = 10, $keyword = '', $type = 0) {
         $mission = new Mission();
@@ -90,7 +109,7 @@ class MissionC extends Controller
             $mission->where('mission_id', $keyword)->whereOr('mission_title', 'like', "%$keyword%");
         }
         if($type == 1) {
-            $mission->where('minute_id', 'neq', 0);
+            $mission->where('minute_id', 0);
         }
         $count = $mission->count();
 
@@ -99,7 +118,7 @@ class MissionC extends Controller
             $mission->where('mission_id', $keyword)->whereOr('mission_title', 'like', "%$keyword%");
         }
         if($type == 1) {
-            $mission->where('minute_id', 'neq', 0);
+            $mission->where('minute_id', 0);
         }
         $missions = $mission->field('mission_id,mission_title,assignee_id')
             ->order('mission_id desc')
@@ -125,13 +144,13 @@ class MissionC extends Controller
 
     /**
      * 保存新建的任务
-     *
-     * @param  \think\Request  $request
-     * @return \think\Response
+     * @param Request $request
+     * @return array
+     * @throws \think\exception\DbException
      */
     public function save(Request $request)
     {
-        $userId = '1110023';          // TODO
+        $userId = Session::get("info")["user_id"];          // TODO
         $_POST['parent_mission_id'] = input('post.is-root')? -1 : input('post.parent_mission_id');
         // 插入任务信息
         $infoArray = array_merge($_POST, [
@@ -173,6 +192,8 @@ class MissionC extends Controller
                 $attachment->save();
             }
         }
+
+        // 发送钉钉消息 TODO
 
         return Result::returnResult(Result::SUCCESS);
     }
