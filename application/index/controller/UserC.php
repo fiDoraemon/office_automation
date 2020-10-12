@@ -10,6 +10,7 @@ namespace app\index\controller;
 
 
 use app\common\interceptor\CommonController;
+use app\index\model\Department;
 use app\index\model\User;
 use app\common\Result;
 use app\common\util\EncryptionUtil;
@@ -195,6 +196,14 @@ class UserC extends CommonController
     }
 
 
+    /**
+     * 根据用户名字或者部门名称进行查询用户，若没有查询条件则查询当前员工所在的部门的所有员工
+     * @param int $limit
+     * @param int $page
+     * @param string $keyword
+     * @return array
+     * @throws \think\Exception
+     */
     public function getAllUsers($limit = 10,$page = 1,$keyword = ""){
         $user = Session::get("info");
         $departmentId = $user["department_id"];
