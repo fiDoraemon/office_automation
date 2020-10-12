@@ -22,10 +22,10 @@ if(token != "" && token != null){ //检查cookie中是否存在token信息
 }
 
 //实现点击刷新验证码功能
-$('#refreshCaptcha').on('click', function(){
-    var path = "/office_automation/public/index.php/index/login_c/sendPageCode";
-    $("#refreshCaptcha").attr('src',path);
-});
+// $('#refreshCaptcha').on('click', function(){
+//     var path = "/office_automation/public/index.php/index/login_c/sendPageCode";
+//     $("#refreshCaptcha").attr('src',path);
+// });
 
 //发送登录请求
 function sendData(){

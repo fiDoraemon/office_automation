@@ -52,15 +52,15 @@ class LoginC
     }
 
     /**
-     * 用户登录
+     * 用户登录（带验证码）
      * @return array
      */
     public function login(){
         $keepLogin = $_POST["keepLogin"];
-        $pageCode = $_POST["pageCode"];
-        if(!$this->checkPageCode($pageCode)){
-            return Result::returnResult(Result::CODE_ERROR,null);
-        }
+//        $pageCode = $_POST["pageCode"];
+//        if(!$this->checkPageCode($pageCode)){   //验证登录验证码
+//            return Result::returnResult(Result::CODE_ERROR,null);
+//        }
         $userNum = $_POST["userNum"];
         $userPwd = EncryptionUtil::Md5Encryption($_POST["userPwd"],$userNum);
         try {
