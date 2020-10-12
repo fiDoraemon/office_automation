@@ -194,4 +194,46 @@ class UserC extends CommonController
         Session::set("info",$userInfo);
     }
 
+
+    public function getAllUsers($limit = 10,$page = 1,$keyword = ""){
+        $user = Session::get("info");
+        $departmentId = $user["department_id"];
+        //所有在职员工
+        $user = new User();
+        try {
+            $user -> where("user_status", 1);
+            if($keyword != ""){   //模糊查询条件
+                $Department = new Department();
+                $listDepartmentId = $Department -> where("department_name", "like", "%$keyword%")
+                    -> column("department_id");
+                $user -> where("user_name","like" ,"%$keyword%")
+                    -> whereOr('department_id','in',$listDepartmentId);
+            }else{
+                $user -> where("department_id",$departmentId);
+            }
+            $count = $user -> count();  //获取条件符合的总人数
+            $user -> where("user_status", 1);
+            if($keyword != ""){
+                $Department = new Department();
+                $listDepartmentId = $Department -> where("department_name", "like", "%$keyword%")
+                    ->column("department_id");
+                $user -> where("user_name","like" ,"%$keyword%")
+                    -> whereOr('department_id','in',$listDepartmentId);
+            }else{
+                $user -> where("department_id",$departmentId);
+            }
+            $listUser = $user -> field("user_id,user_name,department_id")
+                -> order("department_id")
+                -> page($page,$limit)
+                -> select();
+            foreach ($listUser as $u){
+                $u -> department;
+                $u -> department_name = $u -> department -> department_name;
+            }
+            return Result::returnResult(Result::SUCCESS,$listUser,$count);
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+    }
 }
