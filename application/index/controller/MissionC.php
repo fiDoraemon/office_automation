@@ -193,7 +193,23 @@ class MissionC extends Controller
             }
         }
 
-        // 发送钉钉消息 TODO
+        // 发送钉钉消息
+        // 发送给处理人
+        // 发送给邀请关注的人
+        // 发送
+        $data = [
+            'userList' => '15717987769981419',
+            'data' => [
+                'head' => 'OA通知',
+                'title' => '了解钉钉接口1',
+                'detail'=> [
+                    ['key' => '任务号', 'value' => '1'],
+                    ['key' => '描述', 'value' => '学习下如何使用钉钉接口']
+                ],
+                'file_count' => 3
+            ]
+        ];
+        $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
 
         return Result::returnResult(Result::SUCCESS);
     }

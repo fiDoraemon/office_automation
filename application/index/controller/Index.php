@@ -31,7 +31,6 @@ class Index extends Controller
     }
 
     public function test() {
-        $url = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
         $data = [
             'userList' => '15717987769981419',
             'data' => [
@@ -44,7 +43,7 @@ class Index extends Controller
                 'file_count' => 3
             ]
         ];
-        $result = curlUtil::post($url, $data);
+        $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
 
         return $result;
     }
