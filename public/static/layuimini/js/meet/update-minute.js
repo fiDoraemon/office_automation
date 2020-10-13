@@ -58,7 +58,12 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                     break;
                 case 27 : //没有修改权限
                     tempMinuteInfo();
-                    $('html').css("pointer-events", "none");
+                    $('input').css("pointer-events", "none");
+                    $('textarea').css("pointer-events", "none");
+                    $('button').css("pointer-events", "none");
+                    // $('#fileList button').remove();
+                    $('.layui-upload-drag').css("pointer-events", "none");
+                    $('#missionTable').remove();
                     break;
                 case 28 : //没有临时保存的信息
                     tempMinuteInfo();
