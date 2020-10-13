@@ -1,6 +1,3 @@
-
-
-
 layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
     var   form    = layui.form
         , layer   = layui.layer
@@ -9,8 +6,9 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         , upload  = layui.upload
         , table   = layui.table
         , tableSelect = layui.tableSelect;
-
-    //添加实际到会人员
+//标记用户是否有权限修改会议信息
+    var modifyPermission = 1;  //1有权限，0没有
+//添加实际到会人员
     var attended = [];
 //添加应到会人员
     var newAttended = [];
@@ -57,13 +55,14 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                     });
                     break;
                 case 27 : //没有修改权限
+                    modifyPermission = 0;
                     tempMinuteInfo();
                     $('input').css("pointer-events", "none");
                     $('textarea').css("pointer-events", "none");
                     $('button').css("pointer-events", "none");
-                    // $('#fileList button').remove();
                     $('.layui-upload-drag').css("pointer-events", "none");
                     $('#missionTable').remove();
+                    $('#commit-btn').remove();
                     break;
                 case 28 : //没有临时保存的信息
                     tempMinuteInfo();
@@ -360,6 +359,9 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                         `;
                 }
                 $('#fileList').append(element);
+                if(modifyPermission === 0){
+                    $(".delete").remove();
+                }
                 // 删除附件
                 $('#fileList').find('.delete').click(function () {
                     var attachment_id = $(this).attr('attachment_id');
