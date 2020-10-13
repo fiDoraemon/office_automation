@@ -37,19 +37,6 @@ class DingDing
     }
 
     // 获取凭证
-//    public function getAccessToken()
-//    {
-//        $c = new DingTalkClient(DingTalkConstant::$CALL_TYPE_OAPI, DingTalkConstant::$METHOD_GET, DingTalkConstant::$FORMAT_JSON);
-//        $req = new OapiGettokenRequest;
-//
-//        $req->setAppkey($this->app3['AppKey']);
-//        $req->setAppsecret($this->app3['AppSecret']);
-//        $resp = $c->execute($req, null, "https://oapi.dingtalk.com/gettoken");
-//
-//        return $resp->access_token;
-//    }
-
-    // 获取凭证
     public function getAccessToken($type = 1)
     {
         if($this->accessToken) {
@@ -142,7 +129,7 @@ class DingDing
             $form->value = $item['value'];
             array_push($forms, $form);
         }
-        $body->form = array($form);
+        $body->form = $forms;
         $body->title = $data['title'];
         $oa->body = $body;
         $head = new Head;
@@ -169,6 +156,7 @@ class DingDing
         $req->setMsg($this->getMsg($data));
 
         $resp = $c->execute($req, $accessToken, "https://oapi.dingtalk.com/topapi/message/corpconversation/asyncsend_v2");
+
         if($resp->errcode == 0) {
             return true;
         } else {

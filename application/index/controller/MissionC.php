@@ -2,10 +2,13 @@
 
 namespace app\index\controller;
 
+use app\common\util\ArrayAndStringUtil;
+use app\common\util\curlUtil;
 use app\common\util\dateUtil;
 use app\index\model\Attachment;
 use app\index\model\Minute;
 use app\index\model\MissionTree;
+use app\index\model\User;
 use app\index\service\MissionService;
 use app\index\common\DataEnum;
 use app\index\model\Mission;
@@ -171,15 +174,24 @@ class MissionC extends Controller
         ]);
         $missionProcess->save();
 
+        $useridListArray = array();            // 钉钉 userid 字符串列表
         // 插入任务和关注人对应信息
         if(input('post.invite_follow')) {
             $userIds = explode(',', input('post.invite_follow'));
+            $useridArray = array();          // 钉钉 userid 列表
+
             foreach ($userIds as $userId) {
                 $missionInterest = new MissionInterest();
                 $missionInterest->mission_id = $mission->mission_id;
                 $missionInterest->user_id = $userId;
                 $missionInterest->save();
+
+                $user = User::getByUserId($userId);
+                if($user->dd_userid != '') {
+                    array_push($useridArray, $user->dd_userid);
+                }
             }
+            $useridStingArray = ArrayAndStringUtil::getTenString($useridArray);
         }
 
         // 任务处理关联附件
@@ -192,33 +204,70 @@ class MissionC extends Controller
                 $attachment->save();
             }
         }
+        $attachmentCount = count(explode(';', input('post.attachment_list')));
 
         // 发送钉钉消息
         // 发送给处理人
+//        $assignee = User::getByUserId(input('post.assignee_id'));
+//        if($userId != input('post.assignee_id') && $assignee->dd_userid != '') {
+//            $data = [
+//                'userList' => $assignee->dd_userid,
+//                'data' => [
+//                    'head' => 'OA通知',
+//                    'title' => '请处理' . $mission->mission_id . '号任务',
+//                    'detail'=> [
+//                        ['key' => '标题：', 'value' => $mission->mission_title],
+//                        ['key' => '描述：', 'value' =>  $mission->description],
+//                        ['key' => '截止日期：', 'value' =>  $mission->finish_date],
+//                        ['key' => '链接：', 'value' =>  'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
+//                    ],
+//                    'file_count' => $attachmentCount
+//                ]
+//            ];
+//            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+//        }
         // 发送给邀请关注的人
-        // 发送
-        $data = [
-            'userList' => '15717987769981419',
-            'data' => [
-                'head' => 'OA通知',
-                'title' => '了解钉钉接口1',
-                'detail'=> [
-                    ['key' => '任务号', 'value' => '1'],
-                    ['key' => '描述', 'value' => '学习下如何使用钉钉接口']
-                ],
-                'file_count' => 3
-            ]
-        ];
-        $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+//        foreach ($useridListArray as $useridList) {
+//            $data = [
+//                'userList' => $useridList,
+//                'data' => [
+//                    'head' => 'OA通知',
+//                    'title' => Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务',
+//                    'detail'=> [
+//                        ['key' => '标题', 'value' => $mission->mission_title],
+//                        ['key' => '链接', 'value' => 'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
+//                    ]
+//                ]
+//            ];
+//            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+//        }
 
         return Result::returnResult(Result::SUCCESS);
+
+//        $data = [
+//            'userList' => $useridList,
+//            'data' => [
+//                'head' => 'OA通知',
+//                'title' => '您有新的会议要参加',         // 或会议纪要有更新
+//                'detail'=> [
+//                    ['key' => '主题', 'value' => ''],
+//                    ['key' => '时间', 'value' => ''],
+//                    ['key' => '决议', 'value' => ''],         // 为空或默认内容则不发送（若有更新就发送，不勾选发送详情则不发送）
+//                    ['key' => '记录', 'value' => ''],         // 为空或默认内容则不发送（或若有更新就发送，不勾选发送详情则不发送）
+//                    ['key' => '附件清单', 'value' => ''],           // 以逗号分隔，为空或默认内容则不发送（或若有更新就发送）
+//                    ['key' => '链接', 'value' => 'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
+//                ]
+//            ]
+//        ];
     }
 
     /**
      * 显示指定的任务
-     *
-     * @param  int  $id
-     * @return \think\Response
+     * @param $id
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function read($id)
     {
@@ -299,15 +348,14 @@ class MissionC extends Controller
 
     /**
      * 保存更新的任务
-     *
-     * @param  \think\Request  $request
-     * @param  int  $id
-     * @return \think\Response
+     * @param $id
+     * @return array
+     * @throws \think\exception\DbException
      */
     public function update($id)
     {
         $mission = Mission::get($id);
-        $sessionUserId = '1110023';
+        $sessionUserId = Session::get("info")["user_id"];
         // 更新任务信息
         $fields = input('put.');
         $fields['parent_mission_id'] = input('put.is_root')? -1 : input('parent_mission_id');
@@ -354,6 +402,45 @@ class MissionC extends Controller
                 }
             }
         }
+
+        // 发送钉钉消息
+        // 发送给处理人
+        if(input('put.process_note') != '' || input('put.attachment_list') != '') {
+
+        }
+        $assignee = User::getByUserId(input('post.assignee_id'));
+        if($assignee->dd_userid != '') {
+            $data = [
+                'userList' => $assignee->dd_userid,
+                'data' => [
+                    'head' => 'OA通知',
+                    'title' => '请处理' . $mission->mission_id . '号任务',
+                    'detail'=> [
+                        ['key' => '标题：', 'value' => $mission->mission_title],
+                        ['key' => '描述：', 'value' =>  $mission->description],
+                        ['key' => '截止日期：', 'value' =>  $mission->finish_date],
+                        ['key' => '链接：', 'value' =>  'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
+                    ],
+                    'file_count' => $attachmentCount
+                ]
+            ];
+            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+        }
+        // 发送给邀请关注的人
+//        foreach ($useridListArray as $useridList) {
+        $data = [
+            'userList' => $useridList,
+            'data' => [
+                'head' => 'OA通知',
+                'title' => Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务',
+                'detail'=> [
+                    ['key' => '标题', 'value' => $mission->mission_title],
+                    ['key' => '链接', 'value' => 'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
+                ]
+            ]
+        ];
+//            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+//        }
 
         return Result::returnResult(Result::SUCCESS);
     }
