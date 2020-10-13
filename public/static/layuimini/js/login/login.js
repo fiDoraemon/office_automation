@@ -50,7 +50,7 @@ function sendData(){
             switch (code) {
                 case 0:
                     if(keep_login === 1){
-                        $.cookie('user_token',user_token,{path:'/office_automation/public/static/layuimini'});
+                        $.cookie('user_token',user_token,{path:'/office_automation/public/static/layuimini', expires: 7 });
                     }
                     loginSuccess();
                     break;
