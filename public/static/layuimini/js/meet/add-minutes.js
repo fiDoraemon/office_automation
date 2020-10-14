@@ -5,7 +5,8 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         , laydate = layui.laydate
         , upload = layui.upload
         , miniTab = layui.miniTab
-        , tableSelect = layui.tableSelect;
+        , tableSelect = layui.tableSelect,
+        $ = layui.$;
 
     var userIdList = []; //已经选择的应到会议员工id数组
     var uploadList = [];
@@ -18,6 +19,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         timeout: 1000,
         data: {},
         success: function(res){
+            console.log(res)
             var data = res.data;
             if(res.code === 0){
                 layer.confirm('是否读取临时保存的会议纪要？', {
@@ -32,7 +34,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                     $("#place").val(data.place);
                     $("#minute-resolution").val(data.resolution);
                     $("#minute-context").val(data.record);
-                    var attend_users = data.minuteAttends;
+                    var attend_users = data.minuteNewAttends;
                     var userId = "";
                     var userNameList = "";
                     for (var i = 0; i < attend_users.length; i++){
@@ -109,6 +111,8 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         var time  = $("#time").val();
         var place = $("#place").val();
         var attend_users = userIdList;
+        console.log("attend_users");
+        console.log(attend_users);
         var minute_resolution = $("#minute-resolution").val();
         var minute_context = $("#minute-context").val();
         $.ajax({ //临时保存
@@ -127,6 +131,8 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 minute_context  : minute_context
             },
             success: function (res) {
+                console.log("res");
+                console.log(res);
                 if(res.code === 0){
                     layer.msg('临时保存成功');
                 }else{
@@ -351,7 +357,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
     //确认提交
     form.on('submit(save)', function (data) {
         var minute_info             = data.field;
-        minute_info.attend_users    = userIdList;
+        //minute_info.attend_users    = userIdList;
         minute_info.file            = uploadList;
         $.ajax({
             url: "/office_automation/public/index.php/index/minute_c/saveMinute",

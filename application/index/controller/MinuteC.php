@@ -9,6 +9,7 @@
 namespace app\index\controller;
 
 use app\common\Result;
+use app\common\util\curlUtil;
 use app\index\model\Attachment;
 use app\index\model\Department;
 use app\index\model\Minute;
@@ -298,15 +299,20 @@ class MinuteC
         $resultMinute -> projectStage;
         //关联主持人
         $resultMinute -> user;
-        //关联多个应到会人员
-        $attendUsers = $resultMinute -> minuteAttends;
+        //关联多个应到会人员  (此处应该是查询出真实应到会人员)
+        $attendUsers = $resultMinute -> minuteReallyAttends;
         foreach ($attendUsers as $attend){
             $attend -> user;
         }
-        //关联多个已经到会人员
+        //关联多个临时已经到会人员 (有缺陷，此处应该是查询出真实已经到会人员)
         $attendedUsers = $resultMinute -> minuteAttendeds;
         foreach ($attendedUsers as $attended){
             $attended -> user;
+        }
+        //关联多个临时保存的应到会人员
+        $newAttend = $resultMinute -> minuteNewAttends;
+        foreach ($newAttend as $rm){
+            $rm -> user;
         }
         //关联多个附件
         $resultMinute -> attachments;
@@ -336,7 +342,6 @@ class MinuteC
                 $mms -> assignee_name = $assignee -> user_name;
             }
         }
-
         return Result::returnResult(Result::SUCCESS,$resultMinute);
     }
 
@@ -384,16 +389,16 @@ class MinuteC
     public function saveMinute(){
         $info               = Session::get("info");
         $minuteType         = $_POST["minute_type"];        //会议类型
-        $hostId             = $info["user_id"];           //会议主持id
-        $departmentId       = $info["department_id"]; //所属部门id
-        $minuteTheme        = $_POST["minute_theme"];     //会议标题
-        $projectCode        = $_POST["project_code"];     //项目代号
-        $date               = $_POST["date"];                     //会议时间
+        $hostId             = $info["user_id"];             //会议主持id
+        $departmentId       = $info["department_id"];       //所属部门id
+        $minuteTheme        = $_POST["minute_theme"];       //会议标题
+        $projectCode        = $_POST["project_code"];       //项目代号
+        $date               = $_POST["date"];               //会议时间
         $time               = $_POST["time"];
-        $place              = $_POST["place"];                   //会议地点
-        $attendUsers        = $_POST["attend_users"];     //应到人员列表
-        $minuteResolution   = $_POST["minute_resolution"];   //会议决议
-        $minuteContext      = $_POST["minute_context"];         //会议内容
+        $place              = $_POST["place"];              //会议地点
+        $attendUsers        = $_POST["attend_users"];       //应到人员列表
+        $minuteResolution   = $_POST["minute_resolution"];  //会议决议
+        $minuteContext      = $_POST["minute_context"];     //会议内容
 //        $attachmentList = $_POST["attachment_list"];
         $uploadList         = input('post.file/a');//$_POST["file"];
         //保存会议基本信息
@@ -411,27 +416,32 @@ class MinuteC
         $minute -> save();
         $minuteId = $minute -> minute_id;
         //保存会议应到人员
-        foreach ($attendUsers as $attend){
-            $minuteAttend = new MinuteAttend();
-            $minuteAttend -> minute_id = $minuteId;
-            $minuteAttend -> user_id = $attend;
-            $minuteAttend ->save();
+        if(is_array($attendUsers)){
+            foreach ($attendUsers as $attend){
+                $minuteAttend = new MinuteAttend();
+                $minuteAttend -> minute_id = $minuteId;
+                $minuteAttend -> user_id = $attend;
+                $minuteAttend -> save();
+            }
         }
         //保存上传附件信息
         if(is_array($uploadList)){
             foreach ($uploadList as $file){
                 $attachment = new Attachment();
                 $attachment -> where("attachment_id",$file)
-                    ->update(['attachment_type' => "minute","related_id" => $minuteId]);
+                            -> update(['attachment_type' => "minute","related_id" => $minuteId]);
             }
         }
-        //删除临时保存的会议信息
-        //删除临时表里的应到人员
+        //删除临时保存的会议信息和应到人员
         $minuteTemp = new MinuteTemp();
         $m = $minuteTemp -> where(['minute_id' => 0,'host_id' => $hostId]) ->find();
-        $m -> minuteNewAttends()->delete();
-        $m -> delete();
-        if($minuteId != null){
+        if($m != null){
+            $m -> minuteNewAttends() -> delete();
+            $m -> delete();
+        }
+        //发送钉钉消息
+        $result = $this -> sendAttendMessage($minute,$attendUsers);
+        if($minuteId != null && $result){
             return Result::returnResult(Result::SUCCESS,null);
         }
         return Result::returnResult(Result::ERROR,null);
@@ -452,8 +462,7 @@ class MinuteC
         $minuteMission      = input('post.minuteMission/a');   //添加会议任务纪要
         $uploadList         = input('post.uploadList/a');      //上传的附件
         //保存会议基本信息
-        $minute = new Minute();
-        $minute -> where("minute_id",$minuteId);
+        $minute = Minute::getByMinuteId($minuteId);
         $minute -> resolution = $minuteResolution;
         $minute -> record = $minuteContext;
         $minute -> save();
@@ -461,8 +470,8 @@ class MinuteC
             foreach ($attended as $att){
                 $minuteAttend = new MinuteAttend();
                 $minuteAttend -> where("minute_id",$minuteId)
-                    -> where("user_id",$att)
-                    -> setField('status', 1);
+                              -> where("user_id",$att)
+                              -> setField('status', 1);
             }
         }
         if(is_array($newAttend)){
@@ -504,9 +513,13 @@ class MinuteC
         //删除临时表里的应到人员
         $minuteTemp = new MinuteTemp();
         $m = $minuteTemp -> where(['minute_id' => $minuteId,'status' => 1]) ->find();
-        $m -> minuteAttends()->delete();
-        $m -> minuteTempMission()->delete();
-        $m -> delete();
+        if($m != null){
+            $m -> minuteAttends()->delete();
+            $m -> minuteTempMission()->delete();
+            $m -> delete();
+        }
+        //发送钉钉消息
+        $this -> sendAttendMessage($minute, $newAttend);
         return Result::returnResult(Result::SUCCESS,null);
     }
 
@@ -558,7 +571,7 @@ class MinuteC
                                         -> where("status", 0)
                                         -> find();
             if($resuleMinute!=null){
-                $resuleMinutes = $resuleMinute -> minuteAttends;
+                $resuleMinutes = $resuleMinute -> minuteNewAttends;
                 foreach ($resuleMinutes as $rm){
                     $rm -> user;
                 }
@@ -795,6 +808,46 @@ class MinuteC
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
         }
+    }
+
+
+//    public function test(){
+//        $DDidList = User::where('user_id','in',$attendUsers)->column('dd_userid');
+//        $DDidList = implode(',',$DDidList);
+//    }
+    /**
+     * 发起新会议时发送钉钉消息
+     * @param $minute
+     * @param $attendUsers
+     * @return bool
+     */
+    private function sendAttendMessage($minute, $attendUsers){
+        $DDidList = User::where('user_id','in',$attendUsers)->column('dd_userid');
+        $DDidList = implode(',',$DDidList);
+        $fileList = Attachment::where(['attachment_type' => 'minute','related_id' => $minute -> minute_id])->column('source_name');
+        if($fileList == null){
+            $fileList = "";
+        }else{
+            $fileList = implode('，',$fileList);
+        }
+        $data = [
+                'userList' => $DDidList,
+                'data' => [
+                    'head'  => 'OA通知',
+                    'title' => '您有新的会议要参加',
+                    'detail'=> [
+                        ['key' => '主题：',     'value'   => $minute -> minute_theme],
+                        ['key' => '时间：',     'value'   => $minute -> minute_date . ' ' .$minute -> minute_time],
+                        ['key' => '决议：',     'value'   => $minute -> resolution],
+                        ['key' => '记录：',     'value'   => $minute -> record],
+                        ['key' => '附件清单：', 'value'   => $fileList],
+                        ['key' => '链接：',     'value'   => 'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
+                    ],
+                    'file_count' => 3
+                ]
+            ];
+        $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+        return true;
     }
 
 }

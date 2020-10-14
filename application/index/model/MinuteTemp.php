@@ -47,7 +47,7 @@ class MinuteTemp extends Model
     }
 
     /**
-     * 与修改会议页面应到人员会议表一对多关联
+     * 与修改会议页面临时保存的应到人员会议表一对多关联
      * @return \think\model\relation\HasMany
      */
     public function minuteAttends()
@@ -56,12 +56,31 @@ class MinuteTemp extends Model
     }
 
     /**
-     * 与实际到会人员一对多关联
+     * 修改会议页面真实应到人员会议表一对多关联
+     * 修改会议页面需要查询已经提交了的应到会人员
+     * @return \think\model\relation\HasMany
+     */
+    public function minuteReallyAttends()
+    {
+        return $this->hasMany('MinuteAttend','minute_id','minute_id')->field('user_id');
+    }
+
+    /**
+     * 与临实际到会人员一对多关联
      * @return \think\model\relation\HasMany
      */
     public function minuteAttendeds()
     {
         return $this->hasMany('MinuteAttendTemp','minute_id','minute_id')-> where("status",1)->field('user_id');
+    }
+
+    /**
+     * 与真实的实际到会人员一对多关联
+     * @return \think\model\relation\HasMany
+     */
+    public function minuteReallyAttendeds()
+    {
+        return $this->hasMany('MinuteAttend','minute_id','minute_id')-> where("status",1)->field('user_id');
     }
 
     /**

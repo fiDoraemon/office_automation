@@ -114,7 +114,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
      * 获取临时保存的会议信息
      */
     function getTempMinuteInfo(){
-        $.ajax({ //临时保存
+        $.ajax({
             url: "/office_automation/public/index.php/index/minute_c/getTempMinuteInfo",
             type: 'get',
             timeout: 1000,
@@ -122,17 +122,38 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 minuteId : minute_id
             },
             success: function (res) {
+                console.log("查询到的临时会议信息：");
+                console.log(res);
                 var data = res.data;
-                var attendArray = data.minuteAttends;
-                var attendedArray = data.minuteAttendeds;
-                var missionArray = data.minuteMission;                //实际的任务
-                var minuteTempMission = data.minuteTempMission;       //临时保存的会议任务
+                var attendArray         = data.minuteReallyAttends;        //应到会人员
+                var attendedArray       = data.minuteAttendeds;              //临时保存的已到会人员
+                var missionArray        = data.minuteMission;                //临时保存的实际的任务
+                var minuteTempMission   = data.minuteTempMission;            //临时保存的会议任务
+                var newAttendArray      = data.minuteNewAttends;             //临时保存的新增应到会人员
+                // var reallyAttendArray   = data.;             //真实保存的应到会人员
+                // var reallyAttendedArray = data.;             //真实保存的已经到会人员
                 var newMissionArray = "";
-                if(minuteTempMission.length > 0){
-                    newMissionArray = minuteTempMission[0].new_temp_list;  //任务清单
+                var newAttendId     = "";
+                var newAttendName   = "";
+                var attendusers     = "";
+                var attendedusers   = "";
+                if(minuteTempMission.length > 0) {
+                    newMissionArray = minuteTempMission[0].new_temp_list;   //临时保存的任务清单
+                    var arr = newMissionArray.split(',');
+                    arr.forEach(function (val, index) {
+                        newMission.push(val);
+                    });
                 }
-                var attendusers = "";
-                var attendedusers = "";
+                for(var i = 0; i < newAttendArray.length ;i++){
+                    if(i>0){
+                        newAttendId += ',';
+                        newAttendName += ',';
+                    }
+                    newAttended.push(newAttendArray[i].user.user_id);
+                    newAttendId += newAttendArray[i].user.user_id;
+                    newAttendName += newAttendArray[i].user.user_name;
+                }
+                //计算会议任务的完成情况
                 var $count = 0;
                 var $finish = 0;     //完成
                 var $notStarted = 0; //未开始
@@ -143,6 +164,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                     attendusers += attendArray[i].user.user_name + ";";
                 }
                 for (var i = 0; i < attendedArray.length; i++) {
+                    attended.push( attendedArray[i].user.user_id);
                     attendedusers += attendedArray[i].user.user_name + ";";
                 }
                 var missiondata = table.cache["minute-table"];
@@ -176,7 +198,10 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 $("#minute-context").val(data.record);
                 $("#add-mission").val(newMissionArray);
                 $('#add-mission').attr('ts-selected', newMissionArray);
+                $('#new-attend-users').attr('ts-selected', newAttendId);
+                $('#new-attend-users').val(newAttendName);
                 form.render("select");
+                //会议任务表
                 for(var i = 0; i < minuteTempMission.length; i++){
                     var missionTitle = minuteTempMission[i].mission_title;
                     var finishDate = minuteTempMission[i].finish_date;
@@ -412,7 +437,8 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
             ]]
         },
         done: function (elem, data) {
-            var NEWJSON = []
+            var NEWJSON = [];
+            attended.splice(0,attended.length); //清空数组
             layui.each(data.data, function (index, item) {
                 NEWJSON.push(item.user_name);
                 attended.push(item.user_id);
@@ -442,6 +468,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         },
         done: function (elem, data) {
             var NEWJSON = [];
+            newAttended.splice(0,newAttended.length); //清空数组
             layui.each(data.data, function (index, item) {
                 NEWJSON.push(item.user_name);
                 newAttended.push(item.user_id);
@@ -556,23 +583,9 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         }
     });
 
-    //自定义验证规则
-    form.verify({
-        title: function (value) {
-            if (value.length < 5) {
-                return '标题至少得5个字符啊';
-            }
-        }
-        , pass: [
-            /^[\S]{6,12}$/
-            , '密码必须6到12位，且不能出现空格'
-        ]
-        , content: function (value) {
-            layedit.sync(editIndex);
-        }
-    });
-
-    //展示会议纪要任务表已有数据
+    /**
+     * 展示会议纪要任务表已有数据
+     */
     table.render({
         elem: '#minute-table'
         ,cols: [[ //标题栏
@@ -660,6 +673,10 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         var minuteResolution  = $("#minute-resolution").val();
         var minuteContext     = $("#minute-context").val();
         var minuteMission     = getMissionInfo();
+        console.log("newAttended:");
+        console.log(newAttended);
+        console.log("newMission:");
+        console.log(newMission);
         $.ajax({
             url: "/office_automation/public/index.php/index/minute_c/updateMinute",
             type:'post',
