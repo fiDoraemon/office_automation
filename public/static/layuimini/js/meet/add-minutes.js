@@ -181,7 +181,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
     laydate.render({
         elem: '#time'
         ,type: 'time'
-        ,range: true //或 range: '~' 来自定义分割字符
+        ,format: 'H点m分'
     });
 
     selectAddInfo(form);
