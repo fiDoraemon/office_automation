@@ -25,6 +25,13 @@ use think\Session;
  */
 class LoginC
 {
+    public function checkLogin(){
+        $userInfo = Session::get('info');
+        if($userInfo == null){
+            return Result::returnResult(Result::NOT_LOGIN,null);
+        }
+        return Result::returnResult(Result::SUCCESS,null);
+    }
 
     /**
      * token自动登录

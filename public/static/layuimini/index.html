@@ -132,8 +132,7 @@
 <script src="lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <script>
-    //登录拦截返回登录页面
-    //window.location = 'page/login-3.html';
+
 
     layui.use(['jquery', 'layer', 'miniAdmin','miniTongji'], function () {
         var $ = layui.jquery,
@@ -153,6 +152,28 @@
             maxTabNum: 20,              // 最大的tab打开数量
         };
         miniAdmin.render(options);
+
+        //登录拦截返回登录页面
+        $.ajax({
+            url: "/office_automation/public/index.php/index/login_c/checkLogin",
+            type:'get',
+            timeout: 1000,
+            data: {
+            },
+            success: function(res){
+                if(res.code === 5){
+                    layer.alert('请登录！', {title: '提示'},
+                        function (index) {
+                            layer.close(index);
+                            window.location = 'page/login.html';
+                        }
+                    );
+                }
+            },
+            error: function(data){
+            }
+        });
+
 
         // 百度统计代码，只统计指定域名
         miniTongji.render({
