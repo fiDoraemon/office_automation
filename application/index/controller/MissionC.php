@@ -153,7 +153,7 @@ class MissionC extends Controller
      */
     public function save(Request $request)
     {
-        $userId = Session::get("info")["user_id"];          // TODO
+        $userId = Session::get("info")["user_id"];
         $_POST['parent_mission_id'] = input('post.is-root')? -1 : input('post.parent_mission_id');
         // 插入任务信息
         $infoArray = array_merge($_POST, [
@@ -174,13 +174,17 @@ class MissionC extends Controller
         ]);
         $missionProcess->save();
 
-        $useridListArray = array();            // 钉钉 userid 字符串列表
+        $useridList = '';            // 关注人钉钉 userid 以,分隔字符串
         // 插入任务和关注人对应信息
         if(input('post.invite_follow')) {
             $userIds = explode(',', input('post.invite_follow'));
             $useridArray = array();          // 钉钉 userid 列表
 
             foreach ($userIds as $userId) {
+                // 过滤发起人和处理人
+                if($userId == $mission->reporter_id || $userId == $mission->assignee_id) {
+                    continue;
+                }
                 $missionInterest = new MissionInterest();
                 $missionInterest->mission_id = $mission->mission_id;
                 $missionInterest->user_id = $userId;
@@ -191,7 +195,7 @@ class MissionC extends Controller
                     array_push($useridArray, $user->dd_userid);
                 }
             }
-            $useridStingArray = ArrayAndStringUtil::getTenString($useridArray);
+            $useridList = implode(',', $useridArray);
         }
 
         // 任务处理关联附件
@@ -204,61 +208,44 @@ class MissionC extends Controller
                 $attachment->save();
             }
         }
-        $attachmentCount = count(explode(';', input('post.attachment_list')));
+        $attachmentCount = (input('post.attachment_list') == '')? 0 : count(explode(';', input('post.attachment_list')));
 
         // 发送钉钉消息
         // 发送给处理人
-//        $assignee = User::getByUserId(input('post.assignee_id'));
-//        if($userId != input('post.assignee_id') && $assignee->dd_userid != '') {
-//            $data = [
-//                'userList' => $assignee->dd_userid,
-//                'data' => [
-//                    'head' => 'OA通知',
-//                    'title' => '请处理' . $mission->mission_id . '号任务',
-//                    'detail'=> [
-//                        ['key' => '标题：', 'value' => $mission->mission_title],
-//                        ['key' => '描述：', 'value' =>  $mission->description],
-//                        ['key' => '截止日期：', 'value' =>  $mission->finish_date],
+        if($userId != input('post.assignee_id') && $mission->assignee->dd_userid != '') {
+            $data = [
+                'userList' => $mission->assignee->dd_userid,
+                'data' => [
+                    'head' => 'OA通知',
+                    'title' => '您有新的任务待处理',
+                    'detail'=> [
+                        ['key' => '标题：', 'value' => $mission->mission_title],
+                        ['key' => '描述：', 'value' =>  $mission->description],
+                        ['key' => '截止日期：', 'value' =>  $mission->finish_date]
 //                        ['key' => '链接：', 'value' =>  'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
-//                    ],
-//                    'file_count' => $attachmentCount
-//                ]
-//            ];
-//            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
-//        }
+                    ],
+                    'file_count' => $attachmentCount
+                ]
+            ];
+//            curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+        }
         // 发送给邀请关注的人
-//        foreach ($useridListArray as $useridList) {
-//            $data = [
-//                'userList' => $useridList,
-//                'data' => [
-//                    'head' => 'OA通知',
-//                    'title' => Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务',
-//                    'detail'=> [
-//                        ['key' => '标题', 'value' => $mission->mission_title],
+        if($useridList) {
+            $data = [
+                'userList' => $useridList,
+                'data' => [
+                    'head' => 'OA通知',
+                    'title' => Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务',
+                    'detail'=> [
+                        ['key' => '标题', 'value' => $mission->mission_title]
 //                        ['key' => '链接', 'value' => 'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
-//                    ]
-//                ]
-//            ];
-//            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
-//        }
+                    ]
+                ]
+            ];
+//            curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+        }
 
         return Result::returnResult(Result::SUCCESS);
-
-//        $data = [
-//            'userList' => $useridList,
-//            'data' => [
-//                'head' => 'OA通知',
-//                'title' => '您有新的会议要参加',         // 或会议纪要有更新
-//                'detail'=> [
-//                    ['key' => '主题', 'value' => ''],
-//                    ['key' => '时间', 'value' => ''],
-//                    ['key' => '决议', 'value' => ''],         // 为空或默认内容则不发送（若有更新就发送，不勾选发送详情则不发送）
-//                    ['key' => '记录', 'value' => ''],         // 为空或默认内容则不发送（或若有更新就发送，不勾选发送详情则不发送）
-//                    ['key' => '附件清单', 'value' => ''],           // 以逗号分隔，为空或默认内容则不发送（或若有更新就发送）
-//                    ['key' => '链接', 'value' => 'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
-//                ]
-//            ]
-//        ];
     }
 
     /**
@@ -362,18 +349,33 @@ class MissionC extends Controller
         $mission->allowField(true)->save($fields);
 
         // 处理关注人列表
+        $newInterest = array();         // 新邀请关注的人
+        $oldInterest = array();        // 已关注的人
         if(input('put.invite_follow')) {
             $userIds = explode(',', input('put.invite_follow'));
             // 获取关注人工号列表数组
             $missionInterest = new MissionInterest();
             $interestUserIds = $missionInterest->where('mission_id', $id)->column('user_id');
             foreach ($userIds as $userId) {
+                // 过滤发起人和处理人
+                if($userId == $mission->reporter_id || $userId == $mission->assignee_id) {
+                    break;
+                }
+                $user = User::getByUserId($userId);
                 // 如果未存在 任务-关注人 对应关系就插入
                 if(!in_array($userId, $interestUserIds)) {
                     $missionInterest = new MissionInterest();
                     $missionInterest->mission_id = $id;
                     $missionInterest->user_id = $userId;
                     $missionInterest->save();
+
+                    if($user->dd_userid != '') {
+                        array_push($newInterest, $user->dd_userid);
+                    }
+                }  else {
+                    if($user->dd_userid != '') {
+                        array_push($oldInterest, $user->dd_userid);
+                    }
                 }
             }
         }
@@ -402,45 +404,48 @@ class MissionC extends Controller
                 }
             }
         }
+        $attachmentCount = (input('post.attachment_list') == '')? 0 : count(explode(';', input('post.attachment_list')));
 
         // 发送钉钉消息
-        // 发送给处理人
-        if(input('put.process_note') != '' || input('put.attachment_list') != '') {
-
-        }
-        $assignee = User::getByUserId(input('post.assignee_id'));
-        if($assignee->dd_userid != '') {
-            $data = [
-                'userList' => $assignee->dd_userid,
-                'data' => [
-                    'head' => 'OA通知',
-                    'title' => '请处理' . $mission->mission_id . '号任务',
-                    'detail'=> [
-                        ['key' => '标题：', 'value' => $mission->mission_title],
-                        ['key' => '描述：', 'value' =>  $mission->description],
-                        ['key' => '截止日期：', 'value' =>  $mission->finish_date],
-                        ['key' => '链接：', 'value' =>  'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
-                    ],
-                    'file_count' => $attachmentCount
-                ]
-            ];
-            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
-        }
-        // 发送给邀请关注的人
-//        foreach ($useridListArray as $useridList) {
         $data = [
-            'userList' => $useridList,
+            'userList' => '',
             'data' => [
                 'head' => 'OA通知',
-                'title' => Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务',
+                'title' => '',
                 'detail'=> [
-                    ['key' => '标题', 'value' => $mission->mission_title],
-                    ['key' => '链接', 'value' => 'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
-                ]
+                    ['key' => '标题：', 'value' => $mission->mission_title]
+//                    ['key' => '链接：', 'value' =>  'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
+                ],
+                'file_count' => $attachmentCount
             ]
         ];
+        // 发送给处理人
+        if(input('put.process_note') != '' || input('put.attachment_list') != '') {
+            $data['data']['title'] = Session::get("info")["user_name"] . '处理了' . $mission->mission_id . '号任务';
+            // 当前用户是发起人，发送给处理人
+            if($sessionUserId == $mission->reporter_id && $sessionUserId != $mission->assignee_id && $mission->assignee->dd_userid != '') {
+                $data['userList'] = $mission->assignee->dd_userid;
+//                curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+            // 当前用户是处理人，发送给发起人
+            } else if($sessionUserId == $mission->assignee_id && $sessionUserId != $mission->reporter_id && $mission->reporter->dd_userid != '') {
+                $data['userList'] = $mission->reporter->dd_userid;
+                $data['data']['title'] = '您发起的' . $mission->mission_id . '号任务' . '正在被' . Session::get("info")["user_name"] . '处理';
+//                curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+            }
+        }
+        // 发送给邀请关注的人
+        // 发送给新邀请关注的人
+        if(!empty($newInterest)) {
+            $data['data']['title'] = Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务';
+            $data['userList'] = implode(',', $newInterest);
 //            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
-//        }
+        }
+        // 发送给已关注的人
+        if(!empty($oldInterest)) {
+            $data['data']['title'] = '您关注的' . $mission->mission_id . '号任务正在被' . Session::get("info")["user_name"] . '处理';
+            $data['userList'] = implode(',', $oldInterest);
+//            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+        }
 
         return Result::returnResult(Result::SUCCESS);
     }
@@ -456,7 +461,12 @@ class MissionC extends Controller
         //
     }
 
-    // 修改任务优先级
+    /**
+     * 修改任务优先级
+     * @param $id
+     * @return array
+     * @throws \think\exception\DbException
+     */
     public function modifyPriority($id)
     {
         $mission = Mission::get($id);
@@ -471,7 +481,16 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS);
     }
 
-    // 获取关注的根任务列表
+    /**
+     * 获取关注的根任务列表
+     * @param int $page
+     * @param int $limit
+     * @return array
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function treeIndex($page = 1, $limit = 10)
     {
         $mission = new Mission();
@@ -512,7 +531,14 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS, $missions, $count);
     }
 
-    // 获取任务树时间戳列表
+    /**
+     * 获取任务树时间戳列表
+     * @param $id
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function getTreeRecordList($id) {
         // 判断任务是否为根任务
         $mission = Mission::get($id);
@@ -526,7 +552,14 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS, $recordDate);
     }
 
-    // 盖时间戳
+    /**
+     * 盖时间戳
+     * @param $id
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function recordTree($id) {
         // 验证是否有管理员权限 TODO
         $record_date = date('Y-m-d',time());
@@ -562,7 +595,15 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS);
     }
 
-    // 获取任务树进展详情
+    /**
+     * 获取任务树进展详情
+     * @param int $id
+     * @param string $date
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function getProgressReport($id = 12, $date = '2020-10-09') {
         $treeModel = new MissionTree();
         $changeList = array();            // 信息变化的任务列表
@@ -633,7 +674,11 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS, $data);
     }
 
-    // 获取任务树列表
+    /**
+     * 获取任务树列表
+     * @param $id
+     * @return array
+     */
     public function missionTree($id) {
         $missionService = new MissionService();
         $missionTree = $missionService->getMissionTree($id);
@@ -641,7 +686,14 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS, $missionTree, count($missionTree));
     }
 
-    // 删除任务树任务
+    /**
+     * 删除任务树任务
+     * @param $id
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function deleteTreeMission($id) {
         // 获取子任务列表
         $mission = new Mission();
@@ -658,13 +710,17 @@ class MissionC extends Controller
         }
     }
 
-    /** 添加任务树任务
+    /**
+     * 添加任务树任务
      * @param $id
+     * @return array
+     * @throws \think\exception\DbException
      */
     public function addTreeMission($id)
     {
         $mission = Mission::get($id);
         $type = input('post.type');
+        $sessionUserId = Session::get("info")["user_id"];
 
         // 位置
         if(input('post.position') == 'sibling') {
@@ -674,7 +730,7 @@ class MissionC extends Controller
         if($type == 'new') {            // 新增任务
             $minute_id = input('post.minute_id')? input('post.minute_id') : 0;
             $infoArray = array_merge($_POST, [
-                'reporter_id' => '1110023',          // TODO
+                'reporter_id' => $sessionUserId,
                 'minute_id' => $minute_id,
                 'parent_mission_id' => $id,
                 'create_time' => date('Y-m-d H:i:s', time())
@@ -693,7 +749,7 @@ class MissionC extends Controller
             $mission = new Mission();
             $mission->save([
                 'mission_title' => $minute->minute_theme,
-                'reporter_id' => '1110023',         // TODO
+                'reporter_id' => $sessionUserId,
                 'assignee_id' => $minute->host_id,
                 'status' => 2,         // 任务状态：已完成 TODO
                 'start_date' => date("Y-m-d", time()),
@@ -704,10 +760,35 @@ class MissionC extends Controller
             ]);
         }
 
+        // 发送钉钉消息
+        if($type == 'new') {
+            if($sessionUserId != input('post.assignee_id') && $mission->assignee->dd_userid != '') {
+                $data = [
+                    'userList' => $mission->assignee->dd_userid,
+                    'data' => [
+                        'head' => 'OA通知',
+                        'title' => '您有新的任务待处理',
+                        'detail'=> [
+                            ['key' => '标题：', 'value' => $mission->mission_title],
+                            ['key' => '描述：', 'value' =>  $mission->description],
+                            ['key' => '截止日期：', 'value' =>  $mission->finish_date],
+                            ['key' => '链接：', 'value' =>  'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
+                        ],
+                        'file_count' => 0
+                    ]
+                ];
+//                curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+            }
+        }
+
         return Result::returnResult(Result::SUCCESS);
     }
 
-    // 关注任务树所有任务
+    /**
+     * 关注任务树所有任务
+     * @return array
+     * @throws \think\exception\DbException
+     */
     public function interestTree() {
         $missionId = input('post.missionId');
         $userIds = explode(',', input('post.userIds'));
@@ -739,7 +820,12 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS);
     }
 
-    // 获取任务关注人列表
+    /**
+     * 获取任务关注人列表
+     * @param $id
+     * @return array
+     * @throws \think\exception\DbException
+     */
     public function getInterestList($id) {
 
         $mission = Mission::get($id);
@@ -755,14 +841,19 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS, $interestNames);
     }
 
-    /** 获取工作日历任务
-     * @param string $type 我头上的、我发起的、我关注的任务
-     * @param $offset 月偏移量
+    /**
+     * 获取工作日历任务
+     * @param $type 我头上的、我发起的、我关注的任务
+     * @param int $offset 月偏移量
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function getCalendarMission($type, $offset = 0)
     {
         $mission = new Mission();
-        $userId = '1110023';          // TODO
+        $userId = Session::get("info")["user_id"];
         $dateArray = dateUtil::getMonthFirstAndLast($offset);           // 获取月份第一天和最后一天
 
         // 我头上的、我发起的、我关注的

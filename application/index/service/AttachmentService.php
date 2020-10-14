@@ -28,8 +28,8 @@ class AttachmentService
             $attachment = new Attachment([
                 'source_name' => $fileInfo['name'],
                 'storage_name' => $info->getFilename(),
-                'uploader_id' => '1110023',
-                'file_size' => $fileInfo['size'],
+                'uploader_id' => Session::get("info")["user_id"],
+                'file_size' => $fileInfo['size'],           // 单位：字节
                 'save_path' => $info->getSaveName()
             ]);
             $attachment->save();

@@ -1,15 +1,20 @@
 <?php
 namespace app\index\controller;
 
+use app\common\model\UserInfo;
+use app\common\util\EncryptionUtil;
+use app\index\model\Department;
 use app\index\model\Minute;
+use app\index\model\Project;
 use app\index\model\User;
 use app\common\Result;
+use app\other\model\MissionInfo;
+use app\other\model\UserMission;
 use app\index\service\AttachmentService;
 use app\index\model\Mission;
 use app\index\model\MissionInterest;
 use app\common\util\curlUtil;
 use think\Controller;
-use think\Session;
 
 class Index extends Controller
 {
@@ -19,20 +24,11 @@ class Index extends Controller
 //        return $this->fetch();
     }
 
-    // 获取选择会议列表
-    public function selectMinute($page = 1, $limit = 10, $keyword = '') {
-        $minute = new Minute();
-        $minutes = $minute->where('minute_id', $keyword)->field('minute_id,minute_theme,host_id')->select();
-        foreach ($minutes as $one) {
-            $one->host_name = $one->user->user_name;            // 关联处理人
-            unset($one->user);
-        }
-
-        return Result::returnResult(Result::SUCCESS, $minutes, count($minutes));
+    public function test()
+    {
+        $user = User::get(-1);
+        return $user;
     }
 
-    public function test() {
-        $info = Session::get("info");
-        dump($info);
-    }
+
 }

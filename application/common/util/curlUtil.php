@@ -12,7 +12,7 @@ namespace app\common\util;
 class curlUtil
 {
     // 调用接口
-    public static function post($url, $data = '')
+    public static function post($url, $data = [])
     {
         $ch = curl_init();
 

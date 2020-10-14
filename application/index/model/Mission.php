@@ -9,13 +9,13 @@ class Mission extends Model
     // 关联发起人（一对一）
     public function reporter()
     {
-        return $this->hasOne('User','user_id', 'reporter_id')->field('user_name');
+        return $this->hasOne('User','user_id', 'reporter_id')->field('user_name,dd_userid');
     }
 
     // 关联处理人（一对一）
     public function assignee()
     {
-        return $this->hasOne('User','user_id', 'assignee_id')->field('user_name');
+        return $this->hasOne('User','user_id', 'assignee_id')->field('user_name,dd_userid');
     }
 
     // 关联关注人（一对多）

@@ -17,8 +17,9 @@ class dateUtil
 {
     /**
      * 获取月份第一天和最后一天日期
-     * @param $date 指定日期
-     * @param $offset 月份偏移量
+     * @param int $offset 月份偏移量
+     * @param string $date 指定日期
+     * @return array
      */
     public static function getMonthFirstAndLast($offset = 0, $date = ''){
         if($date == '') {

@@ -40,11 +40,15 @@ class DataEnum
 
     // 钉钉消息输入数据格式
     public static $data = [
-        'head' => '',
-        'title' => '',
-        'detail'=> [
-            ['key' => '', 'value' => ''],
-            ['key' => '', 'value' => '']
+        'userList' => '',
+        'data' => [
+            'head' => 'OA通知',
+            'title' => '',
+            'detail'=> [
+                ['key' => '', 'value' => ''],
+                ['key' => '', 'value' =>  '']
+            ],
+            'file_count' => 0
         ]
     ];
 }
