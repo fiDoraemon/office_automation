@@ -68,24 +68,78 @@
           ]
         },
         {
+          "title": "ERP",
+          "href": "",
+          "icon": "fa fa-superpowers",
+          "target": "_self",
+          "child": [
+            {
+              "title": "ERP系统",
+              "href": "http://192.168.0.249/ERP_system/ERP.php",
+              "icon": "fa fa-snowflake-o",
+              "target": "_self"
+            }
+          ]
+        },
+        {
           "title": "样机配置",
           "href": "",
           "icon": "fa fa-superpowers",
           "target": "_self",
           "child": [
             {
-              "title": "配置列表",
-              "href": "page/test.html?v=5",
+              "title": "样机配置系统",
+              "href": "http://192.168.0.249/configuration_system/configuration_portal.php",
+              "icon": "fa fa-snowflake-o",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "百宝箱",
+          "href": "",
+          "icon": "fa fa-superpowers",
+          "target": "_self",
+          "child": [
+            {
+              "title": "硬件百宝箱",
+              "href": "http://192.168.0.249/workfiles/fileindex_hardware.php",
               "icon": "fa fa-snowflake-o",
               "target": "_self"
             },
             {
-              "title": "配置对比",
-              "href": "page/test.html?v=6",
+              "title": "系统百宝箱",
+              "href": "http://192.168.0.249/workfiles/fileindex_system.php",
+              "icon": "fa fa-calendar",
+              "target": "_self"
+            },
+            {
+              "title": "行政百宝箱",
+              "href": "http://192.168.0.249/workfiles/fileindex_administration.php",
               "icon": "fa fa-calendar",
               "target": "_self"
             }
           ]
+        },
+        {
+          "title": "图书馆管理",
+          "href": "",
+          "icon": "fa fa-superpowers",
+          "target": "_self",
+          "child": [
+            {
+              "title": "图书馆",
+              "href": "http://192.168.0.249/book_system/book_portal.php",
+              "icon": "fa fa-snowflake-o",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "心愿单",
+          "href": "http://192.168.0.249/mission_system/wish_list.php",
+          "icon": "fa fa-superpowers",
+          "target": "_self"
         }
       ]
     },
