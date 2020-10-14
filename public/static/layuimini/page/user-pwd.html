@@ -57,6 +57,12 @@
 
         //监听提交
         form.on('submit(saveBtn)', function (data) {
+            if(data.field['again_password'] != data.field['new_password']){
+                var index = layer.alert("两次密码输入不一致！", {
+                    title: '系统提示'
+                });
+                return ;
+            }
             $.ajax({
                 url: "/office_automation/public/index.php/index/user_c/changePwd",
                 type:'post',

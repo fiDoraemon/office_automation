@@ -26,6 +26,7 @@ use think\db\exception\ModelNotFoundException;
 use think\Exception;
 use think\exception\DbException;
 use think\Session;
+use think\Model;
 
 /**
  * 会议纪要模块功能
@@ -188,13 +189,15 @@ class MinuteC
                     $user -> where("user_id", "not in",$userList);
                 }
             }
-            if($keyword != ""){   //模糊查询条件
+            //模糊查询条件
+            if($keyword != ""){
                 $Department = new Department();
                 $listDepartmentId = $Department -> where("department_name", "like", "%$keyword%")
                       -> column("department_id");
                 $user -> where("user_name","like" ,"%$keyword%")
                       -> whereOr('department_id','in',$listDepartmentId);
             }
+
             $count = $user -> count();  //获取条件符合的总人数
 
             $user -> where("user_status", 1);
@@ -220,8 +223,9 @@ class MinuteC
                 $user -> where("user_name","like" ,"%$keyword%")
                       -> whereOr('department_id','in',$listDepartmentId);
             }
+
             $listUser = $user -> field("user_id,user_name,department_id")
-                              -> order("department_id")
+//                              -> order("department_id")
                               -> page($page,$limit)
                               -> select();
             foreach ($listUser as $u){
@@ -243,7 +247,7 @@ class MinuteC
      * @throws ModelNotFoundException
      */
     public function getMinuteInfo(){
-        $minuteId = $_POST["minuteId"];
+        $minuteId = $_GET["minuteId"];
         $minute = new Minute();
         $minute -> department();
         $resultMinute = $minute -> where("minute_id", $minuteId)
@@ -379,6 +383,24 @@ class MinuteC
         }
     }
 
+
+    public function test(){
+        Db::transaction(function () {
+            for($i = 0; $i < 10; $i++){
+                $attend = new MinuteAttendTemp();
+                $attend -> user_id = $i;
+                $attend -> save();
+            }
+            for($i = 0; $i < 10; $i++){
+                $attend = new MinuteTemp();
+                $attend -> id = $i;
+                $attend -> save();
+                if($i == 5){
+                    throw new \think\Exception('异常消息', 100006);
+                }
+            }
+        });
+    }
     /**
      * 保存新发起的会议
      * @return array
@@ -810,11 +832,6 @@ class MinuteC
         }
     }
 
-
-//    public function test(){
-//        $DDidList = User::where('user_id','in',$attendUsers)->column('dd_userid');
-//        $DDidList = implode(',',$DDidList);
-//    }
     /**
      * 发起新会议时发送钉钉消息
      * @param $minute

@@ -130,8 +130,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 var missionArray        = data.minuteMission;                //临时保存的实际的任务
                 var minuteTempMission   = data.minuteTempMission;            //临时保存的会议任务
                 var newAttendArray      = data.minuteNewAttends;             //临时保存的新增应到会人员
-                // var reallyAttendArray   = data.;             //真实保存的应到会人员
-                // var reallyAttendedArray = data.;             //真实保存的已经到会人员
                 var newMissionArray = "";
                 var newAttendId     = "";
                 var newAttendName   = "";
@@ -314,7 +312,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
     function tempMinuteInfo(){
         $.ajax({
             url: "/office_automation/public/index.php/index/minute_c/getMinuteInfo",
-            type:'post',
+            type:'get',
             timeout: 1000,
             data: {
                 minuteId : minute_id,
@@ -690,6 +688,11 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 minuteContext   : minuteContext,    //会议记录
                 minuteMission   : minuteMission,    //新会议任务（数组）
                 uploadList      : uploadList        //附件（数组）
+            },
+            beforeSend:function(){
+                var index = layer.load(1, {
+                    shade: [0.5,'#808080'] //0.1透明度的白色背景
+                });
             },
             success: function(res){
                 layer.alert('会议修改成功！', {title: '提示'},

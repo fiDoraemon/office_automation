@@ -12,7 +12,46 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
     var uploadList = [];
     var hostId;  //根绝这个变量让会议发起人必须在应到会议名单中
 
-//进入页面先判断是否有临时保存的会议信息
+    /**
+     * 获取所有部门信息和会议类型信息
+     */
+    $.ajax({
+        url: "/office_automation/public/index.php/index/minute_c/getAddInfo",
+        type:'post',
+        timeout: 2000,
+        data: {},
+        success: function(res){
+            var hostName = res["data"]["hostName"];
+            var departmentName = res["data"]["departmentName"];
+            hostId = res["data"]["hostId"];
+            //会议主持人名字
+            $("#host-name").val(hostName);
+            //所属部门
+            $("#department-name").val(departmentName);
+            //会议类型信息
+            var minuteTypeArray = res["data"]["minuteType"];
+            for (var i = 0; i < minuteTypeArray.length; i++){
+                var $option = "<option value='" + minuteTypeArray[i]["type_id"] + "'>" + minuteTypeArray[i]["type_name"] + "</option>";
+                $("#select-minute-type").append($option);
+            }
+            //项目代号
+            var projectArray = res["data"]["projectType"];
+            for (var i = 0; i < projectArray.length; i++){
+                var $option = "<option value='" + projectArray[i]["project_code"] + "'>" + projectArray[i]["project_code"] + "</option>";
+                $("#select-project-code").append($option);
+            }
+            if( $('#list-users').val() === null ||  $('#list-users').val() === ""){
+                $('#list-users').attr('ts-selected', hostId);
+                $('#list-users').val(hostName);
+            }
+            //需要重新加载
+            form.render('select');
+        },
+        error: function(data){
+        }
+    });
+
+    //进入页面先判断是否有临时保存的会议信息
     $.ajax({
         url: "/office_automation/public/index.php/index/minute_c/hasNewTempMinute",
         type:'get',
@@ -52,52 +91,13 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 }, function(){
 
                 });
+            }else{
+                userIdList.push(hostId);
             }
         },
         error: function(data){
         }
     });
-
-    /**
-     * 获取所有部门信息和会议类型信息
-     */
-    function selectAddInfo(form){
-        $.ajax({
-            url: "/office_automation/public/index.php/index/minute_c/getAddInfo",
-            type:'post',
-            timeout: 1000,
-            data: {},
-            success: function(res){
-                var hostName = res["data"]["hostName"];
-                var departmentName = res["data"]["departmentName"];
-                hostId = res["data"]["hostId"];
-                //会议主持人名字
-                $("#host-name").val(hostName);
-                //所属部门
-                $("#department-name").val(departmentName);
-                //会议类型信息
-                var minuteTypeArray = res["data"]["minuteType"];
-                for (var i = 0; i < minuteTypeArray.length; i++){
-                    var $option = "<option value='" + minuteTypeArray[i]["type_id"] + "'>" + minuteTypeArray[i]["type_name"] + "</option>";
-                    $("#select-minute-type").append($option);
-                }
-                //项目代号
-                var projectArray = res["data"]["projectType"];
-                for (var i = 0; i < projectArray.length; i++){
-                    var $option = "<option value='" + projectArray[i]["project_code"] + "'>" + projectArray[i]["project_code"] + "</option>";
-                    $("#select-project-code").append($option);
-                }
-                if( $('#list-users').val() === null ||  $('#list-users').val() === ""){
-                    $('#list-users').attr('ts-selected', hostId);
-                    $('#list-users').val(hostName);
-                }
-                //需要重新加载
-                form.render('select');
-            },
-            error: function(data){
-            }
-        });
-    }
 
     function saveTemp(){
         //判断应到列表中是否存在会议发起人，若没有则添加
@@ -146,7 +146,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
     }
 
 
-    //开始使用下拉多个选择
+    //选择应到人员
     tableSelect.render({
         elem: '#list-users',	//定义输入框input对象 必填
         checkedKey: 'user_id', //表格的唯一建值，非常重要，影响到选中状态 必填
@@ -155,7 +155,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
         ],
         table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
-            url:'/office_automation/public/index.php/index/minute_c/getAllUsers',
+            url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=0',
             cols: [[
                 {type: "checkbox"},
                 {field: 'user_id', title: '员工工号'},
@@ -165,6 +165,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         },
         done: function (elem, data) {
             var NEWJSON = []; //显示给用户看的员工名字
+            userIdList.splice(0,userIdList.length); //清空数组
             layui.each(data.data, function (index, item) {
                 NEWJSON.push(item.user_name);
                 userIdList.push(item.user_id)
@@ -183,8 +184,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         ,type: 'time'
         ,format: 'H点m分'
     });
-
-    selectAddInfo(form);
 
     //文件上传
     var fileListView = $('#fileList')
@@ -346,18 +345,16 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         return false;
     });
 
-    //监听指定开关
-    form.on('switch(switchTest)', function (data) {
-        layer.msg('开关checked：' + (this.checked ? 'true' : 'false'), {
-            offset: '6px'
-        });
-        layer.tips('温馨提示：请注意开关状态的文字可以随意定义，而不仅仅是ON|OFF', data.othis)
-    });
-
     //确认提交
     form.on('submit(save)', function (data) {
         var minute_info             = data.field;
-        //minute_info.attend_users    = userIdList;
+        //判断应到列表中是否存在会议发起人，若没有则添加
+        if($.inArray(hostId , userIdList) === -1){
+            userIdList.push(hostId);
+        }
+        minute_info.attend_users    = userIdList;
+        console.log("attend_users:");
+        console.log(userIdList);
         minute_info.file            = uploadList;
         $.ajax({
             url: "/office_automation/public/index.php/index/minute_c/saveMinute",
