@@ -60,7 +60,7 @@
                     <a href="javascript:;" data-check-screen="full"><i class="fa fa-arrows-alt"></i></a>
                 </li>
                 <li class="layui-nav-item layuimini-setting">
-                    <a href="javascript:;">admin</a>
+                    <a href="javascript:;"><span id="userName">未登录</span></a>
                     <dl class="layui-nav-child">
                         <dd>
                             <a href="javascript:;" layuimini-content-href="page/user-setting.html" data-title="基本资料" data-icon="fa fa-gears">基本资料<span class="layui-badge-dot"></span></a>
@@ -132,8 +132,6 @@
 <script src="lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <script>
-
-
     layui.use(['jquery', 'layer', 'miniAdmin','miniTongji'], function () {
         var $ = layui.jquery,
             layer = layui.layer,
@@ -161,7 +159,9 @@
             data: {
             },
             success: function(res){
-                if(res.code === 5){
+                if(res.code === 0){
+                    $("#userName").html(res.data);
+                }else{
                     layer.alert('请登录！', {title: '提示'},
                         function (index) {
                             layer.close(index);

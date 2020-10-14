@@ -30,7 +30,7 @@ class LoginC
         if($userInfo == null){
             return Result::returnResult(Result::NOT_LOGIN,null);
         }
-        return Result::returnResult(Result::SUCCESS,null);
+        return Result::returnResult(Result::SUCCESS,$userInfo["user_name"]);
     }
 
     /**
