@@ -76,7 +76,8 @@ function sendData(){
  * 登录成功，跳转页面
  */
 function loginSuccess(){
-    layer.msg('登录成功', function() {
+    // window.location = '../index.html';
+    layer.msg('登录成功' ,{time: 500},function() {
         window.location = '../index.html';
     });
 }
