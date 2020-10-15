@@ -91,9 +91,11 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 }, function(){
 
                 });
-            }else{
-                userIdList.push(hostId);
             }
+            // else{
+            //     console.log("判断是否有临时信息："+hostId);
+            //     userIdList.push(hostId);
+            // }
         },
         error: function(data){
         }
@@ -168,7 +170,8 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             userIdList.splice(0,userIdList.length); //清空数组
             layui.each(data.data, function (index, item) {
                 NEWJSON.push(item.user_name);
-                userIdList.push(item.user_id)
+                console.log("tableSelect添加:" + item.user_id);
+                userIdList.push(item.user_id);
             });
             elem.val(NEWJSON.join("，"))
         }
@@ -351,6 +354,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         //判断应到列表中是否存在会议发起人，若没有则添加
         if($.inArray(hostId , userIdList) === -1){
             userIdList.push(hostId);
+            console.log("hostid:" + hostId);
         }
         minute_info.attend_users    = userIdList;
         console.log("attend_users:");
