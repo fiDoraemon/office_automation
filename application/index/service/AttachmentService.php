@@ -10,6 +10,7 @@ namespace app\index\service;
 
 use app\common\Result;
 use app\index\model\Attachment;
+use think\Session;
 
 class AttachmentService
 {

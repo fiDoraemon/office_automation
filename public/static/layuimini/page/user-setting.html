@@ -24,10 +24,12 @@
                     <!--<tip>填写自己管理账号的名称。</tip>-->
                 </div>
             </div>
+
             <div class="layui-form-item">
                 <label class="layui-form-label required">部门</label>
                 <div class="layui-input-block">
-                    <input type="text" name="user_department" id="user_department" disabled="disabled" lay-verify="required" lay-reqtext="部门不能为空" placeholder="请输入部门"  value="" class="layui-input">
+                    <select class="departmentSelect" name="departmentSelect" id="departmentSelect" lay-filter="departmentSelect">
+                    </select>
                 </div>
             </div>
             <div class="layui-form-item">
@@ -66,54 +68,85 @@
 <script src="../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script src="../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script>
-    //进入页面马上获取用户的基本信息
-    $.ajax({
-        url: "/office_automation/public/index.php/index/user_c/getUserInfo",
-        type:'post',
-        timeout: 1000,
-        data: {
-        },
-        success: function(data){
-            var code = data['code'];
-            //获取成功，显示用户信息
-            if(code === 0){
-                var user_info = data['data'];
-                var user_id = user_info['user_id'];
-                var user_name = user_info['user_name'];
-                var user_department = user_info['department_id'];
-                var user_phone = user_info['phone'];
-                var user_email = user_info['email'];
-                $("#user_id").val(user_id);
-                $("#user_name").val(user_name);
-                $("#user_department").val(user_department);
-                $("#user_phone").val(user_phone);
-                $("#user_email").val(user_email);
-            }
-        },
-        error: function(data){
-            var index = layer.alert("请求出错！", {
-                title: '系统提示'
-            });
-        }
-    })
-
     layui.use(['form','miniTab'], function () {
         var form = layui.form,
             layer = layui.layer,
             miniTab = layui.miniTab;
+
+        var departmentInfo = "";
+
+        /**
+         * 获取部门信息
+         */
+        $.ajax({
+            url: "/office_automation/public/index.php/index/minute_c/getAllDepartment",
+            type:'get',
+            timeout: 2000,
+            data: {
+            },
+            success: function(res){
+                console.log("部门信息");
+                console.log(res.data);
+                var departmentArray = res.data;;
+                for (var i = 0; i < departmentArray.length; i++){
+                    departmentInfo += "<option value='" + departmentArray[i]["department_id"] + "'>" + departmentArray[i]["department_name"] + "</option>";
+                }
+                $("#departmentSelect").append(departmentInfo);
+                //需要重新加载
+                form.render('select');
+            },
+            error: function(res){
+            }
+        });
+
+        //进入页面马上获取用户的基本信息
+        $.ajax({
+            url: "/office_automation/public/index.php/index/user_c/getUserInfo",
+            type:'get',
+            timeout: 2000,
+            data: {
+            },
+            success: function(data){
+                var code = data.code;
+                //获取成功，显示用户信息
+                if(code === 0){
+                    var user_info = data['data'];
+                    var user_id = user_info['user_id'];
+                    var user_name = user_info['user_name'];
+                    var user_department = user_info['department_id'];
+                    var user_phone = user_info['phone'];
+                    var user_email = user_info['email'];
+                    $("#user_id").val(user_id);
+                    $("#user_name").val(user_name);
+                    $("#departmentSelect").val(user_department);
+                    $("#user_phone").val(user_phone);
+                    $("#user_email").val(user_email);
+                    //需要重新加载
+                    form.render('select');
+                }
+            },
+            error: function(res){
+                var index = layer.alert("请求出错！", {
+                    title: '系统提示'
+                });
+            }
+        });
+
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-            var userName = $("#user_name").val();
-            var userPhone = $("#user_phone").val();
-            var userEmail = $("#user_email").val();
+            var userName     = $("#user_name").val();
+            var departmentId =$("#departmentSelect").val();
+            var userPhone    = $("#user_phone").val();
+            var userEmail    = $("#user_email").val();
             $.ajax({
                 url: "/office_automation/public/index.php/index/user_c/updateUserInfo",
                 type:'post',
                 timeout: 1000,//超时时间
                 data:{
-                    userName: userName,
-                    userPhone: userPhone,
-                    userEmail: userEmail
+                    userName    : userName,
+                    departmentId: departmentId,
+                    userPhone   : userPhone,
+                    userEmail   : userEmail
                 },
                 success: function(data){
                     var code = data['code'];

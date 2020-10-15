@@ -76,10 +76,9 @@ class UserC extends CommonController
      */
     public function getUserInfo(){
         $user =  Session::get("info");
-        $userInfo = Db::table('oa_user')
-            ->field("id,user_id,user_name,email,phone,department_id")
-            ->where('user_id','=',$user["user_id"])
-            ->find();
+        $userInfo = User::where('user_id','=',$user["user_id"])
+                        -> field("id,user_id,user_name,email,phone,department_id")
+                        -> find();
         return Result::returnResult(Result::SUCCESS,$userInfo);
     }
 
@@ -87,13 +86,15 @@ class UserC extends CommonController
      * 修改用户信息
      */
     public function updateUserInfo(){
-        $userName = $_POST["userName"];
-        $userPhone = $_POST["userPhone"];
-        $userEmail = $_POST["userEmail"];
+        $userName     = $_POST["userName"];
+        $departmentId = $_POST["departmentId"];
+        $userPhone    = $_POST["userPhone"];
+        $userEmail    = $_POST["userEmail"];
         $user = Session::get("info");
         $userId = $user["user_id"];
         $updateResult = User::where('user_id', $userId)
             ->update(['user_name' => $userName,
+                'department_id' => $departmentId,
                 'phone' => $userPhone,
                 'email' => $userEmail,
             ]);
