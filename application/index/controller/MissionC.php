@@ -227,7 +227,7 @@ class MissionC extends Controller
                     'file_count' => $attachmentCount
                 ]
             ];
-//            curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+            curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
         }
         // 发送给邀请关注的人
         if($useridList) {
@@ -242,7 +242,7 @@ class MissionC extends Controller
                     ]
                 ]
             ];
-//            curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+            curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
         }
 
         return Result::returnResult(Result::SUCCESS);
@@ -425,12 +425,12 @@ class MissionC extends Controller
             // 当前用户是发起人，发送给处理人
             if($sessionUserId == $mission->reporter_id && $sessionUserId != $mission->assignee_id && $mission->assignee->dd_userid != '') {
                 $data['userList'] = $mission->assignee->dd_userid;
-//                curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+                curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
             // 当前用户是处理人，发送给发起人
             } else if($sessionUserId == $mission->assignee_id && $sessionUserId != $mission->reporter_id && $mission->reporter->dd_userid != '') {
                 $data['userList'] = $mission->reporter->dd_userid;
                 $data['data']['title'] = '您发起的' . $mission->mission_id . '号任务' . '正在被' . Session::get("info")["user_name"] . '处理';
-//                curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+                curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
             }
         }
         // 发送给邀请关注的人
@@ -438,13 +438,13 @@ class MissionC extends Controller
         if(!empty($newInterest)) {
             $data['data']['title'] = Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务';
             $data['userList'] = implode(',', $newInterest);
-//            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
         }
         // 发送给已关注的人
         if(!empty($oldInterest)) {
             $data['data']['title'] = '您关注的' . $mission->mission_id . '号任务正在被' . Session::get("info")["user_name"] . '处理';
             $data['userList'] = implode(',', $oldInterest);
-//            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+            $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
         }
 
         return Result::returnResult(Result::SUCCESS);
@@ -696,13 +696,11 @@ class MissionC extends Controller
      */
     public function deleteTreeMission($id) {
         // 获取子任务列表
-        $mission = new Mission();
-        $childMissionList = $mission->where('parent_mission_id', $id)->field('mission_id,mission_title,assignee_id,status,finish_date,parent_mission_id')->select();
+        $mission = Mission::get($id);
 
-        if($childMissionList) {
-            return Result::returnResult(Result::FORBID_DELETE_PARENT);
+        if($mission->parent_mission_id == -1) {
+            return Result::returnResult(Result::FORBID_DELETE_ROOT);
         } else {
-            $mission = $mission->where('mission_id', $id)->find();
             $mission->parent_mission_id = 0;
             $mission->save();
 

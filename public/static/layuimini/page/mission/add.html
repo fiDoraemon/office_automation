@@ -171,13 +171,14 @@
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script src="../../js/common.js" charset="utf-8"></script>
 <script>
-    layui.use(['form', 'laydate', 'upload', 'tableSelect'], function () {
-        var form = layui.form,
+    layui.use(['form', 'laydate', 'upload', 'tableSelect', 'miniTab'], function () {
+        var $ = layui.$,
+            form = layui.form,
             layer = layui.layer,
             laydate = layui.laydate,
             upload = layui.upload,
             tableSelect = layui.tableSelect,
-            $ = layui.$;
+            miniTab = layui.miniTab;
 
         //日期
         var date = new Date().toLocaleDateString().replace(/\//g, '-');
@@ -429,7 +430,12 @@
                             layer.alert('新建成功！', {title: '提示'},
                                 function (index) {
                                     layer.close(index);
-                                    location.reload();
+                                    location.href = 'index.html';
+                                    // 打开新的窗口
+                                    // miniTab.openNewTabByIframe({
+                                    //     href: "page/index.html",
+                                    //     title: "我的任务",
+                                    // });
                                 }
                             );
                         } else {

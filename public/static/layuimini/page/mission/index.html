@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../../css/public.css" media="all">
 
     <style>
+
         .modify-priority i {
             font-weight: bold;
             color: #1E9FFF;
@@ -17,6 +18,15 @@
             border: 1px solid;
             border-radius: 50%;
         }
+        /* 链接 */
+        .url {
+            color: #1E9FFF;
+        }
+        .url:hover {
+            color: #0567b0;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
@@ -87,7 +97,11 @@
             cols: [[
                 {type: "checkbox", width: 50},
                 {field: 'mission_id', width: 60, title: 'ID', align: "center", sort: true},
-                {field: 'mission_title', width: 150, title: '任务标题'},
+                {field: 'mission_title', width: 150, title: '任务标题',
+                    templet: function(d){
+                        return `<a class="url" lay-event="read">${d.mission_title}</a>`;
+                    }
+                },
                 {field: 'reporter_name', width: 80, title: '发起人', align: "center"},
                 {field: 'status', width: 100, title: '任务状态', align: "center"},
                 {field: 'priority', width: 100, title: '优先级', sort: true, align: "center",

@@ -18,6 +18,12 @@
             line-height: 34px;
             padding: 0 8px;
         }
+        .url {
+            color: #1E9FFF;
+        }
+        .url:hover {
+            color: #0567b0;
+        }
     </style>
 </head>
 <body>
@@ -54,7 +60,7 @@
 
         <script type="text/html" id="operate">
             <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="add"><i class="layui-icon"></i></a>
-            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon"></i></a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon">&#xe67e;</i></a>
             <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="read" lay-event="del">详情</a>
         </script>
     </div>
@@ -80,22 +86,23 @@
             elem: '#mission-tree',
             url: '/office_automation/public/index/mission_c/missionTree?id=' + getQueryVariable('id'),
             page: false,
-            // tree: {
-            //     arrowType: 'arrow2',   // 自定义箭头风格
-            //     getIcon: function(d) {  // 自定义图标
-            //         if (d.haveChild) {  // 判断是否有子集
-            //             return '<i class="ew-tree-icon ew-tree-icon-folder"></i>';
-            //         } else {
-            //             return '<i class="ew-tree-icon ew-tree-icon-file"></i>';
-            //         }
-            //     }
-            // },
             cols: [[
                 {type: 'numbers', width: '5%'},
                 {field: 'mission_title', width: '40%', title: '任务标题'},
                 {field: 'mission_id', width: '10%', title: '任务号', align: 'center'},
                 {field: 'assignee_name', width: '10%', title: '处理人', align: 'center'},
-                {field: 'status_name', width: '10%', title: '任务状态', align: 'center'},
+                {
+                    field: 'status_name', width: '10%', title: '任务状态', align: 'center', templet: function (d) {
+                        var date = new Date().toLocaleDateString().replace(/\//g, '-');
+                        if(d.status == 2) {
+                            return `<span style="color: #5FB878">${d.status_name}</span>`;
+                        } else if(d.status != 2 && d.finish_date < date) {
+                            return `<span style="color: #FF5722">${d.status_name}</span>`;
+                        } else {
+                            return `<span style="color: #393D49">${d.status_name}</span>`;
+                        }
+                    }
+                },
                 {field: 'finish_date', width: '10%', title: '截止日期', align: 'center'},
                 // {
                 //     field: 'is_parent', width: 80, align: 'center', templet: function (d) {
@@ -169,7 +176,7 @@
                     }
                 });
             } else if (layEvent === 'del') {
-                if(data.parent_mission_id == -1 || data.is_parent == 1) {
+                if(data.parent_mission_id == -1) {
                     layer.msg('不允许直接删除父任务！', {icon: 2});
                 } else {
                     layer.confirm('确定删除？', {icon: 3, title:'提示'}, function(index) {
@@ -178,11 +185,16 @@
                             "/office_automation/public/index/mission_c/deleteTreeMission?id=" + data.mission_id,
                             function (res) {
                                 if (res.code == 0) {
-                                    layer.msg('删除成功！', {icon: 1});
-                                    obj.del();
+                                    layer.alert('删除成功！', {title: '提示'},
+                                        function (index) {
+                                            layer.close(index);
+                                            // obj.del();
+                                            location.reload();
+                                        }
+                                    );
                                 } else {
                                     layer.msg('删除失败！', {icon: 2});
-                                    console.log(res.msg);
+                                    layer.msg(res.msg);
                                 }
                             }
                         );
