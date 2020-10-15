@@ -850,11 +850,14 @@ class MinuteC
         $DDidList = User::where('user_id','in',$attendUsers)->column('dd_userid');
         $DDidList = implode(',',$DDidList);
         $fileList = Attachment::where(['attachment_type' => 'minute','related_id' => $minute -> minute_id])->column('source_name');
+        $fileCount = 0;
         if($fileList == null){
             $fileList = "";
         }else{
+            $fileCount = count($fileList);
             $fileList = implode('，',$fileList);
         }
+
         $data = [
                 'userList' => $DDidList,
                 'data' => [
@@ -868,7 +871,7 @@ class MinuteC
                         ['key' => '附件清单：', 'value'   => $fileList],
                         ['key' => '链接：',     'value'   => 'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
                     ],
-                    'file_count' => 3
+                    'file_count' => $fileCount
                 ]
             ];
         $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);

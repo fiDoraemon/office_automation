@@ -1,4 +1,4 @@
-keep_login = 0;  //0代表不保持登录，1代表保持登录
+keep_login = 1;  //0代表不保持登录，1代表保持登录
 //自动token登录
 var token = $.cookie('user_token');
 if(token != "" && token != null){ //检查cookie中是否存在token信息

@@ -180,12 +180,14 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
     //日期
     laydate.render({
         elem: '#date'
+        ,value: new Date()
     });
-    //时间范围选择
+    //时间
     laydate.render({
         elem: '#time'
         ,type: 'time'
         ,format: 'H点m分'
+        ,value: new Date()
     });
 
     //文件上传

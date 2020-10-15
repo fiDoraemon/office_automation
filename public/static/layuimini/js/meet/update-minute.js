@@ -34,7 +34,9 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
 
     $("#minute-id").html(minute_id);
 
-//进入页面后检查是否有修改会议的权限，以及是否有临时保存的会议信息
+    /**
+     *  进入页面后检查是否有修改会议的权限，以及是否有临时保存的会议信息
+     */
     $.ajax({
         url: "/office_automation/public/index.php/index/minute_c/hasTempMinute",
         type:'get',
@@ -44,7 +46,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         },
         success: function(res){
             switch (res.code) {
-                case 0  : //有临时保存的会议信息
+                case 0  : //有修改权限且有临时保存的会议信息
                     layer.confirm('是否读取临时保存的会议纪要？', {
                         btn: ['读取','取消'] //按钮
                     }, function(index){
@@ -56,6 +58,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                     break;
                 case 27 : //没有修改权限
                     modifyPermission = 0;
+                    NoKeyDown(); //禁止使用快捷键保存
                     tempMinuteInfo();
                     $('input').css("pointer-events", "none");
                     $('textarea').css("pointer-events", "none");
@@ -724,5 +727,15 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
             saveTemp();
         }
     });
+
+    //非发起人进入查看页面禁止临时保存
+    function NoKeyDown(){
+        $(window).keydown(function (e) {
+            if (e.keyCode === 83 && e.ctrlKey) {
+                e.preventDefault();
+            }
+        });
+    }
+
 
 });
