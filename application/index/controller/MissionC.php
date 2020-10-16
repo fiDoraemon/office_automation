@@ -488,18 +488,30 @@ class MissionC extends Controller
     public function recordMissionView() {
         $missionId = input('post.missionId');
         $sessionUserId = Session::get("info")["user_id"];
-
+        $dateTime = date('Y-m-d H:i:s',time());
         if(!$missionId) {           // 如果缺少必需参数
             return Result::returnResult(Result::LACK_REQUIRED_PARAM);
         }
         $missionView = MissionView::get(['user_id' => $sessionUserId, 'mission_id' => $missionId]);
         if($missionView) {          // 如果有相同任务浏览记录
-            $missionView->update_time = date('Y-m-d H:i:s',time());
+            $missionView->update_time = $dateTime;
             $missionView->save();
         } else {
             $missionView = new MissionView();
+            $count =$missionView->where('user_id', $sessionUserId)->count();
+            if($count >= 15) {          // 修改最久的记录
+                $missionView = new MissionView();
+                $oldView = $missionView->where('user_id', $sessionUserId)->order('update_time asc')->find();
+                $oldView->mission_id = $missionId;
+                $oldView->save();
+            } else {            // 新增记录
+                $missionView->user_id = $sessionUserId;
+                $missionView->mission_id = $missionId;
+                $missionView->save();
+            }
         }
 
+        return Result::returnResult(Result::SUCCESS);
     }
 
     // 获取最近浏览的 15 条任务
@@ -700,10 +712,13 @@ class MissionC extends Controller
             }
         }
 
+        $changeList = empty($changeList)? [] : collection($changeList)->visible(['mission_id','mission_title','assignee_change','status_change','date_change'])->toArray();
+        $addList = empty($addList)? [] : collection($addList)->visible(['mission_id','mission_title','type'])->toArray();
+        $deleteList = empty($deleteList)? [] : collection($deleteList)->visible(['mission_id','mission_title','type'])->toArray();
         $data = [
-            'changeList' => collection($changeList)->visible(['mission_id','mission_title','assignee_change','status_change','date_change'])->toArray(),
-            'addList' => collection($addList)->visible(['mission_id','mission_title','type'])->toArray(),
-            'deleteList' => collection($deleteList)->visible(['mission_id','mission_title','type'])->toArray()
+            'changeList' => $changeList,
+            'addList' => $addList,
+            'deleteList' => $deleteList
         ];
         return Result::returnResult(Result::SUCCESS, $data);
     }

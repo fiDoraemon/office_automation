@@ -618,7 +618,15 @@
         // });
 
         // 加进任务浏览记录
-
+        $.post(
+            "/office_automation/public/index/mission_c/recordMissionView",
+            { missionId: getQueryVariable('id') },
+            function(res){
+                if(res.data) {
+                    console.log('提示：已加入浏览任务列表');
+                }
+            }
+        );
     });
 </script>
 </body>

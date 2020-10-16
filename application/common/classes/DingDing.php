@@ -117,6 +117,7 @@ class DingDing
      */
     public function getMsg($data) {
         $msg = new Msg;
+        // oa
         $msg->msgtype = "oa";
         $oa = new OA;
         $body = new Body;
@@ -137,6 +138,13 @@ class DingDing
         $head->text = $data['head'];
         $oa->head = $head;
         $msg->oa = $oa;
+        // link
+//        $msg->msgtype="link";
+//        $link = new Link;
+//        $link->message_url="https://www.baidu.com";
+//        $link->text="121213aaaaaaa";
+//        $link->title="1213";
+//        $msg->link = $link;
 
         return $msg;
     }
@@ -164,4 +172,17 @@ class DingDing
         }
     }
 }
+
+//$dingding = new DingDing();
+//$data = [
+//    'head' => 'OA通知',
+//    'title' => '测试消息',
+//    'detail'=> [
+//        ['key' => '标题：', 'value' => '123'],
+//        ['key' => '处理后状态：', 'value' => '123'],
+//        ['key' => '链接：', 'value' =>  "[asd](https://www.baidu.com)"]
+//    ],
+//    'file_count' => 3
+//];
+//echo $dingding->sendMessage('15717987769981419', $data);
 

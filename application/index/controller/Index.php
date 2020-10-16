@@ -5,6 +5,7 @@ use app\common\model\UserInfo;
 use app\common\util\EncryptionUtil;
 use app\index\model\Department;
 use app\index\model\Minute;
+use app\index\model\MissionView;
 use app\index\model\Project;
 use app\index\model\User;
 use app\common\Result;
@@ -26,8 +27,8 @@ class Index extends Controller
 
     public function test()
     {
-        $user = User::get(-1);
-        return $user;
+        $missionView = new MissionView();
+        return $missionView->where('user_id', '1110023')->find();
     }
 
 
