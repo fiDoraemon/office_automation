@@ -11,6 +11,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
     var userIdList = []; //已经选择的应到会议员工id数组
     var uploadList = [];
     var hostId;  //根绝这个变量让会议发起人必须在应到会议名单中
+    var hostName;
 
     /**
      * 获取所有部门信息和会议类型信息
@@ -21,8 +22,8 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         timeout: 2000,
         data: {},
         success: function(res){
-            var hostName = res["data"]["hostName"];
             var departmentName = res["data"]["departmentName"];
+            hostName = res["data"]["hostName"];
             hostId = res["data"]["hostId"];
             //会议主持人名字
             $("#host-name").val(hostName);
@@ -92,10 +93,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
 
                 });
             }
-            // else{
-            //     console.log("判断是否有临时信息："+hostId);
-            //     userIdList.push(hostId);
-            // }
         },
         error: function(data){
         }
@@ -113,8 +110,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         var time  = $("#time").val();
         var place = $("#place").val();
         var attend_users = userIdList;
-        console.log("attend_users");
-        console.log(attend_users);
         var minute_resolution = $("#minute-resolution").val();
         var minute_context = $("#minute-context").val();
         $.ajax({ //临时保存
@@ -166,13 +161,20 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             ]]
         },
         done: function (elem, data) {
-            var NEWJSON = []; //显示给用户看的员工名字
+            var NEWJSON = [];                       //显示给用户看的员工名字
             userIdList.splice(0,userIdList.length); //清空数组
             layui.each(data.data, function (index, item) {
                 NEWJSON.push(item.user_name);
-                console.log("tableSelect添加:" + item.user_id);
                 userIdList.push(item.user_id);
             });
+            //判断应到列表中是否存在会议发起人ID，若没有则添加
+            if($.inArray(hostId , userIdList) === -1){
+                userIdList.push(hostId);
+            }
+            //判断应到列表中是否存在会议发起人姓名，若没有则添加
+            if($.inArray(hostName , NEWJSON) === -1){
+                NEWJSON.push(hostName);
+            }
             elem.val(NEWJSON.join("，"))
         }
     });
@@ -334,16 +336,16 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             "其他：";
         var minute_resolution = "--初步评审结论：";
         switch (data.value) {
-            case "1":   $("#minute-context").val(simple_type);
+            case "0":   $("#minute-context").val(simple_type);
                 $("#minute-resolution").val("");
+                break;
+            case "1":   $("#minute-context").val(review_type);
+                $("#minute-resolution").val(minute_resolution);
                 break;
             case "2":   $("#minute-context").val(review_type);
                 $("#minute-resolution").val(minute_resolution);
                 break;
-            case "3":   $("#minute-context").val(review_type);
-                $("#minute-resolution").val(minute_resolution);
-                break;
-            case "4":   $("#minute-context").val(ECR_type);
+            case "3":   $("#minute-context").val(ECR_type);
                 $("#minute-resolution").val(minute_resolution);
                 break;
         }
