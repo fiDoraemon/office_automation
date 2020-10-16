@@ -43,7 +43,8 @@ class LoginC
         if($token != null){
             $res = $this -> checkToken($token);
             if($res){
-                return Result::returnResult(Result::TOKEN_LOGIN_SUCCESS,null);
+                $userName = Session::get('info')["user_name"];
+                return Result::returnResult(Result::TOKEN_LOGIN_SUCCESS,$userName);
             }
         }
         return Result::returnResult(Result::ERROR,null);

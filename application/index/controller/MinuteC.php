@@ -126,7 +126,7 @@ class MinuteC
         //查询会议类型
         $listMeet = $this -> getMinutes();
         $resultArray = [
-            "projectType" => $listCodes,   //项目类型
+            "projectType" => $listCodes,          //项目类型
             "minuteType"  => $listMeet            //会议类型
         ];
         return Result::returnResult(Result::SUCCESS,$resultArray);

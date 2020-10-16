@@ -132,6 +132,7 @@
 <script src="lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <script>
+    var token = $.cookie('user_token');
     layui.use(['jquery', 'layer', 'miniAdmin','miniTongji'], function () {
         var $ = layui.jquery,
             layer = layui.layer,
@@ -151,33 +152,46 @@
         };
         miniAdmin.render(options);
 
-        //登录拦截返回登录页面
-        $.ajax({
-            url: "/office_automation/public/index.php/index/login_c/checkLogin",
-            type:'get',
-            timeout: 1000,
-            data: {
-            },
-            success: function(res){
-                if(res.code === 0){
-                    $("#userName").html(res.data);
-                }else{
-                    window.location = 'page/login.html';
+        //此处应该增加自动登录功能
+        if(token != "" && token != null){ //检查cookie中是否存在token信息
+            $.ajax({
+                url: "/office_automation/public/index.php/index/login_c/tokenLogin",
+                type:'post',
+                timeout: 1000,//超时时间
+                data: {
+                    userToken : token
+                },
+                success: function(res){
+                    if(res.code === 16){
+                        $("#userName").html(res.data);
+                        //自动登录成功
+                    } else{
+                       window.location = 'page/login.html';
+                    }
+                },
+                error: function(res){
+                    console.log(res);
                 }
-            },
-            error: function(data){
-            }
-        });
+            });
+        }
 
 
-        // 百度统计代码，只统计指定域名
-        // miniTongji.render({
-        //     specific: true,
-        //     domains: [
-        //         '99php.cn',
-        //         'layuimini.99php.cn',
-        //         'layuimini-onepage.99php.cn',
-        //     ],
+        // //登录拦截返回登录页面
+        // $.ajax({
+        //     url: "/office_automation/public/index.php/index/login_c/checkLogin",
+        //     type:'get',
+        //     timeout: 1000,
+        //     data: {
+        //     },
+        //     success: function(res){
+        //         if(res.code === 0){
+        //             $("#userName").html(res.data);
+        //         }else{
+        //             window.location = 'page/login.html';
+        //         }
+        //     },
+        //     error: function(data){
+        //     }
         // });
 
         $('.login-out').on("click", function () {

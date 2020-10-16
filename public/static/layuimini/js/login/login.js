@@ -1,6 +1,8 @@
 keep_login = 1;  //0代表不保持登录，1代表保持登录
 //自动token登录
-var token = $.cookie('user_token');
+// var token = $.cookie('user_token');
+var token = getCookie('user_token');
+// alert("token为："+token);
 if(token != "" && token != null){ //检查cookie中是否存在token信息
     $.ajax({
         url: "/office_automation/public/index.php/index/login_c/tokenLogin",
@@ -10,7 +12,7 @@ if(token != "" && token != null){ //检查cookie中是否存在token信息
             userToken : token
         },
         success: function(res){
-            if(res["code"] == 16){
+            if(res.code === 16){
                 //token登录成功,跳转页面
                 window.location = '../index.html';
             }
@@ -50,7 +52,13 @@ function sendData(){
             switch (code) {
                 case 0:
                     if(keep_login === 1){
-                        $.cookie('user_token',user_token,{path:'/office_automation/public/static/layuimini', expires: 7 });
+                        setCookie("user_token",user_token,7);
+                        // var name = 'user_token';
+                        // var value = user_token;
+                        // var exp = new Date();
+                        // exp.setTime(exp.getTime() + 7 * 24 * 60 * 60 * 1000);//过期时间 2分钟
+                        // document.cookie = name + "=" + value + ";expires=" + exp.toGMTString();
+                        // $.cookie('user_token',user_token,{path:'/office_automation/public/static/layuimini', expires: 7 });
                     }
                     loginSuccess();
                     break;
@@ -70,6 +78,27 @@ function sendData(){
             console.log("error");
         }
     });
+}
+
+//设置cookie
+function setCookie(cname,cvalue,exdays)
+{
+    var d = new Date();
+    d.setTime(d.getTime()+(exdays*24*60*60*1000));
+    var expires = "expires=" + d.toGMTString() + "; path=/office_automation/public/static/layuimini";
+    document.cookie = cname + "=" + cvalue + "; " + expires;
+}
+//获取cookie
+function getCookie(cname)
+{
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0; i<ca.length; i++)
+    {
+        var c = ca[i].trim();
+        if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+    }
+    return "";
 }
 
 /**

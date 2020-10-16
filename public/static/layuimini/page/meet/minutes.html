@@ -96,7 +96,11 @@
             cols: [[
                 {type: "checkbox", width: 50},
                 {field: 'minute_id', width: 80, title: '编号'},
-                {field: 'minute_theme', width: 120, title: '会议主题',templet:tplMinuteId },
+                {field: 'minute_theme', width: 120, title: '会议主题' ,
+                        templet: function(d){
+                            return `<a style="color:#1E9FFF" href="#" lay-event="edit">${d.minute_theme}</a>`;
+                        }
+                },
                 {field: 'minute_host', width: 100, title: '发起人'},
                 {field: 'minute_date', width: 140, title: '会议时间'},
                 {field: 'attends', title: '应到人员', minWidth: 150},
@@ -111,13 +115,6 @@
             page: true,
             skin: 'line'
         });
-
-        //数据表格中的会议标题字段超链接
-        function tplMinuteId(d) {
-            // <a href='#' οnclick='DelSup(\"" + val.supplier_id + "\")'>删除</a>
-            var html = '<a style="color:#1E9FFF" href="#" onclick="themeToUpdate('+ d.minute_id +')" >'+ d.minute_theme +'</a>';
-            return html;
-        }
 
         /**
          * 监听搜索操作
