@@ -26,6 +26,17 @@
             color: #0567b0;
             cursor: pointer;
         }
+        /* 任务列表 */
+        .mission-list li {
+            text-align: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            color: #666;
+        }
+        .mission-list li:hover {
+            background-color: #efefef;
+        }
 
     </style>
 </head>
@@ -34,7 +45,7 @@
     <div class="layuimini-main">
 
         <fieldset class="table-search-fieldset">
-            <legend>任务搜索</legend>
+            <legend>操作</legend>
             <div style="margin: 10px 10px 10px 10px">
                 <form class="layui-form layui-form-pane" action="">
                     <div class="layui-form-item">
@@ -60,6 +71,9 @@
                         </div>
                         <div class="layui-inline">
                             <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                        </div>
+                        <div class="layui-inline">
+                            <button type="button" class="layui-btn layui-btn-primary" id="mission-view">最近浏览任务</button>
                         </div>
                     </div>
                 </form>
@@ -268,6 +282,38 @@
                     ,order: obj.type            // 排序方式
                 }
             });
+        });
+        
+        // 最近浏览任务
+        $('#mission-view').click(function () {
+            var index = layer.load(2);
+            // 获取最近浏览的 15 条任务
+            $.get(
+                "/office_automation/public/index/mission_c/getMissionView",
+                function (res) {
+                    if(res.code == 0) {
+                        var result = res.data;
+                        if(result) {
+                            element = `<ul class="mission-list">`;
+                            for(i in result) {
+                                element += `<li class="to-mission layui-elip" mission-id="${result[i].mission_id}">${result[i].mission_id}：${result[i]['mission'].mission_title}</li>`
+                            }
+                            element += `</ul>`;
+                        } else {
+                            element = `<div>没有任务浏览记录</div>`;
+                        }
+                        layer.close(index);
+                        layer.open({
+                            'title': '浏览过的任务列表',
+                            content: element,
+                            btn: ['关闭'],
+                            shadeClose: true,
+                            area: ['250px', '80%'],
+                            offset: 'r'
+                        });
+                    }
+                }
+            );
         });
     });
 </script>

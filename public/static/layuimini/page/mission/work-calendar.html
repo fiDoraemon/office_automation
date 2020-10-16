@@ -111,7 +111,7 @@
             height: calc((100% / 14) * 13);
         }
 
-        .cal-date{
+        .cal-date {
             display: inline-block;
             border-radius: 10px;
         }
@@ -119,6 +119,12 @@
             margin-top: 5px;
             margin-bottom: 5px;
             display: inline-block;
+        }
+        .cal-dates .cal-picked {
+
+        }
+        .cal-dates .cal-picked .mission-title{
+            color: white !important;
         }
 
         .mission-title {
@@ -134,13 +140,6 @@
         }
         .mission-list li:hover {
             background-color: #dddddd;
-        }
-
-        .cal-text .red {
-            color: #FF5722;
-        }
-        .cal-text .grey {
-            color: #c2c2c2;
         }
 
     </style>
@@ -242,8 +241,8 @@
                             if($("div[data-date='" + date + "'] span>div").length == 3) {
                                 continue;
                             }
-                            var color = (missionList[i].status == '未开始')? 'red' : 'grey';
-                            var element = `<div class="mission-title layui-elip ${color}"><span class="layui-badge-dot layui-bg-black"></span> ${missionList[i].mission_title}</div>`;
+                            var color = (missionList[i].status == '未开始')? '' : 'layui-bg-gray'
+                            var element = `<div class="mission-title layui-elip"><span class="layui-badge-dot ${color}"></span> ${missionList[i].mission_title}</div>`;
                             $("div[data-date='" + date + "']").find('.cal-text').append(element);
                         }
                     }

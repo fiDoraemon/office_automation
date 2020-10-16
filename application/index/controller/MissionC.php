@@ -8,6 +8,7 @@ use app\common\util\dateUtil;
 use app\index\model\Attachment;
 use app\index\model\Minute;
 use app\index\model\MissionTree;
+use app\index\model\MissionView;
 use app\index\model\User;
 use app\index\service\MissionService;
 use app\index\common\DataEnum;
@@ -407,13 +408,15 @@ class MissionC extends Controller
         $attachmentCount = (input('post.attachment_list') == '')? 0 : count(explode(';', input('post.attachment_list')));
 
         // 发送钉钉消息
+        $status_name = MissionStatus::get($mission->status)->status_name;
         $data = [
             'userList' => '',
             'data' => [
                 'head' => 'OA通知',
                 'title' => '',
                 'detail'=> [
-                    ['key' => '标题：', 'value' => $mission->mission_title]
+                    ['key' => '标题：', 'value' => $mission->mission_title],
+                    ['key' => '处理后状态：', 'value' => $status_name]
 //                    ['key' => '链接：', 'value' =>  'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
                 ],
                 'file_count' => $attachmentCount
@@ -481,6 +484,19 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS);
     }
 
+    // 获取最近浏览的 15 条任务
+    public function getMissionView() {
+        $sessionUserId = Session::get("info")["user_id"];
+        $missionView = new MissionView();
+        $viewList = $missionView->where('user_id', $sessionUserId)->field('mission_id')->order('create_time desc')->select();
+
+        foreach ($viewList as $view) {
+            $view->mission;
+        }
+
+        return Result::returnResult(Result::SUCCESS, $viewList, count($viewList));
+    }
+
     /**
      * 获取关注的根任务列表
      * @param int $page
@@ -494,7 +510,7 @@ class MissionC extends Controller
     public function treeIndex($page = 1, $limit = 10)
     {
         $mission = new Mission();
-        $userId = '1110023';
+        $sessionUserId = Session::get("info")["user_id"];
         // 如果传入关键词、项目代号、标签、根任务
         if(input('get.project_id') != '') {            // 关联项目
             $mission->where('project_id',input('get.project_id'));
@@ -503,7 +519,7 @@ class MissionC extends Controller
             $label = input('get.label');
             $mission->where('label', 'like', "%$label%");
         }
-        $count = $mission->where('parent_mission_id', -1)->alias('m')->join('oa_mission_interest mi',"mi.user_id= '$userId' and m.mission_id = mi.mission_id")->count();
+        $count = $mission->where('parent_mission_id', -1)->alias('m')->join('oa_mission_interest mi',"mi.user_id= '$sessionUserId' and m.mission_id = mi.mission_id")->count();
         // 如果传入关键词、项目代号、标签、根任务 TODO
         if(input('get.project_id') != '') {            // 关联项目
             $mission->where('project_id',input('get.project_id'));
@@ -518,7 +534,7 @@ class MissionC extends Controller
         } else {
             $mission->order('mission_id desc');
         }
-        $missions = $mission->alias('m')->join('oa_mission_interest mi',"mi.user_id= '$userId' and m.mission_id = mi.mission_id")->field('m.mission_id,mission_title,assignee_id,status,project_id,label')->page("$page, $limit")->select();
+        $missions = $mission->alias('m')->join('oa_mission_interest mi',"mi.user_id= '$sessionUserId' and m.mission_id = mi.mission_id")->field('m.mission_id,mission_title,assignee_id,status,project_id,label')->page("$page, $limit")->select();
 
         // 处理结果集
         foreach ($missions as $one) {
@@ -858,7 +874,7 @@ class MissionC extends Controller
         if(input('get.type') == 'assign') {
             $mission->where('assignee_id', $userId);
         } else if(input('get.type') == 'report') {
-            $mission->where('reporter_id', $userId);
+            $mission->where('reporter_id', $userId)->where('assignee_id', 'neq', $userId);
         } else if(input('get.type') == 'interest') {
             $missionList = array();
             $missionInterest = new MissionInterest();

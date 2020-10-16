@@ -16,12 +16,11 @@
             text-align: center;
             cursor: pointer;
             padding: 10px;
-            border-radius: 20px;
-            color: #c2c2c2;
+            border-radius: 5px;
+            color: #666;
         }
         .record-list li:hover {
-            background-color: #dddddd;
-            color: #333;
+            background-color: #efefef;
         }
 
     </style>
@@ -262,11 +261,11 @@
                 shadeClose: true,
                 area: ['100%', '100%'],
                 yes: function(index, layero){
-                    var iframeWin = window[layero.find('iframe')[0]['name']];           //得到iframe页的窗口对象
+                    var iframeWin = window[layero.find('iframe')[0]['name']];           // 得到iframe页的窗口对象
                     var array = iframeWin['location'].pathname.split('/');              // 分隔当前窗口的 url 为数组
 
                     if(array[array.length - 1] == 'progress-report.html') {
-                        return false;
+                        layer.close(index);
                     } else {
                         window.history.go(-1);
                     }

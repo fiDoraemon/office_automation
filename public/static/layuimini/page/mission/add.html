@@ -430,12 +430,12 @@
                             layer.alert('新建成功！', {title: '提示'},
                                 function (index) {
                                     layer.close(index);
-                                    location.href = 'index.html';
+                                    // location.href = 'index.html';
                                     // 打开新的窗口
-                                    // miniTab.openNewTabByIframe({
-                                    //     href: "page/index.html",
-                                    //     title: "我的任务",
-                                    // });
+                                    miniTab.openNewTabByIframe({
+                                        href: "page/mission/index.html",
+                                        title: "我的任务",
+                                    });
                                 }
                             );
                         } else {
