@@ -185,9 +185,10 @@
                     type: 'get',
                     async: false,
                     success: function(res){
+                        layer.close(index);
                         if (res.code == 0) {
                             var result = res.data;
-                            if(result) {
+                            if(result.length != 0) {
                                 element = `<ul class="record-list">`;
                                 for(i in result) {
                                     element += `<li class="to-record" mission-id="${data.mission_id}">${result[i].record_date}</li>`
@@ -196,27 +197,17 @@
                             } else {
                                 element = `<div>任务还没打过时间戳</div>`;
                             }
-                        }
-                        layer.close(index);
-                    }
-                });
 
-                layer.open({
-                    'title': '时间戳列表',
-                    content: element,
-                    btn: ['关闭'],
-                    shadeClose: true,
-                    area: ['250px', '80%'],
-                    offset: 'r',
-                    // yes: function(index, layero){
-                    //     // 打开新的窗口
-                    //     miniTab.openNewTabByIframe({
-                    //         href: "page/mission/progress-report.html?id=" + id + "&date=" + date,
-                    //         title: "进展详情",
-                    //     });
-                    //
-                    //     return false;
-                    // }
+                            layer.open({
+                                'title': '时间戳列表',
+                                content: element,
+                                btn: ['关闭'],
+                                shadeClose: true,
+                                area: ['250px', '80%'],
+                                offset: 'r'
+                            });
+                        }
+                    }
                 });
             }
         });

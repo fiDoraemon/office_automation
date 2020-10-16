@@ -315,6 +315,19 @@
                 }
             );
         });
+
+        // 查看任务详情
+        $('body').on('click', '.to-mission', function () {
+            layer.open({
+                title: '任务详情',
+                type: 2,
+                content: 'read.html?id=' + $(this).attr('mission-id'),
+                shade: 0.2,
+                maxmin:true,
+                shadeClose: true,
+                area: ['100%', '100%']
+            });
+        });
     });
 </script>
 

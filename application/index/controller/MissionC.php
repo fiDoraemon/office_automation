@@ -484,11 +484,29 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS);
     }
 
+    // 将任务加进浏览记录
+    public function recordMissionView() {
+        $missionId = input('post.missionId');
+        $sessionUserId = Session::get("info")["user_id"];
+
+        if(!$missionId) {           // 如果缺少必需参数
+            return Result::returnResult(Result::LACK_REQUIRED_PARAM);
+        }
+        $missionView = MissionView::get(['user_id' => $sessionUserId, 'mission_id' => $missionId]);
+        if($missionView) {          // 如果有相同任务浏览记录
+            $missionView->update_time = date('Y-m-d H:i:s',time());
+            $missionView->save();
+        } else {
+            $missionView = new MissionView();
+        }
+
+    }
+
     // 获取最近浏览的 15 条任务
     public function getMissionView() {
         $sessionUserId = Session::get("info")["user_id"];
         $missionView = new MissionView();
-        $viewList = $missionView->where('user_id', $sessionUserId)->field('mission_id')->order('create_time desc')->select();
+        $viewList = $missionView->where('user_id', $sessionUserId)->field('mission_id')->order('update_time desc')->select();
 
         foreach ($viewList as $view) {
             $view->mission;

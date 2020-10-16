@@ -35,6 +35,7 @@ class Result
     const NOT_MODIFY_PERMISSION         = 27;
     const NOT_TEMP                      = 28;
     const NOT_ROOT_MISSION              = 29;
+    const LACK_REQUIRED_PARAM           = 30;
     // 对应结果
     public static $resultMsg = [
         self::SUCCESS                   => '请求成功！',
@@ -65,7 +66,8 @@ class Result
         self::NOT_MINUTE_TEMP           => '不存在临时会议信息！',
         self::NOT_MODIFY_PERMISSION     => '没有修改权限！',
         self::NOT_TEMP                  => '没有临时保存的信息！',
-        self::NOT_ROOT_MISSION          => '任务不是根任务'
+        self::NOT_ROOT_MISSION          => '任务不是根任务',
+        self::LACK_REQUIRED_PARAM          => '缺少必需参数'
     ];
 
     // 返回结果

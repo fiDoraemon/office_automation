@@ -16,6 +16,12 @@
       "target": "_self",
       "child": [
         {
+          "title": "首页",
+          "href": "page/welcome.html",
+          "icon": "fa fa-meetup",
+          "target": "_self"
+        },
+        {
           "title": "任务",
           "href": "",
           "icon": "fa fa-meetup",
