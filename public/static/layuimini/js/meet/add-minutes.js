@@ -38,7 +38,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             //项目代号
             var projectArray = res["data"]["projectType"];
             for (var i = 0; i < projectArray.length; i++){
-                var $option = "<option value='" + projectArray[i]["project_code"] + "'>" + projectArray[i]["project_code"] + "</option>";
+                var $option = "<option value='" + projectArray[i]["project_id"] + "'>" + projectArray[i]["project_code"] + "</option>";
                 $("#select-project-code").append($option);
             }
             if( $('#list-users').val() === null ||  $('#list-users').val() === ""){
@@ -373,7 +373,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 layer.alert('会议发起成功！', {title: '提示'},
                     function (index) {
                         layer.close(index);
-                        // miniTab.deleteCurrentByIframe();
                         location.reload();
                         miniTab.openNewTabByIframe({
                             href:"page/meet/minutes.html",

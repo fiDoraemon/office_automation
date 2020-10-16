@@ -15,7 +15,7 @@ return [
     // 服务器地址
 //    'hostname'        => 'localhost',
     'hostname'        => '192.168.0.112',
-    'database'        => 'office_automation',           // 数据库名
+    'database'        => 'office_automation3',           // 数据库名
     'username'        => 'root',            // 用户名
     'password'        => '',            // 密码
     // 端口

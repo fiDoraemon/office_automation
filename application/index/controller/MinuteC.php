@@ -41,7 +41,7 @@ class MinuteC
      * 实现根据会议类型、项目代号和会议名字模糊查询
      * @param int $page 第几页
      * @param int $limit 一页几行数据
-     * @param string $projectCode 项目代号
+     * @param int $projectCode 项目代号
      * @param int $minuteType 会议类型
      * @param string $keyword 模糊查询条件
      * @param int $isMyLaunch 是不是我应到的会议
@@ -51,7 +51,7 @@ class MinuteC
      * @throws ModelNotFoundException
      * @throws \think\Exception
      */
-    public function getAllMyMeet($page = 1,$limit = 10,$projectCode = "",$minuteType = 0,$keyword = "",$isMyLaunch = 0){
+    public function getAllMyMeet($page = 1,$limit = 10,$projectCode = 0,$minuteType = 0,$keyword = "",$isMyLaunch = 0){
         $userId = Session::get("info")["user_id"];
         //查询与自己相对应的会议id号
         $listMeetId = Db::table('oa_minute_attend')
@@ -69,8 +69,8 @@ class MinuteC
              $minutes -> where("minute_theme","like","%$keyword%");
         }else{
             //对项目代号进行查询
-            if($projectCode != "" && $projectCode != "0"){
-                $minutes -> where("project",$projectCode);
+            if($projectCode != 0){
+                $minutes -> where("project_id",$projectCode);
             }
             //对会议类型进行查询
             if($minuteType != 0){
@@ -87,24 +87,25 @@ class MinuteC
             $minutes -> where("minute_theme","like","%$keyword%");
         }else{
             //对项目代号进行查询
-            if($projectCode != "" && $projectCode != "0"){
-                $minutes -> where("project",$projectCode);
+            if($projectCode != 0){
+                $minutes -> where("project_id",$projectCode);
             }
             //对会议类型进行查询
             if($minuteType != 0){
                 $minutes -> where("minute_type",$minuteType);
             }
         }
-        $listMineMeet = $minutes -> field("minute_id,minute_theme,host_id,minute_date,minute_time,project,minute_type,review_status,project_stage")
+        $listMineMeet = $minutes -> field("minute_id,minute_theme,host_id,minute_date,minute_time,project_id,minute_type,review_status,project_stage")
                                  -> page($page,$limit)
                                  -> order("minute_id","desc")
                                  -> select();
         foreach ($listMineMeet as $minute){
-            $users = "";                                                        //所有应到的员工
-            $minute -> minute_host = $minute -> user -> user_name;              //会议主持人名字
-            $minute -> minute_type = $minute -> minuteType -> type_name;        //会议类型名字
-            $minute -> review_name = $minute -> minuteReview -> review_name;    //会议评审状态
-            $minute -> stage_name = $minute -> projectStage -> stage_name;      //项目阶段
+            $users = "";                                                            //所有应到的员工
+            $minute -> minute_host  = $minute -> user         -> user_name;         //会议主持人名字
+            $minute -> minute_type  = $minute -> minuteType   -> type_name;         //会议类型名字
+            $minute -> review_name  = $minute -> minuteReview -> review_name;       //会议评审状态
+            $minute -> project_code = $minute -> project      -> project_code;      //项目代号
+            $minute -> stage_name   = $minute -> projectStage -> stage_name;        //项目阶段
             $listAttend = $minute-> minuteAttends;
             foreach ($listAttend as $attend){
                 $attend -> user;                                                //应到会议人员和用户信息表一对一关联
@@ -421,12 +422,12 @@ class MinuteC
             $minuteResolution   = $_POST["minute_resolution"];  //会议决议
             $minuteContext      = $_POST["minute_context"];     //会议内容
     //        $attachmentList = $_POST["attachment_list"];
-            $uploadList         = input('post.file/a');//$_POST["file"];
+            $uploadList         = input('post.file/a');
             //保存会议基本信息
             $minute = new Minute();
             $minute -> department_id = $departmentId;
             $minute -> minute_theme = $minuteTheme;
-            $minute -> project = $projectCode;
+            $minute -> project_id = $projectCode;
             $minute -> minute_date = $date;
             $minute -> minute_time = $time;
             $minute -> place = $place;

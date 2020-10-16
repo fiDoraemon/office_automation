@@ -9,10 +9,12 @@ function selectInfo(form){
         data: {
         },
         success: function(res){
+            console.log("xinxi:");
+            console.log(res);
             var projectArray = res["data"]["projectType"];
             var minuteArray = res["data"]["minuteType"];
             for (var i = 0; i < projectArray.length; i++){
-                var $option = "<option value='" + projectArray[i]["project_code"] + "'>" + projectArray[i]["project_code"] + "</option>";
+                var $option = "<option value='" + projectArray[i]["project_id"] + "'>" + projectArray[i]["project_code"] + "</option>";
                 $("#select-project-code").append($option);
             }
             for (var i = 0; i < minuteArray.length; i++){
