@@ -187,7 +187,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 $("#department-name").val(data.department.department_name);
                 $("#minute-theme").val(data.minute_theme);
                 $("#complete-status").val(finishStatus);
-                $("#project-code").val(data.project);
+                $("#project-code").val(data.project_code);
                 $("#project-stage").val(data.projectStage.stage_name);
                 $("#date").val(data.minute_date);
                 $("#time").val(data.minute_time);
@@ -358,7 +358,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 $("#department-name").val(data.department.department_name);
                 $("#minute-theme").val(data.minute_theme);
                 $("#complete-status").val(finishStatus);
-                $("#project-code").val(data.project);
+                $("#project-code").val(data.project_code);
                 $("#project-stage").val(data.projectStage.stage_name);
                 $("#date").val(data.minute_date);
                 $("#time").val(data.minute_time);

@@ -22,6 +22,14 @@ class MinuteTemp extends Model
     }
 
     /**
+     * 与项目一对一对应
+     * @return \think\model\relation\HasOne
+     */
+    public function project(){
+        return $this->hasOne('Project',"project_id","project_id")->field('project_id,project_name');
+    }
+
+    /**
      * 与项目状态一对一对应
      * @return \think\model\relation\HasOne
      */

@@ -68,7 +68,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                     //给页面填充值
                     $("#select-minute-type").val(data.minute_type);
                     $("#minute-theme").val(data.minute_theme);
-                    $("#select-project-code").val(data.project);
+                    $("#select-project-code").val(data.project_code);
                     $("#date").val(data.minute_date);
                     $("#time").val(data.minute_time);
                     $("#place").val(data.place);

@@ -252,7 +252,7 @@ class MinuteC
         $minute = new Minute();
         $minute -> department();
         $resultMinute = $minute -> where("minute_id", $minuteId)
-                -> field("minute_id,department_id,minute_theme,minute_date,minute_time,place,project,host_id,resolution,record,minute_type,review_status,project_stage")
+                -> field("minute_id,department_id,minute_theme,minute_date,minute_time,place,project_id,host_id,resolution,record,minute_type,review_status,project_stage")
                 -> find();
         //关联对应发起会议的员工所属部门
         $resultMinute -> department;
@@ -296,7 +296,7 @@ class MinuteC
         $minute = new MinuteTemp();
         $minute -> department();
         $resultMinute = $minute -> where("minute_id", $minuteId)
-            -> field("minute_id,department_id,minute_theme,minute_date,minute_time,place,project,host_id,resolution,record,minute_type,review_status,project_stage")
+            -> field("minute_id,department_id,minute_theme,minute_date,minute_time,place,project_id,host_id,resolution,record,minute_type,review_status,project_stage")
             -> find();
         //关联对应发起会议的员工所属部门
         $resultMinute -> department;
@@ -653,7 +653,7 @@ class MinuteC
             $minuteTemp->minute_id = $minuteId;
             $minuteTemp->department_id = $minute->department_id;
             $minuteTemp->minute_theme = $minute->minute_theme;
-            $minuteTemp->project = $minute->project;
+            $minuteTemp->project_code = $minute->project -> project_code;
             $minuteTemp->minute_date = $minute->minute_date;
             $minuteTemp->minute_time = $minute->minute_time;
             $minuteTemp->place = $minute->place;
@@ -750,7 +750,7 @@ class MinuteC
                 }
                 $minuteTemp->department_id = $departmentId;
                 $minuteTemp->minute_theme = $minuteTheme;
-                $minuteTemp->project = $projectCode;
+                $minuteTemp->project_code = $projectCode;
                 $minuteTemp->minute_date = $date;
                 $minuteTemp->minute_time = $time;
                 $minuteTemp->place = $place;
