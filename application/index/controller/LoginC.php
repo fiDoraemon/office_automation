@@ -150,6 +150,9 @@ class LoginC
      */
     private function checkToken($token){
         $user = User::get(['token' => $token, 'user_status' => 1]);
+        if($user == null){
+            return false;
+        }
         $timeOut = $user -> token_time_out;
         if (!empty($timeOut)) {
             if (time() - $timeOut > 0) {

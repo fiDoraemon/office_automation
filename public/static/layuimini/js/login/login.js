@@ -2,26 +2,39 @@ keep_login = 1;  //0代表不保持登录，1代表保持登录
 //自动token登录
 // var token = $.cookie('user_token');
 var token = getCookie('user_token');
-// alert("token为："+token);
-if(token != "" && token != null){ //检查cookie中是否存在token信息
-    $.ajax({
-        url: "/office_automation/public/index.php/index/login_c/tokenLogin",
-        type:'post',
-        timeout: 1000,//超时时间
-        data: {
-            userToken : token
-        },
-        success: function(res){
-            if(res.code === 16){
-                //token登录成功,跳转页面
-                window.location = '../index.html';
-            }
-        },
-        error: function(res){
-            console.log(res);
+$.ajax({
+    url: "/office_automation/public/index.php/index/login_c/checkLogin",
+    type:'get',
+    timeout: 1000,//超时时间
+    data: {
+    },
+    success: function(res){
+        if(res.code === 0){
+            window.location = '../index.html';
+        }else if(token != "" && token != null){ //检查cookie中是否存在token信息
+            $.ajax({
+                url: "/office_automation/public/index.php/index/login_c/tokenLogin",
+                type:'post',
+                timeout: 1000,//超时时间
+                data: {
+                    userToken : token
+                },
+                success: function(res){
+                    if(res.code === 16){
+                        //token登录成功,跳转页面
+                        window.location = '../index.html';
+                    }
+                },
+                error: function(res){
+                    console.log(res);
+                }
+            });
         }
-    });
-}
+    },
+    error: function(res){
+        console.log(res);
+    }
+});
 
 //实现点击刷新验证码功能
 // $('#refreshCaptcha').on('click', function(){
@@ -53,12 +66,6 @@ function sendData(){
                 case 0:
                     if(keep_login === 1){
                         setCookie("user_token",user_token,7);
-                        // var name = 'user_token';
-                        // var value = user_token;
-                        // var exp = new Date();
-                        // exp.setTime(exp.getTime() + 7 * 24 * 60 * 60 * 1000);//过期时间 2分钟
-                        // document.cookie = name + "=" + value + ";expires=" + exp.toGMTString();
-                        // $.cookie('user_token',user_token,{path:'/office_automation/public/static/layuimini', expires: 7 });
                     }
                     loginSuccess();
                     break;
@@ -107,7 +114,7 @@ function getCookie(cname)
 function loginSuccess(){
     // window.location = '../index.html';
     layer.msg('登录成功' ,{time: 500},function() {
-        window.location = '../index.html?';
+        window.location = '../index.html';
     });
 }
 
