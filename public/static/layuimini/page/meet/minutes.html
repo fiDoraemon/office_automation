@@ -96,19 +96,19 @@
             cols: [[
                 {type: "checkbox", width: 50},
                 {field: 'minute_id', width: 80, title: '编号'},
-                {field: 'minute_theme', width: 120, title: '会议主题' ,
+                {field: 'minute_theme', width: 200, title: '会议主题' ,
                         templet: function(d){
                             return `<a style="color:#1E9FFF" href="#" lay-event="edit">${d.minute_theme}</a>`;
                         }
                 },
                 {field: 'minute_host', width: 100, title: '发起人'},
                 {field: 'minute_date', width: 140, title: '会议时间'},
-                {field: 'attends', title: '应到人员', minWidth: 150},
-                {field: 'project_code', width: 180, title: '项目代号'},
+                {field: 'attends', title: '应到人员', minWidth: 200},
+                {field: 'project_code', width: 120, title: '项目代号'},
                 {field: 'minute_type', width: 120, title: '会议类型'},
                 {field: 'review_name', width: 100, title: '评审状态'},
                 {field: 'stage_name', width: 135, title: '项目阶段'},
-                {title: '操作', minWidth: 150, toolbar: '#currentTableBar', align: "center"}
+                {title: '操作', toolbar: '#currentTableBar', align: "center"}
             ]],
             limits: [10, 15, 20, 25, 50, 100],  //选择一次显示多少行
             limit: 10,  //默认显示多少行数据

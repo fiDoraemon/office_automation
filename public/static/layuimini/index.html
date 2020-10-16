@@ -60,7 +60,7 @@
                     <a href="javascript:;" data-check-screen="full"><i class="fa fa-arrows-alt"></i></a>
                 </li>
                 <li class="layui-nav-item layuimini-setting">
-                    <a href="javascript:;"><span id="userName">未登录</span></a>
+                    <a href="javascript:;"><span id="userName"></span></a>
                     <dl class="layui-nav-child">
                         <dd>
                             <a href="javascript:;" layuimini-content-href="page/user-setting.html" data-title="基本资料" data-icon="fa fa-gears">基本资料<span class="layui-badge-dot"></span></a>
@@ -152,8 +152,10 @@
         };
         miniAdmin.render(options);
 
-        //此处应该增加自动登录功能
-        if(token != "" && token != null){ //检查cookie中是否存在token信息
+        /**
+         * 检查cookie中是否存在token信息，自动登录
+         */
+        if(token != "" && token != null){
             $.ajax({
                 url: "/office_automation/public/index.php/index/login_c/tokenLogin",
                 type:'post',
@@ -164,9 +166,30 @@
                 success: function(res){
                     if(res.code === 16){
                         $("#userName").html(res.data);
+                        console.log("index页面自动获取的用户信息："+res.data);
                         //自动登录成功
                     } else{
                        window.location = 'page/login.html';
+                    }
+                },
+                error: function(res){
+                    console.log(res);
+                }
+            });
+        }else{  //查看用户是否已经登录
+            $.ajax({
+                url: "/office_automation/public/index.php/index/login_c/checkLogin",
+                type:'get',
+                timeout: 1000,//超时时间
+                data: {
+                },
+                success: function(res){
+                    if(res.code === 0){
+                        $("#userName").html(res.data);
+                        console.log("登录的用户信息："+res.data);
+                        //自动登录成功
+                    } else{
+                        window.location = 'page/login.html';
                     }
                 },
                 error: function(res){
@@ -194,6 +217,9 @@
         //     }
         // });
 
+        /**
+         * 推出登录
+         */
         $('.login-out').on("click", function () {
             $.ajax({
                 url: "/office_automation/public/index.php/index/login_c/loginOut",

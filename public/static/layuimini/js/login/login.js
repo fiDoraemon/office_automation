@@ -107,7 +107,7 @@ function getCookie(cname)
 function loginSuccess(){
     // window.location = '../index.html';
     layer.msg('登录成功' ,{time: 500},function() {
-        window.location = '../index.html';
+        window.location = '../index.html?';
     });
 }
 
@@ -144,7 +144,9 @@ layui.use(['form','jquery'], function () {
         form = layui.form,
         layer = layui.layer;
 
-    //跳转到找回密码页面
+    /**
+     * 跳转到找回密码页面
+     */
     $('.forget-password').on('click', function () {
         window.location = 'user/retrieve-passworld.html';
     });
@@ -162,6 +164,9 @@ layui.use(['form','jquery'], function () {
         }
     });
 
+    /**
+     * 选择是否保持登录
+     */
     $('.icon-nocheck').on('click', function () {
         if ($(this).hasClass('icon-check')) {
             keep_login = 0;
@@ -172,7 +177,9 @@ layui.use(['form','jquery'], function () {
         }
     });
 
-    // 进行登录操作
+    /**
+     * 进行登录操作
+     */
     form.on('submit(login)', function (data) {
         data = data.field;
         if (data.username == '') {

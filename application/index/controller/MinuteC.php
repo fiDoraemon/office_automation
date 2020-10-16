@@ -258,6 +258,8 @@ class MinuteC
         $resultMinute -> department;
         //关联项目
         $resultMinute -> projectStage;
+        //关联project代号
+        $resultMinute -> project_code = $resultMinute -> project -> project_code;
         //关联主持人
         $resultMinute -> user;
         //关联多个应到会人员

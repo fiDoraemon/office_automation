@@ -321,6 +321,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 minuteId : minute_id,
             },
             success: function(res){
+                console.log(res);
                 var data = res.data;
                 var attendArray = data.minuteAttends;
                 var attendedArray = data.minuteAttendeds;
@@ -354,7 +355,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 table.reload("minute-table", {
                     data: missiondata,
                 });
-                var finishStatus = "总数: " + $count + "|完成:" + $finish + "|未开始:" + $notStarted + "|暂停:" + $suspend + "|处理中:" + $processing;
+                var finishStatus = "总数: " + $count + " ， 完成:  " + $finish + " ， 未开始:  " + $notStarted + " ， 暂停:  " + $suspend + " ， 处理中:  " + $processing;
                 $("#department-name").val(data.department.department_name);
                 $("#minute-theme").val(data.minute_theme);
                 $("#complete-status").val(finishStatus);
