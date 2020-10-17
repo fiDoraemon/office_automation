@@ -34,6 +34,12 @@
               "target": "_self"
             },
             {
+              "title": "任务搜索",
+              "href": "page/mission/serach.html",
+              "icon": "fa fa-calendar",
+              "target": "_self"
+            },
+            {
               "title": "任务树",
               "href": "page/mission/tree-index.html",
               "icon": "fa fa-calendar",

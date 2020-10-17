@@ -95,7 +95,8 @@
 
     </div>
 </div>
-<script src="../../lib/layui-v2.5.5/layui.all.js" charset="utf-8"></script>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<!--<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>-->
 <script>
     layui.use(['form', 'table'], function () {
         var $ = layui.jquery,
@@ -108,25 +109,25 @@
             toolbar: '#toolbar',
             defaultToolbar: ['filter', 'exports', 'print'],
             cols: [[
-                {type: "checkbox", width: 50},
-                {field: 'mission_id', width: 60, title: 'ID', align: "center", sort: true},
-                {field: 'mission_title', width: 150, title: '任务标题',
+                {type: "checkbox", width: '3%'},
+                {field: 'mission_id', width: '5%', title: 'ID', align: "center", sort: true},
+                {field: 'mission_title', width: '15%', title: '任务标题',
                     templet: function(d){
                         return `<a class="url" lay-event="read">${d.mission_title}</a>`;
                     }
                 },
-                {field: 'reporter_name', width: 80, title: '发起人', align: "center"},
-                {field: 'status', width: 100, title: '任务状态', align: "center"},
-                {field: 'priority', width: 100, title: '优先级', sort: true, align: "center",
+                {field: 'reporter_name', width: '7%', title: '发起人', align: "center"},
+                {field: 'status', width: '7%', title: '任务状态', align: "center"},
+                {field: 'priority', width: '10%', title: '优先级', sort: true, align: "center",
                     templet: function(d){
                         return '<div class="modify-priority"><i class="layui-icon layui-icon-subtraction" lay-event="reduce"></i> ' + d.priority + ' <i class="layui-icon layui-icon-addition" lay-event="add"></i></div>';
                     }
                 },
-                {field: 'label', width: 100, title: '标签', align: "center"},
-                {field: 'finish_date', width: 130, title: '截止日期', sort: true, align: "center"},
-                {field: 'process_note', minWidth: 150, title: '最近处理信息'},
-                {field: 'process_time', width: 130, title: '处理日期', align: "center"},
-                {title: '操作', width: 100, toolbar: '#missionListBar', align: "center"}
+                {field: 'label', width: '7%', title: '标签', align: "center"},
+                {field: 'finish_date', width: '10%', title: '截止日期', sort: true, align: "center"},
+                {field: 'process_note', width: '19%', title: '最近处理信息'},
+                {field: 'process_time', width: '10%', title: '最近处理日期', align: "center"},
+                {title: '操作', width: '7%', toolbar: '#missionListBar', align: "center"}
             ]],
             id: 'missionList',
             autoSort: false,            // TODO?
@@ -134,7 +135,13 @@
             limits: [10, 15, 20, 25, 50, 100],
             limit: 10,
             page: true,
-            skin: 'line'
+            skin: 'line',
+            done: function(res, curr, count){
+                // 解决刚进来时如果无数据不显示“无数据”问题
+                if($('.layui-table-body table tbody').children().length == 0 && $('.layui-table-body').children().length == 1) {
+                    $('.layui-table-body').append(`<div class="layui-none">无数据</div>`);
+                }
+            }
         });
 
         // 监听搜索操作

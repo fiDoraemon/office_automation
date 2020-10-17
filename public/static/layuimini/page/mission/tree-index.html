@@ -105,7 +105,13 @@
             limits: [10, 15, 20, 25, 50, 100],
             limit: 10,
             page: true,
-            skin: 'line'
+            skin: 'line',
+            done: function(res, curr, count){
+                if(res.code == 0 && count == 0) {
+                    var element  = `<div class="layui-none">无数据</div>`;
+                    $('.layui-table-body').append(element);
+                }
+            }
         });
 
         // 监听搜索操作

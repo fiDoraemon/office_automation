@@ -46,13 +46,13 @@
         <div class="layui-form-item">
             <label class="layui-form-label required">任务标题</label>
             <div class="layui-input-block">
-                <input type="text" name="mission_title" lay-verify="required" lay-reqtext="任务标题不能为空" autocomplete="off" placeholder="请输入任务标题" class="layui-input" disabled>
+                <input type="text" name="mission_title" id="mission_title" lay-verify="required" lay-reqtext="任务标题不能为空" autocomplete="off" placeholder="请输入任务标题" class="layui-input" disabled>
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label required">发起人</label>
             <div class="layui-input-inline">
-                <input type="text" name="reporter_id" class="layui-input" disabled>
+                <input type="text" name="reporter_name" class="layui-input" disabled>
             </div>
             <label class="layui-form-label required">当前处理人</label>
             <div class="layui-input-inline">
@@ -364,7 +364,7 @@
                     form.val("setValue", {
                         "mission_id": missionDetail.mission_id
                         ,"mission_title": missionDetail.mission_title
-                        ,"reporter_id": missionDetail.reporter_id
+                        ,"reporter_name": missionDetail.reporter_name
                         ,"current_assignee_name": missionDetail.assignee.user_name
                         ,"assignee_name": missionDetail.assignee.user_name
                         ,"finish_standard": missionDetail.finish_standard
@@ -418,6 +418,10 @@
                         `;
                     }
                     $('#mission-process').append(element);
+                    var isReporter = res.data.isReporter;
+                    if(isReporter) {            // 如果当前用户是发起人
+                        $('#mission_title').attr('disabled', false);
+                    }
                     // 填充附件信息表
                     // var attachmentList = missionDetail.attachmentList;
                     // element = '';

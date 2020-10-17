@@ -73,7 +73,7 @@ class MissionC extends Controller
         } else {
             $mission->order('priority desc');
         }
-        $missions = $mission->field('mission_id,mission_title,reporter_id,status,priority,label,start_date,finish_date')->page("$page, $limit")->select();
+        $missions = $mission->field('mission_id,mission_title,reporter_id,status,priority,label,finish_date')->page("$page, $limit")->select();
 
         // 处理结果集
         foreach ($missions as $one) {
@@ -131,6 +131,68 @@ class MissionC extends Controller
         foreach ($missions as $one) {
             $one->assignee_name = $one->assignee->user_name;            // 关联处理人
             unset($one->assignee);
+        }
+
+        return Result::returnResult(Result::SUCCESS, $missions, $count);
+    }
+
+    // 搜索任务
+    public function serach($page = 1, $limit = 10, $keyword = '')
+    {
+        $mission = new Mission();
+        // 任务和关键词、项目代号、标签不叠加
+        if(input('get.mission_id') != '') {            // 任务号
+            $mission->where('mission_id',input('get.mission_id'));
+        } else {
+            if($keyword != '') {            // 标题
+                $mission->where('mission_title','like',"%$keyword%");
+            }
+            if(input('get.project_id') != '') {            // 关联项目
+                $mission->where('project_id',input('get.project_id'));
+            }
+            if(input('get.label') != '') {          // 标签
+                $label = input('get.label');
+                $mission->where('label', 'like', "%$label%");
+            }
+        }
+
+        $count = $mission->count();
+        // 如果传入关键词、项目代号、标签 TODO
+        if(input('get.mission_id') != '') {            // 任务号
+            $mission->where('mission_id',input('get.mission_id'));
+        } else {
+            if($keyword != '') {            // 标题
+                $mission->where('mission_title','like',"%$keyword%");
+            }
+            if(input('get.project_id') != '') {            // 关联项目
+                $mission->where('project_id',input('get.project_id'));
+            }
+            if(input('get.label') != '') {          // 标签
+                $label = input('get.label');
+                $mission->where('label', 'like', "%$label%");
+            }
+        }
+        if(input('get.field') != '') {          // 排序
+            $mission->order(input('get.field') . ' ' . input('get.order'));
+        } else {
+            $mission->order('mission_id desc');
+        }
+        $missions = $mission->field('mission_id,mission_title,reporter_id,assignee_id,status,priority,label,finish_date')->page("$page, $limit")->select();
+
+        // 处理结果集
+        foreach ($missions as $one) {
+            // 关联查找用户名
+            $one->reporter_name = $one->reporter->user_name;
+            $one->assignee_name = $one->assignee->user_name;
+            $one->status = MissionStatus::get($one->status)->status_name;          // 查找状态码对应的信息
+            // 获取最近一条任务处理信息
+            if($one->process) {
+                $one->process_time = explode(' ', $one->process[0]->process_time)[0];
+            } else {
+                $one->process_time = '';
+            }
+            // 删除多余字段
+            unset($one->reporter_id, $one->assignee_id, $one->reporter, $one->assignee, $one->process);
         }
 
         return Result::returnResult(Result::SUCCESS, $missions, $count);
@@ -259,6 +321,7 @@ class MissionC extends Controller
      */
     public function read($id)
     {
+        $sessionUserId = Session::get("info")["user_id"];
         // 判断用户是否有权限查看任务详情 TODO
         // 获取任务详情
         $mission = Mission::get($id);
@@ -268,7 +331,7 @@ class MissionC extends Controller
         $mission->requirement_id = ($mission->requirement_id == 0)? '' : $mission->requirement_id;
         $mission->problem_id = ($mission->problem_id == 0)? '' : $mission->problem_id;
         // 关联查找用户名和转换状态码成信息
-        $mission->reporter_id = $mission->reporter->user_name;
+        $mission->reporter_name = $mission->reporter->user_name;
         $mission->assignee;
         // 获取任务关注人列表
         $nameArray = array();
@@ -289,10 +352,14 @@ class MissionC extends Controller
         // 获取任务状态列表
         $missionStatus = new MissionStatus();
         $statusList = $missionStatus->field('status_id,status_name')->select();
+
+        // 判断当前用户是否是发起人
+        $isReporter = ($sessionUserId == $mission->reporter_id)? 1 : 0;
         $data = [
             'missionDetail' => $mission,
             'projectList' => $projectList,
-            'statusList' => $statusList
+            'statusList' => $statusList,
+            'isReporter' => $isReporter
         ];
 
         // 获取任务附件列表
@@ -347,7 +414,7 @@ class MissionC extends Controller
         // 更新任务信息
         $fields = input('put.');
         $fields['parent_mission_id'] = input('put.is_root')? -1 : input('parent_mission_id');
-        $mission->allowField(true)->save($fields);
+        $mission->allowField([''])->save($fields);
 
         // 处理关注人列表
         $newInterest = array();         // 新邀请关注的人

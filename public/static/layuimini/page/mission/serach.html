@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>任务搜索</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+
+    <style>
+
+        /* 链接 */
+        .url {
+            color: #1E9FFF;
+        }
+        .url:hover {
+            color: #0567b0;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+
+        <fieldset class="table-search-fieldset">
+            <legend>任务搜索</legend>
+            <div style="margin: 10px 10px 10px 10px">
+                <form class="layui-form layui-form-pane" action="">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">任务标题</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="keyword" class="layui-input" placeholder="请输入关键词">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">关联项目</label>
+                            <div class="layui-input-inline">
+                                <select id="project_id" name="project_id">
+                                    <option value=""></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">标签</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="label" class="layui-input" placeholder="请输入任务标签">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">任务号</label>
+                            <div class="layui-input-inline">
+                                <input type="text" name="mission_id" class="layui-input" placeholder="请输入任务号">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </fieldset>
+
+        <table class="layui-hide" id="missionList" lay-filter="missionList"></table>
+
+        <script type="text/html" id="missionListBar">
+            <a class="layui-btn layui-btn-normal layui-btn-xs data-count-edit" lay-event="read">详情</a>
+            <!--<a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="stop">暂停</a>-->
+        </script>
+
+    </div>
+</div>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<!--<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>-->
+<script>
+    layui.use(['form', 'table'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            table = layui.table;
+
+        table.render({
+            elem: '#missionList',
+            url: '/office_automation/public/index/mission_c/serach',
+            toolbar: '#toolbar',
+            defaultToolbar: ['filter', 'exports', 'print'],
+            cols: [[
+                {type: "checkbox", width: '5%'},
+                {field: 'mission_id', width: '5%', title: 'ID', align: "center", sort: true},
+                {field: 'mission_title', width: '19%', title: '任务标题',
+                    templet: function(d){
+                        return `<a class="url" lay-event="read">${d.mission_title}</a>`;
+                    }
+                },
+                {field: 'reporter_name', width: '8%', title: '发起人', align: "center"},
+                {field: 'assignee_name', width: '8%', title: '处理人', align: "center"},
+                {field: 'status', width: '8%', title: '任务状态', align: "center"},
+                {field: 'priority', width: '8%', title: '优先级', align: "center"},
+                {field: 'label', width: '9%', title: '标签', align: "center"},
+                {field: 'finish_date', width: '10%', title: '截止日期', sort: true, align: "center"},
+                {field: 'process_time', width: '10%', title: '最近处理日期', align: "center"},
+                {title: '操作', width: '10%', toolbar: '#missionListBar', align: "center"}
+            ]],
+            id: 'missionList',
+            initSort: {field:'mission_id', type:'desc'},
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 10,
+            page: true,
+            skin: 'line',
+            done: function(res, curr, count){
+                // 解决刚进来时如果无数据不显示“无数据”问题
+                if($('.layui-table-body table tbody').children().length == 0 && $('.layui-table-body').children().length == 1) {
+                    $('.layui-table-body').append(`<div class="layui-none">无数据</div>`);
+                }
+            }
+        });
+
+        // 监听搜索操作
+        form.on('submit(data-search-btn)', function (data) {
+            var result = data.field;
+
+            //执行搜索重载
+            table.reload('missionList', {
+                page: {
+                    curr: 1
+                },
+                where: {
+                    mission_id: result.mission_id,
+                    keyword: result.keyword,
+                    project_id: result.project_id,
+                    label: result.label
+                }
+            }, 'data');
+
+            return false;
+        });
+
+        // 监听操作按钮
+        table.on('tool(missionList)', function (obj) {
+            var data = obj.data;
+
+            if (obj.event === 'read') {
+                var index = layer.open({
+                    title: '任务详情',
+                    type: 2,
+                    content: '../../page/mission/read.html?id=' + data.mission_id,
+                    // btn: ['返回'],
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['100%', '100%']
+                });
+                // 浏览器窗口改变大小时，把弹窗填满
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+                return false;
+            }
+        });
+
+        // 获取项目列表
+        $.get(
+            "/office_automation/public/project",
+            function (res, status) {
+                if(res.code == 0) {
+                    // 填充项目下拉框
+                    var projectList = res.data;
+                    var element = '';
+                    for(i in projectList) {
+                        element += `<option value="${projectList[i].project_id}">${projectList[i].project_code}</option>`;
+                    }
+                    $('#project_id').append(element);
+                    form.render('select');          // 刷新select选择框渲染
+                }
+            }
+        );
+
+        //监听排序事件
+        table.on('sort(missionList)', function(obj){
+            table.reload('missionList', {
+                initSort: obj           // 记录初始排序
+                ,where: {
+                    field: obj.field            // 排序字段
+                    ,order: obj.type            // 排序方式
+                }
+            });
+        });
+
+        // 查看任务详情
+        $('body').on('click', '.to-mission', function () {
+            layer.open({
+                title: '任务详情',
+                type: 2,
+                content: 'read.html?id=' + $(this).attr('mission-id'),
+                shade: 0.2,
+                maxmin:true,
+                shadeClose: true,
+                area: ['100%', '100%']
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

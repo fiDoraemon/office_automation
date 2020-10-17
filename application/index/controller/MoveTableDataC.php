@@ -165,12 +165,18 @@ class MoveTableDataC
         MissionInfo::chunk(100, function ($objects) {
             $date = date('Y-m-d H:i:s',time());
             foreach ($objects as $object) {
+                if($object->title == '') {
+                    continue;
+                }
                 // 处理值
                 $object->standard = $object->standard ? $object->standard : '';
                 $object->label = $object->label ? $object->label : '';
                 $object->parent_id= $object->parent_id? $object->parent_id : 0;
                 $object->related_requirement = $object->related_requirement? $object->related_requirement : 0;
                 $object->related_problem = $object->related_problem? $object->related_problem : 0;
+                // 处理处理人为空
+                $object->reporter_ID = $object->reporter_ID?  $object->reporter_ID : 0;
+                $object->assignee_ID = $object->assignee_ID?  $object->assignee_ID : 0;
                 // 处理任务状态
                 if ($object->status == '未开始') {
                     $object->status = 0;

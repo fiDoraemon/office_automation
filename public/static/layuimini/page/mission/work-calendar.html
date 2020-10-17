@@ -136,10 +136,11 @@
             text-align: center;
             cursor: pointer;
             padding: 10px;
-            border-radius: 20px;
+            border-radius: 5px;
+            color: #666;
         }
         .mission-list li:hover {
-            background-color: #dddddd;
+            background-color: #efefef;
         }
 
     </style>
@@ -192,7 +193,7 @@
                     var mission = dateList[time];
                     element = `<ul class="mission-list">`;
                     for(i in mission) {
-                        element += `<li class="to-mission" mission-id="${mission[i][0]}">${mission[i][1]}</li>`
+                        element += `<li class="to-mission layui-elip" mission-id="${mission[i][0]}">${mission[i][1]}</li>`
                     }
                     element += `</ul>`;
                 } else {
