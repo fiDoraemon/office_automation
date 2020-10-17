@@ -118,33 +118,33 @@ class DingDing
     public function getMsg($data) {
         $msg = new Msg;
         // oa
-        $msg->msgtype = "oa";
-        $oa = new OA;
-        $body = new Body;
-        $body->author = "OA";
-        $body->file_count = $data['file_count'];
-        $forms = array();
-        foreach ($data['detail'] as $item) {
-            $form = new Form;
-            $form->key = $item['key'];
-            $form->value = $item['value'];
-            array_push($forms, $form);
+        if($data['type'] == 'oa') {
+            $msg->msgtype = "oa";
+            $oa = new OA;
+            $body = new Body;
+            $body->author = "OA";
+//        $body->file_count = $data['file_count'];
+            $forms = array();
+            foreach ($data['detail'] as $item) {
+                $form = new Form;
+                $form->key = $item['key'];
+                $form->value = $item['value'];
+                array_push($forms, $form);
+            }
+            $body->form = $forms;
+            $body->title = $data['title'];
+            $oa->body = $body;
+            $head = new Head;
+            $head->bgcolor = "FFBBBBBB";
+            $head->text = $data['head'];
+            $oa->head = $head;
+            $msg->oa = $oa;
+        } else {
+            $msg->msgtype="text";
+            $text = new Text;
+            $text->content = $data['content'];
+            $msg->text = $text;
         }
-        $body->form = $forms;
-        $body->title = $data['title'];
-        $oa->body = $body;
-        $head = new Head;
-        $head->bgcolor = "FFBBBBBB";
-        $head->text = $data['head'];
-        $oa->head = $head;
-        $msg->oa = $oa;
-        // link
-//        $msg->msgtype="link";
-//        $link = new Link;
-//        $link->message_url="https://www.baidu.com";
-//        $link->text="121213aaaaaaa";
-//        $link->title="1213";
-//        $msg->link = $link;
 
         return $msg;
     }
@@ -175,14 +175,15 @@ class DingDing
 
 //$dingding = new DingDing();
 //$data = [
+//    'type' => 'oa',
 //    'head' => 'OA通知',
-//    'title' => '测试消息',
+//    'title' => '您有新的任务待处理',
 //    'detail'=> [
 //        ['key' => '标题：', 'value' => '123'],
-//        ['key' => '处理后状态：', 'value' => '123'],
-//        ['key' => '链接：', 'value' =>  "[asd](https://www.baidu.com)"]
-//    ],
-//    'file_count' => 3
+//        ['key' => '链接：', 'value' =>  '链接见下方']
+//    ]
 //];
+//$dingding->sendMessage('15717987769981419', $data);
+//$data = ['type' => 'text', 'content' => 'http://192.168.0.249/office_automation/public/static/layuimini/123'];
 //echo $dingding->sendMessage('15717987769981419', $data);
 

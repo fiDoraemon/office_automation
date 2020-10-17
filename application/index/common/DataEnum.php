@@ -39,16 +39,13 @@ class DataEnum
     const uploadDir = '/office_automation/public/upload/';
 
     // 钉钉消息输入数据格式
-    public static $data = [
+    public static $msgData = [
         'userList' => '',
         'data' => [
+            'type' => 'oa',
             'head' => 'OA通知',
             'title' => '',
-            'detail'=> [
-                ['key' => '', 'value' => ''],
-                ['key' => '', 'value' =>  '']
-            ],
-            'file_count' => 0
+            'detail'=> []
         ]
     ];
 }
