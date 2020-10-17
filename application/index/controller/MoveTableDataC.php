@@ -464,6 +464,27 @@ class MoveTableDataC
         return '会议表数据转移完成';
     }
 
+    // 转移真实附件
+    public function moveAttachment() {
+//        $attachment = new Attachment();
+//        $objects = $attachment->limit(10)->select();
+        Attachment::chunk(100, function ($objects) {
+            foreach ($objects as $object) {
+                $oldPath = ROOT_PATH . 'public/attachments/'. $object->storage_name;
+                $newPath = ROOT_PATH . 'public/upload/' . $object->save_path;
+                $monthDir = ROOT_PATH . 'public/upload/' . explode('/', $object->save_path)[0];
+                if(file_exists($oldPath)) {
+                    // 如果月份文件夹不存在
+                    if(!file_exists($monthDir)) {
+                        mkdir($monthDir);
+                    }
+                    rename($oldPath, $newPath);
+                }
+            }
+        });
+        return '附件转移完成';
+    }
+
     public function moveAlldata() {
 //        $this->moveUserData();
 //        $this->moveProjectData();
