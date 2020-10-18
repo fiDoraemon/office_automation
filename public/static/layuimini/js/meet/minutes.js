@@ -9,8 +9,6 @@ function selectInfo(form){
         data: {
         },
         success: function(res){
-            console.log("xinxi:");
-            console.log(res);
             var projectArray = res["data"]["projectType"];
             var minuteArray = res["data"]["minuteType"];
             for (var i = 0; i < projectArray.length; i++){

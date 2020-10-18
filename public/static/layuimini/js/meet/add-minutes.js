@@ -59,7 +59,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         timeout: 1000,
         data: {},
         success: function(res){
-            console.log(res)
             var data = res.data;
             if(res.code === 0){
                 layer.confirm('是否读取临时保存的会议纪要？', {
@@ -128,8 +127,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 minute_context  : minute_context
             },
             success: function (res) {
-                console.log("res");
-                console.log(res);
                 if(res.code === 0){
                     layer.msg('临时保存成功');
                 }else{
@@ -336,16 +333,20 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             "其他：";
         var minute_resolution = "--初步评审结论：";
         switch (data.value) {
-            case "0":   $("#minute-context").val(simple_type);
+            case "0":
+                $("#minute-context").val(simple_type);
                 $("#minute-resolution").val("");
                 break;
-            case "1":   $("#minute-context").val(review_type);
+            case "1":
+                $("#minute-context").val(review_type);
                 $("#minute-resolution").val(minute_resolution);
                 break;
-            case "2":   $("#minute-context").val(review_type);
+            case "2":
+                $("#minute-context").val(review_type);
                 $("#minute-resolution").val(minute_resolution);
                 break;
-            case "3":   $("#minute-context").val(ECR_type);
+            case "3":
+                $("#minute-context").val(ECR_type);
                 $("#minute-resolution").val(minute_resolution);
                 break;
         }
@@ -358,11 +359,8 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         //判断应到列表中是否存在会议发起人，若没有则添加
         if($.inArray(hostId , userIdList) === -1){
             userIdList.push(hostId);
-            console.log("hostid:" + hostId);
         }
         minute_info.attend_users    = userIdList;
-        console.log("attend_users:");
-        console.log(userIdList);
         minute_info.file            = uploadList;
         $.ajax({
             url: "/office_automation/public/index.php/index/minute_c/saveMinute",

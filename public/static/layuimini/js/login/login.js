@@ -26,13 +26,11 @@ $.ajax({
                     }
                 },
                 error: function(res){
-                    console.log(res);
                 }
             });
         }
     },
     error: function(res){
-        console.log(res);
     }
 });
 
@@ -60,7 +58,6 @@ function sendData(){
         },
         success: function(res){
             var code = res['code'];
-            console.log(res);
             var user_token = res["data"];
             switch (code) {
                 case 0:
@@ -81,8 +78,6 @@ function sendData(){
             }
         },
         error: function(data){
-            console.log(data);
-            console.log("error");
         }
     });
 }

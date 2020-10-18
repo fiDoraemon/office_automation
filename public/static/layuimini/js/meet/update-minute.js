@@ -125,8 +125,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 minuteId : minute_id
             },
             success: function (res) {
-                console.log("查询到的临时会议信息：");
-                console.log(res);
                 var data = res.data;
                 var attendArray         = data.minuteReallyAttends;        //应到会人员
                 var attendedArray       = data.minuteAttendeds;              //临时保存的已到会人员
@@ -321,7 +319,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 minuteId : minute_id,
             },
             success: function(res){
-                console.log(res);
                 var data = res.data;
                 var attendArray = data.minuteAttends;
                 var attendedArray = data.minuteAttendeds;
@@ -675,10 +672,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         var minuteResolution  = $("#minute-resolution").val();
         var minuteContext     = $("#minute-context").val();
         var minuteMission     = getMissionInfo();
-        console.log("newAttended:");
-        console.log(newAttended);
-        console.log("newMission:");
-        console.log(newMission);
         $.ajax({
             url: "/office_automation/public/index.php/index/minute_c/updateMinute",
             type:'post',
@@ -702,11 +695,19 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 layer.alert('会议修改成功！', {title: '提示'},
                     function (index) {
                         layer.close(index);
+                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                        parent.layer.close(index); //再执行关闭
                         location.reload();
                     }
                 );
             },
-            error: function(data){
+            error: function(res){
+                layer.alert('会议修改失败！', {title: '提示'},
+                    function (index) {
+                        layer.close(index);
+                        location.reload();
+                    }
+                );
             }
         });
         return false;

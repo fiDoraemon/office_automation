@@ -10,6 +10,7 @@ namespace app\index\controller;
 
 use app\common\Result;
 use app\common\util\curlUtil;
+use app\index\common\DataEnum;
 use app\index\model\Attachment;
 use app\index\model\Department;
 use app\index\model\Minute;
@@ -853,32 +854,129 @@ class MinuteC
         $DDidList = User::where('user_id','in',$attendUsers)->column('dd_userid');
         $DDidList = implode(',',$DDidList);
         $fileList = Attachment::where(['attachment_type' => 'minute','related_id' => $minute -> minute_id])->column('source_name');
-        $fileCount = 0;
         if($fileList == null){
             $fileList = "";
         }else{
-            $fileCount = count($fileList);
             $fileList = implode('，',$fileList);
         }
 
-        $data = [
-                'userList' => $DDidList,
-                'data' => [
-                    'head'  => 'OA通知',
-                    'title' => '您有新的会议要参加',
-                    'detail'=> [
-                        ['key' => '主题：',     'value'   => $minute -> minute_theme],
-                        ['key' => '时间：',     'value'   => $minute -> minute_date . ' ' .$minute -> minute_time],
-                        ['key' => '决议：',     'value'   => $minute -> resolution],
-                        ['key' => '记录：',     'value'   => $minute -> record],
-                        ['key' => '附件清单：', 'value'   => $fileList],
-                        ['key' => '链接：',     'value'   => 'http://192.168.0.249/office_automation/public/static/layuimini/#/page/mission/index.html']
-                    ],
-                    'file_count' => $fileCount
-                ]
-            ];
-        $result = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage', $data);
+        $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
+        $url = 'http://192.168.0.204/office_automation/public/static/layuimini/index.html#/page/meet/minutes.html?minuteId=' . $minute -> minute_id;
+        $data = DataEnum::$msgData;
+        $data['userList'] = $DDidList;
+        $data['data']['title'] = '您有新的会议要参加(#' . $minute -> minute_id .")";
+        $data['data']['detail'] = [
+            ['key' => '主题：', 'value' => $minute -> minute_theme],
+            ['key' => '时间：', 'value' => $minute -> minute_date . ' ' .$minute -> minute_time],
+            ['key' => '链接',   'value' => '链接见下方']
+        ];
+        if($fileList != "" ) {  //判断是否需要发送附件清单
+            array_splice($data['data']['detail'],2,0, [['key' => '附件清单', 'value' => $fileList]]);
+        }
+        if(!$this -> checkRecord($minute)){ //判断是否发送会议记录
+            array_splice($data['data']['detail'],2,0, [['key' => '记录：', 'value' => $minute -> record]]);
+        }
+        if(!$this -> checkResolution($minute)){ //判断是否发送会议决议
+            array_splice($data['data']['detail'],2,0, [['key' => '决议：', 'value' => $minute -> resolution]]);
+        }
+        $result = curlUtil::post($postUrl, $data);
+        $data['data'] = ['type' => 'text', 'content' => $url];
+        curlUtil::post($postUrl, $data);
         return true;
+    }
+
+    /**
+     * 判断是否需要发送会议记录
+     * @param $minute
+     * @return bool
+     */
+    private function checkRecord($minute){
+        switch ($minute -> minute_type){
+            case 0 :
+                $str = "---会议目的---
+1.
+---会议议题---
+1.
+--会前工作---
+1.
+--会议过程记录--
+1.
+2.";
+                if($minute -> record == $str){
+                    return true;
+                }
+                break;
+            case 1 :
+            case 2 :
+            $str = "---评审内容---
+1.
+---资料类型---
+（可选项：设计开发文档、技术文档、其他（要写出其他的具体内容））
+--会议时间/会签截止时间---
+
+--评审记录--
+1.
+提出人：
+问题：
+重要程度：
+处理方式：
+处理人：";
+            if($minute -> record == $str){
+                return true;
+            }
+            break;
+            case 3 :
+                $str = "---对各业务方向的影响（各方向负责人写）---
+系统（牛顿） ：
+液路（牛顿）:
+硬件（尚添）：
+机械（肖清文）：
+软件（崔刚）：
+设计转换（何战仓）：
+试剂（TBD）：
+其他：
+
+---对各业务方向的影响（申请人自己写，非必填）---
+系统： 
+液路：
+硬件：
+机械：
+下位机软件：
+上位机软件：
+设计转换：
+试剂：
+其他：";
+                if($minute -> record == $str){
+                    return true;
+                }
+                break;
+        }
+        return false;
+    }
+
+    /**
+     * 判断是否需要发送会议决议
+     * @param $minute
+     * @return bool
+     */
+    private function checkResolution($minute){
+        switch ($minute -> minute_type){
+            case 0 :
+                $str = "";
+                if($minute -> resolution == $str){
+                    return true;
+                }
+                break;
+            case 1 :
+            case 2 :
+            case 3 :
+                $str = "--初步评审结论：";
+                if($minute -> resolution == $str){
+                    return true;
+                }
+                break;
+        }
+        return false;
     }
 
 }

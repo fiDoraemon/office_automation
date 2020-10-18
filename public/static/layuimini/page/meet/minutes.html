@@ -70,7 +70,6 @@
 <script>
     //此函数放在layui里面不行
     function themeToUpdate(minute_id){
-        console.log("test")
         var index = layer.open({
             title: '会议详情',
             type: 2,
@@ -81,6 +80,16 @@
             content: 'update-minute.html?minute_id='+minute_id,
         });
     }
+    /**
+     * 获取url传输的会议id
+     */
+    function getUrlParam(name)
+    {
+        var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg);  //匹配目标参数
+        if (r!=null) return unescape(r[2]); return null;    //返回参数值
+    }
+
 
     layui.use(['form', 'table'], function () {
         var $ = layui.jquery,
@@ -224,6 +233,11 @@
         });
 
 
+        //点击链接直接查看信息
+        var minuteId = getUrlParam("minuteId");
+        if(minuteId != null && minuteId != ''){
+            themeToUpdate(minuteId);
+        }
     });
 </script>
 
