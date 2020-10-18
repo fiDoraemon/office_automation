@@ -157,7 +157,7 @@
       "child": [
         {
           "title": "用户管理",
-          "href": "",
+          "href": "page/user/index.html",
           "icon": "fa fa-meetup",
           "target": "_self"
         },
