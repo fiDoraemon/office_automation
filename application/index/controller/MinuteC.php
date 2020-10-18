@@ -861,7 +861,7 @@ class MinuteC
         }
 
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-        $url = 'http://192.168.0.204/office_automation/public/static/layuimini/index.html#/page/meet/minutes.html?minuteId=' . $minute -> minute_id;
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/index.html#/page/meet/minutes.html?minuteId=' . $minute -> minute_id;
         $data = DataEnum::$msgData;
         $data['userList'] = $DDidList;
         $data['data']['title'] = '您有新的会议要参加(#' . $minute -> minute_id .")";
