@@ -469,7 +469,7 @@ class MoveTableDataC
 //        $objects = $attachment->limit(10)->select();
         Attachment::chunk(100, function ($objects) {
             foreach ($objects as $object) {
-                $oldPath = ROOT_PATH . 'public/attachments/'. $object->storage_name;
+                $oldPath = ROOT_PATH . '../attachments/'. $object->storage_name;
                 $newPath = ROOT_PATH . 'public/upload/' . $object->save_path;
                 $monthDir = ROOT_PATH . 'public/upload/' . explode('/', $object->save_path)[0];
                 if(file_exists($oldPath)) {
