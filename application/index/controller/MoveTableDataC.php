@@ -265,6 +265,8 @@ class MoveTableDataC
         MissionHistory::chunk(100, function ($objects) {
             $date = date('Y-m-d H:i:s',time());
             foreach ($objects as $object) {
+                // 处理处理人
+                $object->handler = $object->handler? $object->handler : 0;
                 // 处理任务状态
                 if ($object->post_status == '未开始') {
                     $object->post_status = 0;
@@ -307,7 +309,6 @@ class MoveTableDataC
                         }
                         $attachment->related_id = $missionProcess->process_id;
                         $attachment->save();
-                        // 转移真实附件 TODO
                     }
                 }
             }
@@ -315,7 +316,6 @@ class MoveTableDataC
         return '任务处理表数据转移完成';
     }
 
-    // 转移任务树表进展详情数据
     // 转移会议表数据
     public function moveMinuteData() {
 //        $minuteInfo = new MinuteInfo();
@@ -455,7 +455,6 @@ class MoveTableDataC
                         }
                         $attachment->related_id = $minute->minute_id;
                         $attachment->save();
-                        // 转移真实附件 TODO
                     }
                 }
 
@@ -485,10 +484,12 @@ class MoveTableDataC
         return '附件转移完成';
     }
 
+    // 转移任务树表进展详情数据
+
     public function moveAlldata() {
-//        $this->moveUserData();
-//        $this->moveProjectData();
-//        $this->moveMissionData();
+        $this->moveUserData();
+        $this->moveProjectData();
+        $this->moveMissionData();
         $this->moveMissionHistoryData();
         $this->moveMinuteData();
         return '全部数据转移完成';

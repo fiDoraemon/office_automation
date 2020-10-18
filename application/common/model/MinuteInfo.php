@@ -11,9 +11,9 @@ class MinuteInfo extends Model
         // 数据库类型
         'type'        => 'mysql',
         // 服务器地址
-        'hostname'    => 'localhost',
+        'hostname'    => '192.168.0.112',
         // 数据库名
-        'database'    => 'test',
+        'database'    => 'oa',
         // 数据库用户名
         'username'    => 'root',
         // 数据库密码
