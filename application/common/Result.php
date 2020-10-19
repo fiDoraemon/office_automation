@@ -29,13 +29,15 @@ class Result
     const USER_SELECT_SUCCESS           = 21;
     const USER_SELECT_ERROR             = 22;
     const DELETE_ATTACHMENT             = 23;
-    const FORBID_DELETE_ROOT          = 24;
+    const FORBID_DELETE_ROOT            = 24;
     const PARENT_EXIST                  = 25;
     const NOT_MINUTE_TEMP               = 26;
     const NOT_MODIFY_PERMISSION         = 27;
     const NOT_TEMP                      = 28;
     const NOT_ROOT_MISSION              = 29;
     const LACK_REQUIRED_PARAM           = 30;
+    const EXIST_USER                    = 31;
+
     // 对应结果
     public static $resultMsg = [
         self::SUCCESS                   => '请求成功！',
@@ -61,13 +63,14 @@ class Result
         self::USER_SELECT_SUCCESS       => '查询用户成功',
         self::USER_SELECT_ERROR         => '查询用户失败',
         self::DELETE_ATTACHMENT         => '删除附件失败',
-        self::FORBID_DELETE_ROOT      => '不允许直接删除根任务',
+        self::FORBID_DELETE_ROOT        => '不允许直接删除根任务',
         self::PARENT_EXIST              => '该任务已有父任务！',
         self::NOT_MINUTE_TEMP           => '不存在临时会议信息！',
         self::NOT_MODIFY_PERMISSION     => '没有修改权限！',
         self::NOT_TEMP                  => '没有临时保存的信息！',
         self::NOT_ROOT_MISSION          => '任务不是根任务',
-        self::LACK_REQUIRED_PARAM          => '缺少必需参数'
+        self::LACK_REQUIRED_PARAM       => '缺少必需参数',
+        self::EXIST_USER                => '该用户已经存在'
     ];
 
     // 返回结果

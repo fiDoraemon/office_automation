@@ -149,7 +149,10 @@ class LoginC
      * @throws DbException
      */
     private function checkToken($token){
-        $user = User::get(['token' => $token, 'user_status' => 1]);
+        $user = new User();
+        $user -> where(['token' => $token, 'user_status' => 1])
+              -> field("id,user_id,user_name,department_id,token,token_time_out,super")
+              -> find();
         if($user == null){
             return false;
         }
@@ -203,7 +206,7 @@ class LoginC
      */
     private function checkUser($userNum, $userPwd, $keepLogin){
         $user = Db::table('oa_user')
-            ->field("id,user_id,user_name,dd_userid,department_id,token,token_time_out")
+            ->field("id,user_id,user_name,department_id,token,token_time_out,super")
             ->where('user_id','=',$userNum)
             ->where('password','=',$userPwd)
             ->where('user_status','=',1)

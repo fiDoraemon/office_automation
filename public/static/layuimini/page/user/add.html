@@ -20,32 +20,33 @@
             <div class="layui-form-item">
                 <label class="layui-form-label required">用户工号</label>
                 <div class="layui-input-block">
-                    <input type="text" name="user_id" id="user_id" lay-verify="required" lay-reqtext="用户工号不能为空" placeholder="请输入用户工号" class="layui-input">
+                    <input type="text" autocomplete="off" name="user_id" id="user_id" lay-verify="required" lay-reqtext="用户工号不能为空" placeholder="请输入用户工号" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item">
                 <label class="layui-form-label required">用户姓名</label>
                 <div class="layui-input-block">
-                    <input type="text" name="user_name" id="user_name" lay-verify="required" lay-reqtext="用户姓名不能为空" placeholder="请输入用户姓名" class="layui-input">
+                    <input type="text" autocomplete="off" name="user_name" id="user_name" lay-verify="required" lay-reqtext="用户姓名不能为空" placeholder="请输入用户姓名" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item">
                 <label class="layui-form-label required">用户部门</label>
                 <div class="layui-input-block">
-                    <select class="departmentSelect" name="departmentSelect" id="departmentSelect" lay-filter="departmentSelect">
+                    <select class="departmentSelect" name="department_id" lay-verify="required" id="departmentSelect" lay-filter="departmentSelect">
+                        <option value="">--请选择部门--</option>
                     </select>
                 </div>
             </div>
             <div class="layui-form-item">
                 <label class="layui-form-label">手机号</label>
                 <div class="layui-input-block">
-                    <input type="text" name="phone" id="phone" placeholder="请输入手机号" class="layui-input">
+                    <input type="text" autocomplete="off" name="phone" id="phone" placeholder="请输入手机号" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item">
                 <label class="layui-form-label required">邮箱账号</label>
                 <div class="layui-input-block">
-                    <input type="email" name="email" id="email" placeholder="请输入邮箱" class="layui-input">
+                    <input type="email" autocomplete="off" name="email" id="email" lay-verify="required" placeholder="请输入邮箱" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item">
@@ -95,34 +96,57 @@
         //监听提交
         form.on('submit(saveBtn)', function (data) {
             var result = data.field;
-            $.post(
-                "/office_automation/public/index.php/index/user_c/addUserInfo",
-                {
-                    user_id: result.user_id,
-                    user_name: result.user_name,
-                    department_id: result.department_id,
-                    phone   : result.phone,
-                    email   : result.email
+            $.ajax({
+                url: "/office_automation/public/index.php/index/admin_c/addUser",
+                type:'post',
+                timeout: 2000,
+                data: {
+                    user_id         : result.user_id,
+                    user_name       : result.user_name,
+                    department_id   : result.department_id,
+                    phone           : result.phone,
+                    email           : result.email
                 },
-                function (res) {
-                    if (res.code == 0) {
-                        layer.alert('添加成功！', {title: '提示'},
-                            function (index) {
-                                layer.close(index);
-                                // location.href = 'index.html';
-                                // 打开新的窗口
-                                miniTab.openNewTabByIframe({
-                                    href: "page/mission/index.html",
-                                    title: "我的任务",
-                                });
-                            }
-                        );
-                    } else {
-                        layer.msg('添加失败！');
+                success: function(res){
+                    switch (res.code) {
+                        case 0:
+                            layer.alert('添加成功！', {title: '提示'},
+                                function (index) {
+                                    layer.close(index);
+                                    miniTab.openNewTabByIframe({
+                                        href: "page/mission/index.html",
+                                        title: "我的任务",
+                                    });
+                                }
+                            );
+                            break;
+                        case 3:
+                            layer.alert('没有添加用户权限！', {title: '提示'},
+                                function (index) {
+                                    layer.close(index);
+                                    miniTab.openNewTabByIframe({
+                                        href: "page/mission/index.html",
+                                        title: "我的任务",
+                                    });
+                                }
+                            );
+                            break;
+                        case 31:
+                            layer.alert('员工ID已经存在！', {title: '提示'},
+                                function (index) {
+                                    layer.close(index);
+                                }
+                            );
+                            break;
+                        default:
+                            layer.msg('添加失败！');
+                            break;
                     }
-                }
-            );
+                },
+                error: function(res){
 
+                }
+            });
             return false;
         });
     });
