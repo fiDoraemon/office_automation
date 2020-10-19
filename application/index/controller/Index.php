@@ -25,11 +25,10 @@ class Index extends Controller
 //        return $this->fetch();
     }
 
-    public function test()
+    public function getMenuList()
     {
         $missionView = new MissionView();
         return $missionView->where('user_id', '1110023')->find();
     }
-
 
 }

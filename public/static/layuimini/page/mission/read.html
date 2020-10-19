@@ -392,6 +392,7 @@
                     var processList = missionDetail.processList;
                     element = '';
                     for(i in processList) {
+                        var result = processList[i];
                         // if(processList[i].attachment != '') {
                         //     processList[i].attachment = '附件：' + processList[i].attachment;
                         // }
@@ -404,13 +405,13 @@
                         element += `
                         <tr>
                             <td>${i + 1}</td>
-                            <td>${processList[i].handler['user_name']}</td>
-                            <td>${processList[i].status['status_name']}</td>
-                            <td>${processList[i].process_time}</td>
-                            <td>${processList[i].post_finish_date}</td>
+                            <td>${result.handler['user_name']}</td>
+                            <td>${result.status['status_name']}</td>
+                            <td>${result.process_time}</td>
+                            <td>${result.post_finish_date}</td>
                             <td>
                                 <blockquote class="layui-elem-quote">
-                                ${processList[i].process_note}
+                                ${result.process_note}
                                 </blockquote>
                                 ${tempString}
                             </td>
@@ -461,6 +462,31 @@
                     //             }
                     //         });
                     //     });
+                    // });
+                } else {
+                    layer.open({
+                        type: 0,
+                        title: '提示',
+                        content: res.msg,
+                        icon: 5,
+                        anim: 6,
+                        closeBtn: 2,
+                        yes: function(index, layero){
+                            layer.close(index);
+
+                            var index = parent.layer.getFrameIndex(window.name);
+                            parent.layer.close(index);
+                        },
+                        cancel: function(index, layero){
+                            var index = parent.layer.getFrameIndex(window.name);
+                            parent.layer.close(index);
+                        }
+                    });
+                    // layer.alert(res.msg, {icon: 5}, function(index){
+                    //     layer.close(index);
+                    //
+                    //     var index = parent.layer.getFrameIndex(window.name);
+                    //     parent.layer.close(index);
                     // });
                 }
             }

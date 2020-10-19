@@ -150,6 +150,9 @@ class MissionC extends Controller
     public function serach($page = 1, $limit = 10, $keyword = '')
     {
         $mission = new Mission();
+        if(input('get.mission_id') == '' && $keyword == '' && input('get.project_id') == '' && input('get.label') == '') {
+            return Result::returnResult(Result::SUCCESS, [], 0);
+        }
         // 任务和关键词、项目代号、标签不叠加
         if(input('get.mission_id') != '') {            // 任务号
             $mission->where('mission_id',input('get.mission_id'));
@@ -336,9 +339,11 @@ class MissionC extends Controller
     public function read($id)
     {
         $sessionUserId = Session::get("info")["user_id"];
-        // 判断用户是否有权限查看任务详情 TODO
-        // 获取任务详情
-        $mission = Mission::get($id);
+        $mission = Mission::get($id);            // 获取任务详情
+        // 判断用户是否有权限查看任务详情
+        if($sessionUserId != $mission->reporter_id && $sessionUserId != $mission->assignee_id) {
+            return Result::returnResult(Result::NO_ACCESS);
+        }
         // 处理编号为 0 问题
         $mission->parent_mission_id = ($mission->parent_mission_id == 0)? '' : $mission->parent_mission_id;
         $mission->minute_id = ($mission->minute_id == 0)? '' : $mission->minute_id;

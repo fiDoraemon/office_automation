@@ -40,13 +40,13 @@ class Result
 
     // 对应结果
     public static $resultMsg = [
-        self::SUCCESS                   => '请求成功！',
-        self::ERROR                     => '请求错误！',
-        self::NO_USER_INFO              => '数据库没有您的用户信息！',
-        self::NO_ACCESS                 => '您无权限查看!',
-        self::NOT_LOGIN                 => '您还未登录！',
-        self::OBJECT_EXIST              => '对象已存在！',
-        self::FORBIDDEN_USER            => '您的账户已禁用！',
+        self::SUCCESS                   => '请求成功',
+        self::ERROR                     => '请求错误',
+        self::NO_USER_INFO              => '数据库没有您的用户信息',
+        self::NO_ACCESS                 => '没有权限查看',
+        self::NOT_LOGIN                 => '您还未登录',
+        self::OBJECT_EXIST              => '对象已存在',
+        self::FORBIDDEN_USER            => '您的账户已禁用',
         self::OLD_PASSWORLD_ERROR       => '原密码输入错误',
         self::SEND_CODE_SUCCESS         => '验证码发送成功',
         self::SEND_CODE_ERROR           => '验证码发送失败',
@@ -66,8 +66,8 @@ class Result
         self::FORBID_DELETE_ROOT        => '不允许直接删除根任务',
         self::PARENT_EXIST              => '该任务已有父任务！',
         self::NOT_MINUTE_TEMP           => '不存在临时会议信息！',
-        self::NOT_MODIFY_PERMISSION     => '没有修改权限！',
-        self::NOT_TEMP                  => '没有临时保存的信息！',
+        self::NOT_MODIFY_PERMISSION     => '没有修改权限',
+        self::NOT_TEMP                  => '没有临时保存的信息',
         self::NOT_ROOT_MISSION          => '任务不是根任务',
         self::LACK_REQUIRED_PARAM       => '缺少必需参数',
         self::EXIST_USER                => '该用户已经存在'
