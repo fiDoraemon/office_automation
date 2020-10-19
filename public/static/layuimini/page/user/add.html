@@ -79,9 +79,7 @@
             data: {
             },
             success: function(res){
-                console.log("部门信息");
-                console.log(res.data);
-                var departmentArray = res.data;;
+                var departmentArray = res.data;
                 for (var i = 0; i < departmentArray.length; i++){
                     departmentInfo += "<option value='" + departmentArray[i]["department_id"] + "'>" + departmentArray[i]["department_name"] + "</option>";
                 }

@@ -27,13 +27,18 @@
                         <div class="layui-inline">
                             <label class="layui-form-label">用户部门</label>
                             <div class="layui-input-inline">
-                                <input type="text" name="department_id" autocomplete="off" class="layui-input">
+                                <select class="departmentSelect" name="department_id" lay-verify="required" id="departmentSelect">
+                                    <option value="0" selected>所有</option>
+                                </select>
                             </div>
                         </div>
                         <div class="layui-inline">
                             <label class="layui-form-label">用户状态</label>
                             <div class="layui-input-inline">
-                                <input type="text" name="user_status" autocomplete="off" class="layui-input">
+                                <select class="statusSelect" name="user_status" lay-verify="required" id="statusSelect">
+                                    <option value="1" selected>正常</option>
+                                    <option value="0">已停用</option>
+                                </select>
                             </div>
                         </div>
                         <div class="layui-inline">
@@ -67,9 +72,11 @@
             form = layui.form,
             table = layui.table;
 
+        var departmentInfo = "";
+
         table.render({
             elem: '#userList',
-            url: '../../api/table.json',
+            url: '/office_automation/public/index.php/index/admin_c/getAllUsers',
             toolbar: '#toolbar',
             defaultToolbar: ['filter', 'exports', 'print', {
                 title: '提示',
@@ -77,41 +84,59 @@
                 icon: 'layui-icon-tips'
             }],
             cols: [[
-                {type: "checkbox", width: '5%'},
-                {field: 'id', width: '10%', title: '工号', sort: true},
-                {field: 'username', width: '10%', title: '姓名'},
-                {field: 'sex', width: '10%', title: '性别'},
-                {field: 'city', width: '10%', title: '部门'},
-                {field: 'sign', width: '10%', title: '手机'},
-                {field: 'experience', width: '10%', title: '邮箱'},
-                {field: 'score', width: '5%', title: '用户状态'},
-                {field: 'classify', width: '10%', title: '创建时间', sort: true},
-                {field: 'wealth', width: '10%', title: '修改时间'},
-                {title: '操作', width: '10%', toolbar: '#userListBar', align: "center"}
+                {field: 'user_id', title: '工号', sort: true},
+                {field: 'user_name', title: '姓名'},
+                {field: 'department_name', title: '部门'},
+                {field: 'phone', title: '手机'},
+                {field: 'email', title: '邮箱'},
+                {field: 'status', title: '用户状态'},
+                {field: 'create_time', title: '创建时间', sort: true},
+                {field: 'update_time', title: '修改时间', sort: true},
+                {title: '操作', toolbar: '#userListBar', align: "center"}
             ]],
+            id: 'userList',
             limits: [10, 15, 20, 25, 50, 100],
             limit: 15,
             page: true,
             skin: 'line'
         });
 
+        /**
+         * 获取部门信息
+         */
+        $.ajax({
+            url: "/office_automation/public/index.php/index/minute_c/getAllDepartment",
+            type:'get',
+            timeout: 2000,
+            data: {
+            },
+            success: function(res){
+                var departmentArray = res.data;;
+                for (var i = 0; i < departmentArray.length; i++){
+                    departmentInfo += "<option value='" + departmentArray[i]["department_id"] + "'>" + departmentArray[i]["department_name"] + "</option>";
+                }
+                $("#departmentSelect").append(departmentInfo);
+                //需要重新加载
+                form.render('select');
+            },
+            error: function(res){
+            }
+        });
+
         // 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
-            var result = JSON.stringify(data.field);
-            layer.alert(result, {
-                title: '最终的搜索信息'
-            });
-
+            var result = data.field;
             //执行搜索重载
-            table.reload('currentTableId', {
+            table.reload('userList', {
                 page: {
                     curr: 1
                 }
                 , where: {
-                    searchParams: result
+                    userName: result.user_name,
+                    departmentId: result.department_id,
+                    userStatus: result.user_status
                 }
             }, 'data');
-
             return false;
         });
 
@@ -132,10 +157,27 @@
                 $(window).on("resize", function () {
                     layer.full(index);
                 });
-            } else if (obj.event === 'update') {  // 监听删除操作
-                var checkStatus = table.checkStatus('userList')
-                    , data = checkStatus.data;
-                layer.alert(JSON.stringify(data));
+            } else if (obj.event === 'update') {
+                var loadingIndex = layer.load(2);
+                $.ajax({
+                    url: "/office_automation/public/index/admin_c/updateUserid",
+                    type:'post',
+                    data: {
+                    },
+                    success: function(res){
+                        layer.close(loadingIndex);
+                        if(res.code === 0){
+                            console.log("success")
+                            layer.msg('更新成功!', function() {});
+                        }else{
+                            console.log("error")
+                            layer.msg("更新失败!", function() {});
+                        }
+                    },
+                    error: function(res){
+                        console.log("error!")
+                    }
+                });
             }
         });
 
