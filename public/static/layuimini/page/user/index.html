@@ -158,25 +158,28 @@
                     layer.full(index);
                 });
             } else if (obj.event === 'update') {
-                var loadingIndex = layer.load(2);
-                $.ajax({
-                    url: "/office_automation/public/index/admin_c/updateUserid",
-                    type:'post',
-                    data: {
-                    },
-                    success: function(res){
-                        layer.close(loadingIndex);
-                        if(res.code === 0){
-                            console.log("success")
-                            layer.msg('更新成功!', function() {});
-                        }else{
-                            console.log("error")
-                            layer.msg("更新失败!", function() {});
+                layer.confirm('确定要更新？', function (index) {
+                    var loadingIndex = layer.load(2);
+                    $.ajax({
+                        url: "/office_automation/public/index/admin_c/updateUserid",
+                        type:'post',
+                        data: {
+                        },
+                        success: function(res){
+                            layer.close(loadingIndex);
+                            if(res.code === 0){
+                                console.log("success")
+                                layer.msg('更新成功!', function() {});
+                            }else{
+                                console.log("error")
+                                layer.msg("更新失败!", function() {});
+                            }
+                        },
+                        error: function(res){
+                            console.log("error!")
                         }
-                    },
-                    error: function(res){
-                        console.log("error!")
-                    }
+                    });
+                    layer.close(index);
                 });
             }
         });
@@ -189,7 +192,6 @@
         table.on('tool(userListFilter)', function (obj) {
             var data = obj.data;
             if (obj.event === 'edit') {
-
                 var index = layer.open({
                     title: '编辑用户',
                     type: 2,
@@ -205,7 +207,23 @@
                 return false;
             } else if (obj.event === 'stop') {
                 layer.confirm('确定要禁用？', function (index) {
-                    // obj.del();
+                    $.ajax({
+                        url: "/office_automation/public/index/admin_c/deleteUser",
+                        type:'post',
+                        data: {
+                            user_id : data["user_id"]
+                        },
+                        success: function(res){
+                            if(res.code === 0){
+                                layer.msg('禁用成功!', function() {});
+                            }else{
+                                layer.msg("禁用失败!", function() {});
+                            }
+                        },
+                        error: function(res){
+                            layer.msg("禁用失败!", function() {});
+                        }
+                    });
                     layer.close(index);
                 });
             }

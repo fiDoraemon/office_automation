@@ -156,6 +156,17 @@ class AdminC
     }
 
     /**
+     * 禁用用户
+     */
+    public function deleteUser(){
+        $userId = $_POST["user_id"];
+        $user = new User;
+        $user -> where('user_id', $userId)
+              -> update(['user_status' => 0]);
+        return Result::returnResult(Result::SUCCESS);
+    }
+
+    /**
      * 查看是否已经含有某一个用户
      */
     private function checkHasUser($userId){
