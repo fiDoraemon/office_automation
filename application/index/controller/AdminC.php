@@ -166,6 +166,29 @@ class AdminC
         return Result::returnResult(Result::SUCCESS);
     }
 
+    public function getUserInfo(){
+        $userId = $_GET["userId"];
+        $userInfo = User::where('user_id','=',$userId)
+            -> field("id,user_id,user_name,email,phone,department_id")
+            -> find();
+        return Result::returnResult(Result::SUCCESS,$userInfo);
+    }
+
+    /**
+     * 修改用户
+     */
+    public function updateUser(){
+        $userId = $_POST["userId"];
+        $departmentId = $_POST["departmentId"];
+        $userName = $_POST["userName"];
+        $phone = $_POST["phone"];
+        $email = $_POST["email"];
+        $user = new User();
+        $user -> where('user_id', $userId)
+              -> update(['user_name' => $userName,'department_id' => $departmentId,'phone' => $phone,'email' => $email]);
+        return Result::returnResult(Result::SUCCESS);
+    }
+
     /**
      * 查看是否已经含有某一个用户
      */

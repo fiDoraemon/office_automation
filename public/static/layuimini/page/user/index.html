@@ -199,7 +199,7 @@
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '../page/user/edit.html',
+                    content: 'user-edit.html?user_id=' + data["user_id"],
                 });
                 $(window).on("resize", function () {
                     layer.full(index);
