@@ -1,0 +1,187 @@
+{
+  "homeInfo": {
+    "title": "我的任务",
+    "href": "page/mission/index.html"
+  },
+  "logoInfo": {
+    "title": "",
+    "image": "images/logo.jpg",
+    "href": ""
+  },
+  "menuInfo": [
+    {
+      "title": "日常管理",
+      "icon": "fa fa-slideshare",
+      "href": "",
+      "target": "_self",
+      "child": [
+        {
+          "title": "任务",
+          "href": "",
+          "icon": "fa fa-meetup",
+          "target": "_self",
+          "child": [
+            {
+              "title": "我的任务",
+              "href": "page/mission/index.html",
+              "icon": "fa fa-calendar",
+              "target": "_self"
+            },
+            {
+              "title": "新建任务",
+              "href": "page/mission/add.html",
+              "icon": "fa fa-calendar",
+              "target": "_self"
+            },
+            {
+              "title": "任务搜索",
+              "href": "page/mission/serach.html",
+              "icon": "fa fa-calendar",
+              "target": "_self"
+            },
+            {
+              "title": "任务树",
+              "href": "page/mission/tree-index.html",
+              "icon": "fa fa-calendar",
+              "target": "_self"
+            },
+            {
+              "title": "工作日历",
+              "href": "page/mission/work-calendar.html",
+              "icon": "fa fa-calendar",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "会议纪要",
+          "href": "",
+          "icon": "fa fa-superpowers",
+          "target": "_self",
+          "child": [
+            {
+              "title": "纪要列表",
+              "href": "page/meet/minutes.html",
+              "icon": "fa fa-snowflake-o",
+              "target": "_self"
+            },
+            {
+              "title": "新增纪要",
+              "href": "page/meet/add-minute.html",
+              "icon": "fa fa-calendar",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "ERP",
+          "href": "",
+          "icon": "fa fa-superpowers",
+          "target": "_self",
+          "child": [
+            {
+              "title": "ERP系统",
+              "href": "http://192.168.0.249/ERP_system/ERP.php",
+              "icon": "fa fa-snowflake-o",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "样机配置",
+          "href": "",
+          "icon": "fa fa-superpowers",
+          "target": "_self",
+          "child": [
+            {
+              "title": "样机配置系统",
+              "href": "http://192.168.0.249/configuration_system/configuration_portal.php",
+              "icon": "fa fa-snowflake-o",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "百宝箱",
+          "href": "",
+          "icon": "fa fa-superpowers",
+          "target": "_self",
+          "child": [
+            {
+              "title": "硬件百宝箱",
+              "href": "http://192.168.0.249/workfiles/fileindex_hardware.php",
+              "icon": "fa fa-snowflake-o",
+              "target": "_self"
+            },
+            {
+              "title": "系统百宝箱",
+              "href": "http://192.168.0.249/workfiles/fileindex_system.php",
+              "icon": "fa fa-calendar",
+              "target": "_self"
+            },
+            {
+              "title": "行政百宝箱",
+              "href": "http://192.168.0.249/workfiles/fileindex_administration.php",
+              "icon": "fa fa-calendar",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "图书馆管理",
+          "href": "",
+          "icon": "fa fa-superpowers",
+          "target": "_self",
+          "child": [
+            {
+              "title": "图书馆",
+              "href": "http://192.168.0.249/book_system/book_portal.php",
+              "icon": "fa fa-snowflake-o",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "心愿单",
+          "href": "http://192.168.0.249/mission_system/wish_list.php",
+          "icon": "fa fa-superpowers",
+          "target": "_self"
+        }
+      ]
+    },
+    {
+      "title": "管理员",
+      "icon": "fa fa-slideshare",
+      "href": "",
+      "target": "_self",
+      "child": [
+        {
+          "title": "用户管理",
+          "href": "page/user/index.html",
+          "icon": "fa fa-meetup",
+          "target": "_self"
+        },
+        {
+          "title": "通用设置",
+          "href": "",
+          "icon": "fa fa-superpowers",
+          "target": "_self",
+          "child": [
+            {
+              "title": "钉钉",
+              "href": "page/test.html?v=5",
+              "icon": "fa fa-snowflake-o",
+              "target": "_self"
+            }
+          ]
+        },
+        {
+          "title": "系统设置",
+          "href": "",
+          "icon": "fa fa-superpowers",
+          "target": "_self"
+        }
+      ]
+    }
+  ]
+}

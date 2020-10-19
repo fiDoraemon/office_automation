@@ -9,6 +9,7 @@ use app\index\model\MissionView;
 use app\index\model\Project;
 use app\index\model\User;
 use app\common\Result;
+use app\index\service\UserService;
 use app\other\model\MissionInfo;
 use app\other\model\UserMission;
 use app\index\service\AttachmentService;
@@ -16,6 +17,7 @@ use app\index\model\Mission;
 use app\index\model\MissionInterest;
 use app\common\util\curlUtil;
 use think\Controller;
+use think\Session;
 
 class Index extends Controller
 {
@@ -25,10 +27,19 @@ class Index extends Controller
 //        return $this->fetch();
     }
 
+    // 获取菜单列表
     public function getMenuList()
     {
-        $missionView = new MissionView();
-        return $missionView->where('user_id', '1110023')->find();
+        $filePath = APP_PATH .'common/api/init.json';
+        $sessionUserId = Session::get("info")["user_id"];
+        $menuList = json_decode(file_get_contents($filePath));
+
+        // 如果不是管理员
+        if(!UserService::isSuper($sessionUserId)) {
+            unset($menuList->menuInfo[1]);
+        }
+
+        return $menuList;
     }
 
 }

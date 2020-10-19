@@ -340,7 +340,7 @@ class MissionC extends Controller
     {
         $sessionUserId = Session::get("info")["user_id"];
         $mission = Mission::get($id);            // 获取任务详情
-        // 判断用户是否有权限查看任务详情
+        // 判断用户是否有权限查看任务详情 TODO
         if($sessionUserId != $mission->reporter_id && $sessionUserId != $mission->assignee_id) {
             return Result::returnResult(Result::NO_ACCESS);
         }
