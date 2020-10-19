@@ -154,8 +154,9 @@
                         var index = layer.alert("用户信息修改成功", {
                             title: '系统提示'
                         }, function () {
+                            var frameIndex = parent.layer.getFrameIndex(window.name);
+                            parent.layer.close(frameIndex);
                             layer.close(index);
-                            miniTab.deleteCurrentByIframe();
                         });
                     }else{
                         var index = layer.alert("用户信息修改失败！", {
