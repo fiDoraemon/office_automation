@@ -376,7 +376,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                             <td>${attachmentList[i].file_size}</td>
                             <td>已上传</td>
                             <td>
-                                <a class="layui-btn layui-btn-xs" href="/office_automation/public/${attachmentList[i].save_path}" download="${attachmentList[i].source_name}">下载</a>
+                                <a class="layui-btn layui-btn-xs" href="/office_automation/public/upload/${attachmentList[i].save_path}" download="${attachmentList[i].source_name}">下载</a>
                                 <button class="layui-btn layui-btn-xs layui-btn-danger delete" attachment_id="${attachmentList[i].attachment_id}">删除</button>
                             </td>
                         </tr>
