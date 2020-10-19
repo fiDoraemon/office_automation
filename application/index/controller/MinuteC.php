@@ -656,7 +656,7 @@ class MinuteC
             $minuteTemp->minute_id = $minuteId;
             $minuteTemp->department_id = $minute->department_id;
             $minuteTemp->minute_theme = $minute->minute_theme;
-            $minuteTemp->project_code = $minute->project -> project_code;
+            $minuteTemp->project_id = $minute->project -> project_code;
             $minuteTemp->minute_date = $minute->minute_date;
             $minuteTemp->minute_time = $minute->minute_time;
             $minuteTemp->place = $minute->place;
@@ -753,7 +753,7 @@ class MinuteC
                 }
                 $minuteTemp->department_id = $departmentId;
                 $minuteTemp->minute_theme = $minuteTheme;
-                $minuteTemp->project_code = $projectCode;
+                $minuteTemp->project_id = $projectCode;
                 $minuteTemp->minute_date = $date;
                 $minuteTemp->minute_time = $time;
                 $minuteTemp->place = $place;
