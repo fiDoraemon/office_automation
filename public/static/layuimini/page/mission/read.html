@@ -40,23 +40,23 @@
         <div class="layui-form-item">
             <label class="layui-form-label required">任务号</label>
             <div class="layui-input-inline">
-                <input type="text" name="mission_id" id="mission_id" class="layui-input" disabled>
+                <input type="text" name="mission_id" id="mission_id" class="layui-input" readonly>
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label required">任务标题</label>
             <div class="layui-input-block">
-                <input type="text" name="mission_title" id="mission_title" lay-verify="required" lay-reqtext="任务标题不能为空" autocomplete="off" placeholder="请输入任务标题" class="layui-input" disabled>
+                <input type="text" name="mission_title" id="mission_title" lay-verify="required" lay-reqtext="任务标题不能为空" autocomplete="off" placeholder="请输入任务标题" class="layui-input" readonly>
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label required">发起人</label>
             <div class="layui-input-inline">
-                <input type="text" name="reporter_name" class="layui-input" disabled>
+                <input type="text" name="reporter_name" class="layui-input" readonly>
             </div>
             <label class="layui-form-label required">当前处理人</label>
             <div class="layui-input-inline">
-                <input type="text" name="current_assignee_name" class="layui-input" disabled>
+                <input type="text" name="current_assignee_name" class="layui-input" readonly>
             </div>
         </div>
         <div class="layui-form-item">
@@ -96,19 +96,19 @@
         <div class="layui-form-item">
             <label class="layui-form-label">邀请关注</label>
             <div class="layui-input-block">
-                <input type="text" name="invite_follow" id="invite_follow" autocomplete="off" placeholder="请选择要邀请关注任务的人" class="layui-input">
+                <input type="text" name="invite_follow" id="invite_follow" autocomplete="off" placeholder="请选择要邀请关注任务的人" class="layui-input" readonly>
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">任务标签</label>
             <div class="layui-input-block">
-                <input type="text" name="label" class="layui-input" disabled>
+                <input type="text" name="label" class="layui-input" readonly>
             </div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">父任务号</label>
             <div class="layui-input-inline">
-                <input type="text" name="parent_mission_id" id="parent_mission_id" class="layui-input" autocomplete="off" placeholder="请选择父任务号">
+                <input type="text" name="parent_mission_id" id="parent_mission_id" class="layui-input" autocomplete="off" placeholder="请选择父任务号" readonly>
             </div>
             <label class="layui-form-label">设为根任务</label>
             <div class="layui-input-inline">
@@ -118,15 +118,15 @@
         <div class="layui-form-item">
             <label class="layui-form-label">关联会议号</label>
             <div class="layui-input-inline">
-                <input type="text" name="minute_id" id="minute_id" class="layui-input" autocomplete="off" placeholder="请选择会议号">
+                <input type="text" name="minute_id" id="minute_id" class="layui-input" autocomplete="off" placeholder="请选择会议号" readonly>
             </div>
             <label class="layui-form-label">关联需求号</label>
             <div class="layui-input-inline">
-                <input type="text" name="requirement_id" class="layui-input" autocomplete="off" placeholder="请选择需求号" disabled>
+                <input type="text" name="requirement_id" class="layui-input" autocomplete="off" placeholder="请选择需求号" readonly>
             </div>
             <label class="layui-form-label">关联故障专题号</label>
             <div class="layui-input-inline">
-                <input type="text" name="problem_id" class="layui-input" autocomplete="off" placeholder="请输入故障专题号" disabled>
+                <input type="text" name="problem_id" class="layui-input" autocomplete="off" placeholder="请输入故障专题号" readonly>
             </div>
         </div>
         <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
@@ -175,7 +175,7 @@
             </div>
             <label class="layui-form-label required">后续处理人</label>
             <div class="layui-input-inline">
-                <input type="text" name="assignee_name" id="assignee_name" lay-verify="required" lay-reqtext="未选择后续处理人" autocomplete="off" placeholder="请选择后续处理人" class="layui-input">
+                <input type="text" name="assignee_name" id="assignee_name" lay-verify="required" lay-reqtext="未选择后续处理人" autocomplete="off" placeholder="请选择后续处理人" class="layui-input" readonly>
             </div>
         </div>
         <div class="layui-form-item layui-form-text">
@@ -421,7 +421,7 @@
                     $('#mission-process').append(element);
                     var isReporter = res.data.isReporter;
                     if(isReporter) {            // 如果当前用户是发起人
-                        $('#mission_title').attr('disabled', false);
+                        $('#mission_title').attr('readonly', false);
                     }
                     // 填充附件信息表
                     // var attachmentList = missionDetail.attachmentList;
@@ -498,7 +498,7 @@
             checkedKey: 'user_id',
             searchPlaceholder: '用户/部门关键词',
             table: {
-                url: '/office_automation/public/index.php/index/minute_c/getAllUsers'
+                url: '/office_automation/public/index.php/index/user_c/getAllUsers'
                 ,cols: [[
                     { type: 'radio' },
                     { field: 'user_id', title: '工号' },
@@ -517,7 +517,7 @@
             checkedKey: 'user_id',
             searchPlaceholder: '用户/部门关键词',
             table: {
-                url: '/office_automation/public/index.php/index/minute_c/getAllUsers'
+                url: '/office_automation/public/index.php/index/user_c/getAllUsers'
                 ,cols: [[
                     { type: 'checkbox' },
                     { field: 'user_id', title: '工号' },
@@ -587,30 +587,10 @@
         //监听提交
         form.on('submit(saveBtn)', function (data) {
             var result = data.field;
-            if(!$('#assignee_name').attr('ts-selected')) {
-                layer.msg('请手动选择处理人', {icon: 5});
-                return false;
-            }
-            if(result.invite_follow != '' && !$('#invite_follow').attr('ts-selected')) {
-                layer.msg('请手动选择关注人', {icon: 5});
-                return false;
-            }
-            if(result.parent_mission_id != '' && !$('#parent_mission_id').attr('ts-selected')) {
-                layer.msg('请手动选择父任务号', {icon: 5});
-                return false;
-            }
-            if(result.minute_id != '' && !$('#minute_id').attr('ts-selected')) {
-                layer.msg('请手动选择会议号', {icon: 5});
-                return false;
-            }
-            if(result.finish_date < result.start_date) {
-                layer.msg('截止日期不能在开始日期之前', {icon: 5});
-                return false;
-            }
+
             result.assignee_id = $('#assignee_name').attr('ts-selected');
             result.invite_follow = result.invite_follow? $('#invite_follow').attr('ts-selected') : '';
-            result.parent_mission_id = result.parent_mission_id? $('#parent_mission_id').attr('ts-selected') : '';
-            result.minute_id = result.minute_id? $('#minute_id').attr('ts-selected') : '';
+            console.log(result);
             // 去除多余数据
             delete result.mission_title;
             delete result.reporter_id;

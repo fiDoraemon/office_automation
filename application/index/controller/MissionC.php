@@ -213,16 +213,6 @@ class MissionC extends Controller
     }
 
     /**
-     * 显示创建资源表单页.
-     *
-     * @return \think\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * 保存新建的任务
      * @param Request $request
      * @return array
@@ -292,11 +282,11 @@ class MissionC extends Controller
         }
 
         // 发送钉钉消息(先发送基本信息，再发送链接)
-        $data = DataEnum::$msgData;
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
         $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?missionId=' . $mission->mission_id;
         // 发送给处理人
         if($userId != input('post.assignee_id') && $mission->assignee->dd_userid != '') {
+            $data = DataEnum::$msgData;
             $data['userList'] = $mission->assignee->dd_userid;
             $data['data']['title'] = '您有新的任务待处理';
             $data['data']['detail'] = [
@@ -315,12 +305,14 @@ class MissionC extends Controller
         }
         // 发送给邀请关注的人
         if($useridList) {
+            $data = DataEnum::$msgData;
             $data['userList'] = $useridList;
             $data['data']['title'] = Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务';
             $data['data']['detail'] = [
                 ['key' => '标题：', 'value' => $mission->mission_title],
                 ['key' => '链接', 'value' => '链接见下方']
             ];
+
             curlUtil::post($postUrl, $data);
             $data['data'] = ['type' => 'text', 'content' => $url];
             curlUtil::post($postUrl, $data);
@@ -434,7 +426,7 @@ class MissionC extends Controller
         // 更新任务信息
         $fields = input('put.');
         $fields['parent_mission_id'] = input('put.is_root')? -1 : input('parent_mission_id');
-        $mission->allowField([''])->save($fields);
+        $mission->allowField(true)->save($fields);
 
         // 处理关注人列表
         $newInterest = array();         // 新邀请关注的人
@@ -501,16 +493,16 @@ class MissionC extends Controller
 
         // 发送钉钉消息
         $status_name = MissionStatus::get($mission->status)->status_name;
-        $data = DataEnum::$msgData;
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
         $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?missionId=' . $mission->mission_id;
-        // 发送给处理人
         if(input('put.process_note') != '' || input('put.attachment_list') != '') {
-            $data['data']['detail'] = [
+            $data = DataEnum::$msgData;
+            $detail = [
                 ['key' => '标题：', 'value' => $mission->mission_title],
                 ['key' => '处理后状态：', 'value' => $status_name],
                 ['key' => '链接', 'value' => '链接见下方']
             ];
+            $data['data']['detail'] = $detail;
             if($attachmentList != '') {
                 array_splice($data['data']['detail'],2,0, [['key' => '附件清单', 'value' => $attachmentList]]);
             }
@@ -526,28 +518,36 @@ class MissionC extends Controller
                 $data['userList'] = $mission->reporter->dd_userid;
                 $data['data']['title'] = '您发起的' . $mission->mission_id . '号任务' . '正在被' . Session::get("info")["user_name"] . '处理';
             }
+
             curlUtil::post($postUrl, $data);
             $data['data'] = ['type' => 'text', 'content' => $url];
             curlUtil::post($postUrl, $data);
 
+            // 发送给已关注的人
+            if(!empty($oldInterest)) {
+                $data = DataEnum::$msgData;
+                $data['userList'] = implode(',', $oldInterest);
+                $data['data']['title'] = '您关注的' . $mission->mission_id . '号任务正在被' . Session::get("info")["user_name"] . '处理';
+                $data['data']['detail'] = array_slice($detail,0, 3);
+
+                curlUtil::post($postUrl, $data);
+                $data['data'] = ['type' => 'text', 'content' =>$url];
+                curlUtil::post($postUrl, $data);
+            }
         }
-        // 发送给邀请关注的人
+
         // 发送给新邀请关注的人
         if(!empty($newInterest)) {
-            $data['data']['title'] = Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务';
+            $data = DataEnum::$msgData;
             $data['userList'] = implode(',', $newInterest);
+            $data['data']['title'] = Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务';
+            $data['data']['detail'] = [
+                ['key' => '标题：', 'value' => $mission->mission_title],
+                ['key' => '链接', 'value' => '链接见下方']
+            ];
 
             curlUtil::post($postUrl, $data);
             $data['data'] = ['type' => 'text', 'content' => $url];
-            curlUtil::post($postUrl, $data);
-        }
-        // 发送给已关注的人
-        if(!empty($oldInterest)) {
-            $data['data']['title'] = '您关注的' . $mission->mission_id . '号任务正在被' . Session::get("info")["user_name"] . '处理';
-            $data['userList'] = implode(',', $oldInterest);
-
-            curlUtil::post($postUrl, $data);
-            $data['data'] = ['type' => 'text', 'content' =>$url];
             curlUtil::post($postUrl, $data);
         }
 

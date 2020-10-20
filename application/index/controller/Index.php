@@ -17,6 +17,7 @@ use app\index\model\Mission;
 use app\index\model\MissionInterest;
 use app\common\util\curlUtil;
 use think\Controller;
+use think\File;
 use think\Session;
 
 class Index extends Controller
@@ -40,11 +41,6 @@ class Index extends Controller
         }
 
         return $menuList;
-    }
-
-    public function test() {
-        $user = new User;
-        return $user->where("length(user_name)", '=', 20)->select();
     }
 
 }

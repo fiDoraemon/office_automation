@@ -131,28 +131,15 @@
 <script src="js/lay-config.js?v=2.0.0" charset="utf-8"></script>
 <script src="lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
-<script src="js/common.js" charset="utf-8"></script>
+<script src="js/common.js?v=4" charset="utf-8"></script>
 <script>
-    var token = getCookie('user_token');
     layui.use(['jquery', 'layer', 'miniAdmin', 'miniTongji', 'miniTab'], function () {
         var $ = layui.jquery,
             layer = layui.layer,
             miniAdmin = layui.miniAdmin,
             miniTab = layui.miniTab;
 
-        var options = {
-            iniUrl: "/office_automation/public/index/index/getMenuList",    // 初始化接口
-            clearUrl: "api/clear.json", // 缓存清理接口
-            urlHashLocation: true,      // 是否打开hash定位
-            bgColorDefault: false,      // 主题默认配置
-            multiModule: true,          // 是否开启多模块
-            menuChildOpen: false,       // 是否默认展开菜单
-            loadingTime: 0,             // 初始化加载时间
-            pageAnim: true,             // iframe窗口动画
-            maxTabNum: 20,              // 最大的tab打开数量
-        };
-        miniAdmin.render(options);
-
+        var token = getCookie('user_token');
         /**
          * 检查cookie中是否存在token信息，自动登录
          */
@@ -192,6 +179,19 @@
             }
         });
 
+        var options = {
+            iniUrl: "/office_automation/public/index/index/getMenuList",    // 初始化接口
+            clearUrl: "api/clear.json", // 缓存清理接口
+            urlHashLocation: true,      // 是否打开hash定位
+            bgColorDefault: false,      // 主题默认配置
+            multiModule: true,          // 是否开启多模块
+            menuChildOpen: false,       // 是否默认展开菜单
+            loadingTime: 0,             // 初始化加载时间
+            pageAnim: true,             // iframe窗口动画
+            maxTabNum: 20,              // 最大的tab打开数量
+        };
+        miniAdmin.render(options);
+
         /**
          * 退出登录
          */
@@ -226,37 +226,16 @@
         if(getQueryVariable('missionId')) {
             miniTab.openNewTabByIframe({
                 href: "page/mission/read.html?id=" + getQueryVariable('missionId'),
-                title: "任务详情",
+                title: "任务详情"
             });
         } else if(getQueryVariable('minuteId')) {
             miniTab.openNewTabByIframe({
                 href: "page/meet/update-minute.html?minute_id=" + getQueryVariable('minuteId'),
-                title: "会议详情",
+                title: "会议详情"
             });
         }
 
     });
-
-    //设置cookie
-    function setCookie(cname,cvalue,exdays)
-    {
-        var d = new Date();
-        d.setTime(d.getTime()+(exdays*24*60*60*1000));
-        var expires = "expires=" + d.toGMTString() + "; path=/office_automation/public/static/layuimini"
-        document.cookie = cname + "=" + cvalue + "; " + expires;
-    }
-    //获取cookie
-    function getCookie(cname)
-    {
-        var name = cname + "=";
-        var ca = document.cookie.split(';');
-        for(var i=0; i<ca.length; i++)
-        {
-            var c = ca[i].trim();
-            if (c.indexOf(name)==0) return c.substring(name.length,c.length);
-        }
-        return "";
-    }
 
 </script>
 </body>
