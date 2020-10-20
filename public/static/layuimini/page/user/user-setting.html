@@ -85,50 +85,46 @@
             data: {
             },
             success: function(res){
-                console.log("部门信息");
-                console.log(res.data);
                 var departmentArray = res.data;;
                 for (var i = 0; i < departmentArray.length; i++){
                     departmentInfo += "<option value='" + departmentArray[i]["department_id"] + "'>" + departmentArray[i]["department_name"] + "</option>";
                 }
                 $("#departmentSelect").append(departmentInfo);
+                //进入页面马上获取用户的基本信息
+                $.ajax({
+                    url: "/office_automation/public/index.php/index/user_c/getUserInfo",
+                    type:'get',
+                    data: {
+                    },
+                    success: function(data){
+                        var code = data.code;
+                        //获取成功，显示用户信息
+                        if(code === 0){
+                            var user_info = data['data'];
+                            var user_id = user_info['user_id'];
+                            var user_name = user_info['user_name'];
+                            var user_department = user_info['department_id'];
+                            var user_phone = user_info['phone'];
+                            var user_email = user_info['email'];
+                            $("#user_id").val(user_id);
+                            $("#user_name").val(user_name);
+                            $("#departmentSelect").val(user_department);
+                            $("#user_phone").val(user_phone);
+                            $("#user_email").val(user_email);
+                            //需要重新加载
+                            form.render('select');
+                        }
+                    },
+                    error: function(res){
+                        var index = layer.alert("请求出错！", {
+                            title: '系统提示'
+                        });
+                    }
+                });
                 //需要重新加载
                 form.render('select');
             },
             error: function(res){
-            }
-        });
-
-        //进入页面马上获取用户的基本信息
-        $.ajax({
-            url: "/office_automation/public/index.php/index/user_c/getUserInfo",
-            type:'get',
-            timeout: 2000,
-            data: {
-            },
-            success: function(data){
-                var code = data.code;
-                //获取成功，显示用户信息
-                if(code === 0){
-                    var user_info = data['data'];
-                    var user_id = user_info['user_id'];
-                    var user_name = user_info['user_name'];
-                    var user_department = user_info['department_id'];
-                    var user_phone = user_info['phone'];
-                    var user_email = user_info['email'];
-                    $("#user_id").val(user_id);
-                    $("#user_name").val(user_name);
-                    $("#departmentSelect").val(user_department);
-                    $("#user_phone").val(user_phone);
-                    $("#user_email").val(user_email);
-                    //需要重新加载
-                    form.render('select');
-                }
-            },
-            error: function(res){
-                var index = layer.alert("请求出错！", {
-                    title: '系统提示'
-                });
             }
         });
 
@@ -154,9 +150,11 @@
                         var index = layer.alert("用户信息修改成功", {
                             title: '系统提示'
                         }, function () {
-                            var frameIndex = parent.layer.getFrameIndex(window.name);
-                            parent.layer.close(frameIndex);
                             layer.close(index);
+                            miniTab.openNewTabByIframe({
+                                href:"page/mission/index.html",
+                                title:"我的任务",
+                            });
                         });
                     }else{
                         var index = layer.alert("用户信息修改失败！", {
