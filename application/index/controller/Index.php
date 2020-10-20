@@ -42,4 +42,9 @@ class Index extends Controller
         return $menuList;
     }
 
+    public function test() {
+        $user = new User;
+        return $user->where("length(user_name)", '=', 20)->select();
+    }
+
 }

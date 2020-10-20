@@ -131,16 +131,17 @@
 <script src="js/lay-config.js?v=2.0.0" charset="utf-8"></script>
 <script src="lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script src="js/common.js" charset="utf-8"></script>
 <script>
     var token = getCookie('user_token');
-    layui.use(['jquery', 'layer', 'miniAdmin','miniTongji'], function () {
+    layui.use(['jquery', 'layer', 'miniAdmin', 'miniTongji', 'miniTab'], function () {
         var $ = layui.jquery,
             layer = layui.layer,
-            miniAdmin = layui.miniAdmin;
-            // miniTongji = layui.miniTongji;
+            miniAdmin = layui.miniAdmin,
+            miniTab = layui.miniTab;
 
         var options = {
-            iniUrl: "/Office_Automation/public/index/index/getMenuList",    // 初始化接口
+            iniUrl: "/office_automation/public/index/index/getMenuList",    // 初始化接口
             clearUrl: "api/clear.json", // 缓存清理接口
             urlHashLocation: true,      // 是否打开hash定位
             bgColorDefault: false,      // 主题默认配置
@@ -220,6 +221,14 @@
                 }
             });
         });
+
+        // 根据任务号打开任务详情
+        if(getQueryVariable('missionId')) {
+            miniTab.openNewTabByIframe({
+                href: "page/mission/read.html?id=" + getQueryVariable('missionId'),
+                title: "任务详情",
+            });
+        }
     });
 
     //设置cookie
@@ -242,6 +251,7 @@
         }
         return "";
     }
+
 </script>
 </body>
 </html>

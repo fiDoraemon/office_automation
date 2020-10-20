@@ -12,10 +12,12 @@ use app\common\model\FileManageSystemAttachmentInfo;
 use app\common\model\MinuteInfo;
 use app\common\model\MissionHistory;
 use app\common\model\MissionInfo;
+use app\common\model\OverwatchListMission;
 use app\common\model\ReferenceProjectInfo;
 use app\common\model\UserInfo;
 use app\common\util\EncryptionUtil;
 use app\index\model\Attachment;
+use app\index\model\Cooperation;
 use app\index\model\Department;
 use app\index\model\Minute;
 use app\index\model\MinuteAttend;
@@ -26,6 +28,7 @@ use app\index\model\MissionView;
 use app\index\model\Project;
 use app\index\model\ProjectManager;
 use app\index\model\User;
+use think\Session;
 
 /**
  * 转移旧OA数据库表控制器
@@ -485,8 +488,80 @@ class MoveTableDataC
     }
 
     // 转移任务树表进展详情数据
+    // 转移合作人表数据
+    public function moveOverwatchData() {
+        OverwatchListMission::chunk(100, function ($objects) {
+            foreach ($objects as $object) {
+                $userList = explode(';', $object->overwatch_list);
+                foreach ($userList as $user) {
+                    if($user == '') {
+                        continue;
+                    }
+                    $cooperation = Cooperation::get(['manage_id' => $object->user_ID, 'member_id' => $user]);
+                    if(!$cooperation) {
+                        $cooperation = new Cooperation();
+                        $cooperation->manage_id = $object->user_ID;
+                        $cooperation->member_id = $user;
+                        $cooperation->save();
+                    }
+                }
+            }
+        });
+        return '合作人表转移完成';
+    }
 
-    public function moveAlldata() {
+    // 因被截断数据更新任务表描述（有条任务的完成标准需要手动）
+    public function updateMissionData() {
+        MissionInfo::chunk(100, function ($objects) {
+            foreach ($objects as $object) {
+                $mission = Mission::get($object->ID);
+                if ($mission) {
+                    $mission->description = $object->description;
+                    $mission->save();
+                }
+            }
+        });
+        return '任务表数据更新完成';
+    }
+
+    // 因被截断数据更新会议表会议描述和决议
+    public function updateMinuteData() {
+        MinuteInfo::chunk(100, function ($objects) {
+            foreach ($objects as $object) {
+                // 处理值
+                $object->RESOLUTION = $object->RESOLUTION ? $object->RESOLUTION : '';
+                $object->RECORD = $object->RECORD ? $object->RECORD : '';
+
+                $minute = Minute::get($object->ID) ;
+                if($minute) {
+                    $minute->resolution = $object->RESOLUTION;
+                    $minute->record = $object->RECORD;
+                    $minute->save();
+                }
+            }
+        });
+        return '会议表数据更新完成';
+    }
+
+    // 因被截断数据重新导入任务处理表信息
+    public function removeMissionHistoryData() {
+        Session::set('id', 1);
+        MissionHistory::chunk(100, function ($objects) {
+            foreach ($objects as $object) {
+                $id = Session::get('id');
+                Session::set('id', $id + 1);
+                $missionProcess = MissionProcess::get($id);
+                // TODO 加个判断长度的条件会好点
+                if($missionProcess && ($missionProcess->mission_id == $object->mission_id) && ($missionProcess->handler_id == $object->handler)) {
+                    $missionProcess->process_note = $object->process_note;
+                    $missionProcess->save();
+                }
+            }
+        });
+        return '任务处理表数据重新导入完成';
+    }
+
+    public function moveAllData() {
         $this->moveUserData();
         $this->moveProjectData();
         $this->moveMissionData();

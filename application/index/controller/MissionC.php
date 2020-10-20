@@ -18,6 +18,7 @@ use app\index\model\MissionProcess;
 use app\index\model\MissionStatus;
 use app\index\service\ProjectService;
 use app\common\Result;
+use app\index\service\UserService;
 use think\Controller;
 use think\Request;
 use think\Session;
@@ -293,7 +294,7 @@ class MissionC extends Controller
         // 发送钉钉消息(先发送基本信息，再发送链接)
         $data = DataEnum::$msgData;
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-        $url = 'http://192.168.0.249/office_automation/public/static/layuimini';
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?missionId=' . $mission->mission_id;
         // 发送给处理人
         if($userId != input('post.assignee_id') && $mission->assignee->dd_userid != '') {
             $data['userList'] = $mission->assignee->dd_userid;
@@ -341,7 +342,7 @@ class MissionC extends Controller
         $sessionUserId = Session::get("info")["user_id"];
         $mission = Mission::get($id);            // 获取任务详情
         // 判断用户是否有权限查看任务详情 TODO
-        if($sessionUserId != $mission->reporter_id && $sessionUserId != $mission->assignee_id) {
+        if($sessionUserId != $mission->reporter_id && $sessionUserId != $mission->assignee_id && !UserService::isSuper($sessionUserId)) {
             return Result::returnResult(Result::NO_ACCESS);
         }
         // 处理编号为 0 问题
@@ -502,7 +503,7 @@ class MissionC extends Controller
         $status_name = MissionStatus::get($mission->status)->status_name;
         $data = DataEnum::$msgData;
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-        $url = 'http://192.168.0.249/office_automation/public/static/layuimini';
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?missionId=' . $mission->mission_id;
         // 发送给处理人
         if(input('put.process_note') != '' || input('put.attachment_list') != '') {
             $data['data']['detail'] = [
@@ -910,8 +911,8 @@ class MissionC extends Controller
         // 发送钉钉消息
         $data = DataEnum::$msgData;
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-        $url = 'http://192.168.0.249/office_automation/public/static/layuimini';
         if($type == 'new') {
+            $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?missionId=' . $mission->mission_id;
             if($sessionUserId != input('post.assignee_id') && $mission->assignee->dd_userid != '') {
                 $data['userList'] = $mission->assignee->dd_userid;
                 $data['data']['title'] = '您有新的任务待处理';
