@@ -89,17 +89,17 @@ class AttachmentC extends Controller
 
     /**
      * 删除指定附件
-     *
-     * @param  int  $id
-     * @return \think\Response
+     * @param $id
+     * @return array
+     * @throws \think\exception\DbException
      */
     public function delete($id)
     {
         $attachment = Attachment::get($id);
         if($attachment) {
             $filePath = ROOT_PATH . 'public/upload/' . $attachment->save_path;
-//            $attachment->delete();          // 删除附件信息
-//            unlink($filePath);          // 删除附件真实文件
+            $attachment->delete();          // 删除附件信息
+            unlink($filePath);          // 删除附件真实文件
 
             return Result::returnResult(Result::SUCCESS);
         } else {

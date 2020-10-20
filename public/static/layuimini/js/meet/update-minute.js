@@ -257,7 +257,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                             url: "/office_automation/public/attachment/" + attachment_id,
                             type: 'delete',
                             success: function (res) {
-                                if (res.code == 0) {
+                                if (res.code === 0) {
                                     layer.msg('删除成功！');
                                     tr.remove();
                                 } else {
