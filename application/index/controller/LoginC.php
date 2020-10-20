@@ -150,26 +150,26 @@ class LoginC
      */
     private function checkToken($token){
         $user = new User();
-        $user -> where(['token' => $token, 'user_status' => 1])
+        $userInfo = $user -> where(['token' => $token, 'user_status' => 1])
               -> field("id,user_id,user_name,department_id,token,token_time_out,super")
               -> find();
-        if($user == null){
+        if($userInfo == null){
             return false;
         }
-        $timeOut = $user -> token_time_out;
+        $timeOut = $userInfo -> token_time_out;
         if (!empty($timeOut)) {
             if (time() - $timeOut > 0) {
-                return false; //token长时间未使用而过期，需重新登陆
+                return false;                      //token长时间未使用而过期，需重新登陆
             }
-            $new_time_out = time() + 604800; //604800是七天
-            $user -> token_time_out = $new_time_out;
-            $res = $user -> save();
+            $new_time_out = time() + 604800;        //604800是七天
+            $userInfo -> token_time_out = $new_time_out;
+            $res = $userInfo -> save();
             if ($res == 1) {
-                Session::set("info",$user);
-                return true; //token验证成功，time_out刷新成功，可以获取接口信息
+                Session::set("info",$userInfo);
+                return true;                        //token验证成功，time_out刷新成功，可以获取接口信息
             }
         }
-        return false; //token错误验证失败
+        return false;                               //token错误验证失败
     }
 
     /**

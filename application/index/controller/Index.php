@@ -35,9 +35,9 @@ class Index extends Controller
         $menuList = json_decode(file_get_contents($filePath));
 
         // 如果不是管理员
-        if(!UserService::isSuper($sessionUserId)) {
-            unset($menuList->menuInfo[1]);
-        }
+//        if(!UserService::isSuper($sessionUserId)) {
+//            unset($menuList->menuInfo[1]);
+//        }
 
         return $menuList;
     }
