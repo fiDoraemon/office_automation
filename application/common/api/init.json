@@ -154,23 +154,9 @@
           "target": "_self"
         },
         {
-          "title": "通用设置",
-          "href": "",
-          "icon": "fa fa-superpowers",
-          "target": "_self",
-          "child": [
-            {
-              "title": "钉钉",
-              "href": "page/test.html?v=5",
-              "icon": "fa fa-snowflake-o",
-              "target": "_self"
-            }
-          ]
-        },
-        {
-          "title": "系统设置",
-          "href": "",
-          "icon": "fa fa-superpowers",
+          "title": "会议管理",
+          "href": "page/meet/admin-minute.html",
+          "icon": "fa fa-meetup",
           "target": "_self"
         }
       ]
