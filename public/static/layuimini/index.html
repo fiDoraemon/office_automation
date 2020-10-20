@@ -133,13 +133,14 @@
 <script src="https://cdn.staticfile.org/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
 <script src="js/common.js?v=4" charset="utf-8"></script>
 <script>
-    layui.use(['jquery', 'layer', 'miniAdmin', 'miniTongji', 'miniTab'], function () {
+    layui.use(['jquery', 'layer', 'miniAdmin', 'miniTab'], function () {
         var $ = layui.jquery,
             layer = layui.layer,
             miniAdmin = layui.miniAdmin,
             miniTab = layui.miniTab;
 
         var token = getCookie('user_token');
+
         /**
          * 检查cookie中是否存在token信息，自动登录
          */
@@ -152,7 +153,7 @@
                 if(res.code === 0){
                     initMenu();
                     $("#userName").html(res.data);
-                }else if(token != "" && token != null){ //检查cookie中是否存在token信息
+                }else if(token != "" && token != null){         // 检查cookie中是否存在token信息
                     $.ajax({
                         url: "/office_automation/public/index.php/index/login_c/tokenLogin",
                         type:'post',

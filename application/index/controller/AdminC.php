@@ -8,9 +8,11 @@
 
 namespace app\index\controller;
 
+use app\common\model\UserInfo;
 use app\common\Result;
 use app\common\util\curlUtil;
 use app\common\util\EncryptionUtil;
+use app\index\model\Department;
 use app\index\model\Minute;
 use app\index\model\User;
 use think\db\exception\DataNotFoundException;
@@ -196,7 +198,7 @@ class AdminC
     }
 
     /**
-     * 管理元添加用户
+     * 管理员添加用户
      */
     public function addUser(){
         $userId       = $_POST["user_id"];
@@ -225,6 +227,25 @@ class AdminC
             'email'          =>  $email
         ]);
         $result = $user->save();
+
+        // 更新所有用户 userid
+        $this->updateUserid();
+
+        // 关联添加旧 OA 用户
+        $department = Department::get($departmentId);
+        $user = User::get(['user_id' => $userId]);
+        $password = '';
+        $userInfo = new UserInfo();
+        $userInfo->data([
+            'Name' => $userName,
+            'User_ID' => $userId,
+            'Password' => $password,
+            'email' => $email,
+            'userid' => $user->userid,
+            'department' => $department->department_name
+        ]);
+        $userInfo->save();
+
         if($result > 0){
             return Result::returnResult(Result::SUCCESS);
         }

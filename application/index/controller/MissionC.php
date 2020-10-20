@@ -332,11 +332,11 @@ class MissionC extends Controller
     public function read($id)
     {
         $sessionUserId = Session::get("info")["user_id"];
-        $mission = Mission::get($id);            // 获取任务详情
-        // 判断用户是否有权限查看任务详情 TODO
-        if($sessionUserId != $mission->reporter_id && $sessionUserId != $mission->assignee_id && !UserService::isSuper($sessionUserId)) {
+        // 判断用户是否有权限查看任务详情
+        if(!MissionService::isView($sessionUserId, $id)) {
             return Result::returnResult(Result::NO_ACCESS);
         }
+        $mission = Mission::get($id);            // 获取任务详情
         // 处理编号为 0 问题
         $mission->parent_mission_id = ($mission->parent_mission_id == 0)? '' : $mission->parent_mission_id;
         $mission->minute_id = ($mission->minute_id == 0)? '' : $mission->minute_id;

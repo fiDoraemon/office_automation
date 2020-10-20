@@ -18,19 +18,5 @@ use app\index\model\User;
  */
 class UserService
 {
-    /**
-     * 判断用户是否是管理员
-     * @param $userId
-     * @return bool
-     * @throws \think\exception\DbException
-     */
-    public static function isSuper($userId) {
-        $user = User::get(['user_id' => $userId]);
-
-        if($user->super == 1) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+    //
 }
