@@ -34,12 +34,11 @@ class Index extends Controller
         $filePath = APP_PATH . 'common/api/init.json';
         $sessionUserId = Session::get("info")["user_id"];
         $menuList = json_decode(file_get_contents($filePath));
-        $user = User::get($sessionUserId);
+        $user = User::get(['user_id' => $sessionUserId]);
         // 如果不是管理员
-//        if($user->super == 0) {
-//            unset($menuList->menuInfo[1]);
-//        }
-        unset($menuList->menuInfo[1]);
+        if($user->super == 0) {
+            unset($menuList->menuInfo[1]);
+        }
 
         return $menuList;
     }
