@@ -4,16 +4,16 @@ namespace app\common\model;
 
 use think\Model;
 
-class MissionInfo extends Model
+class OverwatchListMission extends Model
 {
     // 设置当前模型的数据库连接
     protected $connection = [
         // 数据库类型
         'type'        => 'mysql',
         // 服务器地址
-        'hostname'    => 'localhost',
+        'hostname'    => '192.168.0.112',
         // 数据库名
-        'database'    => 'test',
+        'database'    => 'oa',
         // 数据库用户名
         'username'    => 'root',
         // 数据库密码
