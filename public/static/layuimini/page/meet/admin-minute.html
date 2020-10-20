@@ -50,8 +50,8 @@
 
         <script type="text/html" id="toolbarDemo">
             <div class="layui-btn-container">
-                <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="my_launch"> 我发起的会议 </button>
-                <button class="layui-btn layui-btn-normal layui-btn-sm data-delete-btn" lay-event="need_arrive"> 我需要到的会议 </button>
+                <!--<button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="my_launch"> 我发起的会议 </button>-->
+                <!--<button class="layui-btn layui-btn-normal layui-btn-sm data-delete-btn" lay-event="need_arrive"> 我需要到的会议 </button>-->
             </div>
         </script>
 
@@ -68,30 +68,6 @@
 <script src="../../lib/layui-v2.5.5/layui.all.js" charset="utf-8"></script>
 <script src="../../js/meet/minutes.js" charset="utf-8"></script> <!--引入查询所有部门和所有会议类型信息js-->
 <script>
-    //此函数放在layui里面不行
-    function themeToUpdate(minute_id){
-        var index = layer.open({
-            title: '会议详情',
-            type: 2,
-            shade: 0.2,
-            maxmin:true,
-            shadeClose: true,
-            area: ['100%', '100%'],
-            content: 'update-minute.html?minute_id='+minute_id,
-        });
-    }
-
-    /**
-     * 获取url传输的会议id
-     */
-    function getUrlParam(name)
-    {
-        var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)"); //构造一个含有目标参数的正则表达式对象
-        var r = window.location.search.substr(1).match(reg);  //匹配目标参数
-        if (r!=null) return unescape(r[2]); return null;    //返回参数值
-    }
-
-
     layui.use(['form', 'table'], function () {
         var $ = layui.jquery,
             form = layui.form,
@@ -100,16 +76,16 @@
 
         table.render({
             elem: '#currentTableId',
-            url: '/office_automation/public/index.php/index/minute_c/getAllMyMeet',
+            url: '/office_automation/public/index.php/index/admin_c/getAllMeet',
             toolbar: '#toolbarDemo',
             defaultToolbar: ['filter', 'exports', 'print'],
             cols: [[
                 {type: "checkbox", width: 50},
                 {field: 'minute_id', width: 80, title: '编号'},
                 {field: 'minute_theme', width: 200, title: '会议主题' ,
-                        templet: function(d){
-                            return `<a style="color:#1E9FFF" href="#" lay-event="edit">${d.minute_theme}</a>`;
-                        }
+                    templet: function(d){
+                        return `<a style="color:#1E9FFF" href="#" lay-event="edit">${d.minute_theme}</a>`;
+                    }
                 },
                 {field: 'minute_host', width: 100, title: '发起人'},
                 {field: 'minute_date', width: 140, title: '会议时间'},
@@ -121,7 +97,7 @@
                 {title: '操作', toolbar: '#currentTableBar', align: "center"}
             ]],
             limits: [10, 15, 20, 25, 50, 100],  //选择一次显示多少行
-            limit: 10,  //默认显示多少行数据
+            limit: 15,  //默认显示多少行数据
             page: true,
             skin: 'line'
         });
@@ -193,20 +169,21 @@
                     }
                 }, 'data');
                 return false;
-            } else if (obj.event === 'need_arrive') {  // 监听删除操作
-                table.reload('currentTableId', {
-                    page: {
-                        curr: 1
-                    }
-                    , where: {
-                        minuteType: "",
-                        projectCode: "",
-                        keyword : "",
-                        isMyLaunch : 0    //我发起的会议
-                    }
-                }, 'data');
-                return false;
             }
+            // else if (obj.event === 'need_arrive') {
+            //     table.reload('currentTableId', {
+            //         page: {
+            //             curr: 1
+            //         }
+            //         , where: {
+            //             minuteType: "",
+            //             projectCode: "",
+            //             keyword : "",
+            //             isMyLaunch : 0    //我发起的会议
+            //         }
+            //     }, 'data');
+            //     return false;
+            // }
         });
 
         //监听表格复选框选择
@@ -232,13 +209,6 @@
                 return false;
             }
         });
-
-
-        //点击链接直接查看信息
-        // var minuteId = getUrlParam("minuteId");
-        // if(minuteId != null && minuteId != ''){
-        //     themeToUpdate(minuteId);
-        // }
     });
 </script>
 

@@ -106,24 +106,24 @@
             </div>
         </div>
 
-        <div class="layui-form-item">
+        <div class="layui-form-item  no-onclick">
             <label class="layui-form-label input-title">实到人员</label>
             <div class="layui-input-block">
-                <input type="text" name="" placeholder="--请选择已到会人员--" autocomplete="off" class="layui-input" id="attended-user" value="" ts-selected="">
+                <input type="text" name="" readonly="readonly"  placeholder="--请选择已到会人员--" autocomplete="off" class="layui-input" id="attended-user" value="" ts-selected="">
             </div>
         </div>
 
-        <div class="layui-form-item">
+        <div class="layui-form-item no-onclick">
             <label class="layui-form-label input-title">新增应到人员</label>
             <div class="layui-input-block">
-                <input type="text" name="" placeholder="--请选择新增应到员工--" autocomplete="off" class="layui-input" id="new-attend-users" value="" ts-selected="">
+                <input type="text" name="" readonly="readonly"  placeholder="--请选择新增应到员工--" autocomplete="off" class="layui-input" id="new-attend-users" value="" ts-selected="">
             </div>
         </div>
 
-        <div class="layui-form-item layui-form-text">
+        <div class="layui-form-item layui-form-text no-onclick">
             <label class="layui-form-label input-title">新增基本任务清单</label>
             <div class="layui-input-block">
-                <input type="text" name="" placeholder="--请选择基本任务清单--" autocomplete="off" class="layui-input" id="add-mission" value="" ts-selected="">
+                <input type="text" name="" readonly="readonly"  placeholder="--请选择基本任务清单--" autocomplete="off" class="layui-input" id="add-mission" value="" ts-selected="">
             </div>
         </div>
 
@@ -144,7 +144,7 @@
         <div class="layui-form-item layui-form-text">
             <label class="layui-form-label input-title">会议记录</label>
             <div class="layui-input-block">
-                <textarea placeholder="请输入内容" name="minute-context" id="minute-context" class="layui-textarea"></textarea>
+                <textarea placeholder="请输入内容" name="minute-context" id="minute-context" class="layui-textarea" rows="15"></textarea>
             </div>
         </div>
 
@@ -215,7 +215,7 @@
                     <div class="layui-col-md4">
                         <button class="layui-btn" id="save" lay-submit lay-filter="save">确定保存</button>
                         <button type="reset" id="refresh" class="layui-btn layui-btn-primary">重置</button>
-                        <button class="layui-btn" id="temporarySave">临时保存</button>
+                        <button class="layui-btn allowTemp" id="temporarySave">临时保存</button>
                     </div>
                     <div class="layui-col-md4"></div>
                 </div>

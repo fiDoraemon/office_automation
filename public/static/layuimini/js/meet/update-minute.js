@@ -58,12 +58,12 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                     break;
                 case 27 : //没有修改权限
                     modifyPermission = 0;
-                    NoKeyDown(); //禁止使用快捷键保存
                     tempMinuteInfo();
-                    $('input').css("pointer-events", "none");
-                    $('textarea').css("pointer-events", "none");
+                    $('input').attr("readOnly",true);
+                    $('textarea').attr("readOnly",true);
                     $('button').css("pointer-events", "none");
                     $('.layui-upload-drag').css("pointer-events", "none");
+                    $("#temporarySave").removeClass('allowTemp');
                     $('#missionTable').remove();
                     $('#commit-btn').remove();
                     break;
@@ -717,6 +717,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
     $("#refresh").on("click",function(){
         location.reload();
     });
+
     //临时保存
     $("#temporarySave").on("click",function () {
         saveTemp();
@@ -726,18 +727,8 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
     $(window).keydown(function (e) {
         if (e.keyCode === 83 && e.ctrlKey) {
             e.preventDefault();
-            saveTemp();
+            $(".allowTemp").click();
         }
     });
-
-    //非发起人进入查看页面禁止临时保存
-    function NoKeyDown(){
-        $(window).keydown(function (e) {
-            if (e.keyCode === 83 && e.ctrlKey) {
-                e.preventDefault();
-            }
-        });
-    }
-
 
 });

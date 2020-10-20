@@ -228,7 +228,13 @@
                 href: "page/mission/read.html?id=" + getQueryVariable('missionId'),
                 title: "任务详情",
             });
+        } else if(getQueryVariable('minuteId')) {
+            miniTab.openNewTabByIframe({
+                href: "page/meet/update-minute.html?minute_id=" + getQueryVariable('minuteId'),
+                title: "会议详情",
+            });
         }
+
     });
 
     //设置cookie
