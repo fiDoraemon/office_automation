@@ -98,11 +98,8 @@ class UserC extends CommonController
                 'phone' => $userPhone,
                 'email' => $userEmail,
             ]);
-        if($updateResult == 1){
-            $this -> updateInfo();//更新session中的用户信息
-            return Result::returnResult(Result::SUCCESS,null);
-        }
-        return Result::returnResult(Result::ERROR,null);
+        $this -> updateInfo();//更新session中的用户信息
+        return Result::returnResult(Result::SUCCESS,null);
     }
 
     /**

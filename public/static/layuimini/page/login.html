@@ -72,7 +72,7 @@
             <div class="center">
                 <div class="item">
                     <span class="icon icon-2"></span>
-                    <input type="text" name="username" id="user-num" lay-verify="required"  placeholder="请输入登录账号" maxlength="24" />
+                    <input type="text" name="username" id="user-num" lay-verify="required" onkeyup="this.value=this.value.replace(/[, ]/g,'')" placeholder="请输入登录账号" maxlength="24" />
                 </div>
 
                 <div class="item">
