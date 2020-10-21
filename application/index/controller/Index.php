@@ -31,12 +31,12 @@ class Index extends Controller
     // 获取菜单列表
     public function getMenuList()
     {
-        $filePath = APP_PATH .'common/api/init.json';
+        $filePath = APP_PATH . 'common/api/init.json';
         $sessionUserId = Session::get("info")["user_id"];
         $menuList = json_decode(file_get_contents($filePath));
-
+        $user = User::get(['user_id' => $sessionUserId]);
         // 如果不是管理员
-        if(!UserService::isSuper($sessionUserId)) {
+        if($user->super == 0) {
             unset($menuList->menuInfo[1]);
         }
 
