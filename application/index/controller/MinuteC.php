@@ -74,7 +74,7 @@ class MinuteC
                 $minutes -> where("project_id",$projectCode);
             }
             //对会议类型进行查询
-            if($minuteType != 0){
+            if($minuteType != -1){
                 $minutes -> where("minute_type",$minuteType);
             }
         }
@@ -92,7 +92,7 @@ class MinuteC
                 $minutes -> where("project_id",$projectCode);
             }
             //对会议类型进行查询
-            if($minuteType != 0){
+            if($minuteType != -1){
                 $minutes -> where("minute_type",$minuteType);
             }
         }
