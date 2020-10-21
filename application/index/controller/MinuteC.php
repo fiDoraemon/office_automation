@@ -52,7 +52,7 @@ class MinuteC
      * @throws ModelNotFoundException
      * @throws \think\Exception
      */
-    public function getAllMyMeet($page = 1,$limit = 10,$projectCode = 0,$minuteType = 0,$keyword = "",$isMyLaunch = 0){
+    public function getAllMyMeet($page = 1,$limit = 10,$projectCode = 0,$minuteType = -1,$keyword = "",$isMyLaunch = 0){
         $userId = Session::get("info")["user_id"];
         //查询与自己相对应的会议id号
         $listMeetId = Db::table('oa_minute_attend')

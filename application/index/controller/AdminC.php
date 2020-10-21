@@ -114,7 +114,7 @@ class AdminC
      * @throws ModelNotFoundException
      * @throws \think\Exception
      */
-    public function getAllMeet($page = 1,$limit = 15,$projectCode = 0,$minuteType = 0,$keyword = "",$isMyLaunch = 0){
+    public function getAllMeet($page = 1,$limit = 15,$projectCode = 0,$minuteType = -1,$keyword = "",$isMyLaunch = 0){
         $userId = Session::get("info")["user_id"];
         //查询对应的会议信息
         $minutes = new Minute();
@@ -131,7 +131,7 @@ class AdminC
                 $minutes -> where("project_id",$projectCode);
             }
             //对会议类型进行查询
-            if($minuteType != 0){
+            if($minuteType != -1){
                 $minutes -> where("minute_type",$minuteType);
             }
         }
@@ -148,7 +148,7 @@ class AdminC
                 $minutes -> where("project_id",$projectCode);
             }
             //对会议类型进行查询
-            if($minuteType != 0){
+            if($minuteType != -1){
                 $minutes -> where("minute_type",$minuteType);
             }
         }
