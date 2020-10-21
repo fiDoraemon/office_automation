@@ -130,10 +130,10 @@
 
         //监听提交
         form.on('submit(saveBtn)', function (data) {
-            var userName     = $("#user_name").val();
+            var userName     = $("#user_name").val().trim().replace(/\s/g,"");
             var departmentId =$("#departmentSelect").val();
-            var userPhone    = $("#user_phone").val();
-            var userEmail    = $("#user_email").val();
+            var userPhone    = $("#user_phone").val().trim().replace(/\s/g,"");
+            var userEmail    = $("#user_email").val().trim().replace(/\s/g,"");
             $.ajax({
                 url: "/office_automation/public/index.php/index/user_c/updateUserInfo",
                 type:'post',

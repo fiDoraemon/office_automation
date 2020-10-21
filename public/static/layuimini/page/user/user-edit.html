@@ -148,10 +148,10 @@
         form.on('submit(saveBtn)', function (data) {
             var result       = data.field;
             var userId       = result.user_id;
-            var userName     = result.user_name;
+            var userName     = result.user_name.trim().replace(/\s/g,"");
             var departmentId = result.departmentSelect;
-            var phone        = result.phone;
-            var email        = result.email;
+            var phone        = result.phone.trim().replace(/\s/g,"");
+            var email        = result.email.trim().replace(/\s/g,"");
             $.ajax({
                 url: "/office_automation/public/index.php/index/admin_c/updateUser",
                 type:'post',
