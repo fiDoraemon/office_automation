@@ -460,7 +460,9 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 {field: 'user_id', title: '员工工号'},
                 {field: 'user_name', title: '姓名'},
                 {field: 'department_name', title: '部门'},
-            ]]
+            ]],
+            limits: [10, 15, 20, 25, 50, 100],  //选择一次显示多少行
+            limit: 100,  //默认显示多少行数据
         },
         done: function (elem, data) {
             var NEWJSON = [];

@@ -227,7 +227,7 @@ class MinuteC
             }
 
             $listUser = $user -> field("user_id,user_name,department_id")
-//                              -> order("department_id")
+                              -> order("department_id,user_id")
                               -> page($page,$limit)
                               -> select();
             foreach ($listUser as $u){
@@ -385,25 +385,6 @@ class MinuteC
         } catch (DbException $e) {
         } catch (Exception $e) {
         }
-    }
-
-
-    public function test(){
-        Db::transaction(function () {
-            for($i = 0; $i < 10; $i++){
-                $attend = new MinuteAttendTemp();
-                $attend -> user_id = $i;
-                $attend -> save();
-            }
-            for($i = 0; $i < 10; $i++){
-                $attend = new MinuteTemp();
-                $attend -> id = $i;
-                $attend -> save();
-                if($i == 5){
-                    throw new \think\Exception('异常消息', 100006);
-                }
-            }
-        });
     }
 
     /**
