@@ -160,7 +160,7 @@
             <div class="layui-form-item">
                 <div class="layui-input-block">
                     <button class="layui-btn layui-btn-normal return-btn" lay-submit lay-filter="saveBtn">提交</button>
-                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    <button type="reset" id="reset" class="layui-btn layui-btn-primary">重置</button>
                 </div>
             </div>
         </form>
@@ -409,7 +409,8 @@
                         if (res.code == 0) {
                             layer.alert('新建成功！', {title: '提示'},
                                 function (index) {
-                                    // location.href = 'index.html';
+                                    layer.close(index);
+                                    $('#reset').click();
                                     // 打开新的窗口
                                     miniTab.openNewTabByIframe({
                                         href: "page/mission/index.html",

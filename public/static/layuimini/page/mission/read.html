@@ -151,7 +151,6 @@
                                 <thead>
                                 <tr>
                                     <th>文件名</th>
-                                    <th>上传者</th>
                                     <th>大小</th>
                                     <th>状态</th>
                                     <th>操作</th>
@@ -266,7 +265,6 @@
                 obj.preview(function(index, file, result){          // 分别是文件索引、文件对象、文件base64编码
                     var tr = $(['<tr id="upload-'+ index +'">'
                         ,'<td>'+ file.name +'</td>'
-                        ,'<td>王工</td>'          // TODO
                         ,'<td>'+ (file.size/1024).toFixed(1) +'kb</td>'
                         ,'<td>等待上传</td>'
                         ,'<td>'

@@ -46,8 +46,7 @@
     <div class="layui-form-item">
         <label class="layui-form-label required">处理人</label>
         <div class="layui-input-inline">
-            <input type="text" name="assignee_name" id="assignee_name" autocomplete="off" placeholder="请选择处理人" class="layui-input">
-            <input type="hidden" name="assignee_id" id="assignee_id">
+            <input type="text" name="assignee_name" id="assignee_name" autocomplete="off" placeholder="请选择处理人" class="layui-input" readonly>
         </div>
     </div>
     <div class="layui-form-item">
@@ -71,7 +70,7 @@
     <div class="layui-form-item">
         <label class="layui-form-label">会议号</label>
         <div class="layui-input-inline">
-            <input type="text" name="minute_id" id="minute_id" autocomplete="off" placeholder="请选择会议号" class="layui-input">
+            <input type="text" name="minute_id" id="minute_id" autocomplete="off" placeholder="请选择会议号" class="layui-input" readonly>
         </div>
     </div>
     </div>
@@ -79,7 +78,7 @@
     <div class="layui-form-item">
         <label class="layui-form-label">任务号</label>
         <div class="layui-input-inline">
-            <input type="text" name="mission_id" id="mission_id" autocomplete="off" placeholder="请选择任务号" class="layui-input">
+            <input type="text" name="mission_id" id="mission_id" autocomplete="off" placeholder="请选择任务号" class="layui-input" readonly>
         </div>
     </div>
     </div>
@@ -124,7 +123,6 @@
             },
             done: function (elem, data) {
                 elem.val(data.data[0].user_name)
-                $('#assignee_id').val(data.data[0].user_id)
             }
         });
 
@@ -193,7 +191,6 @@
                 if(res.code == 0) {
                     $('#interest-users').text(res.data.interestList);
                     if(res.data.parent_mission_id == -1) {
-                        console.log(1);
                         $('#sibling').attr('disabled', true);
                     }
                 }
@@ -212,18 +209,18 @@
             // 判断必填项是否填写
             if(result.type == 'new') {
                 if(result.mission_title == '') {
-                    layer.msg('任务标题不能为空！');
+                    layer.msg('任务标题不能为空', {icon: 5});
                 } else if(result.assignee_name == '') {
-                    layer.msg('未选择处理人!');
+                    layer.msg('未选择处理人', {icon: 5});
                 } else if(result.start_date == '') {
-                    layer.msg('未选择开始日期!');
+                    layer.msg('未选择开始日期', {icon: 5});
                 } else if(result.finish_date == '') {
-                    layer.msg('未选择截止日期!');
+                    layer.msg('未选择截止日期', {icon: 5});
                 } else {
                     verify = true;
                     fields = $.extend({}, fields, {
                         'mission_title': result.mission_title,
-                        'assignee_id': result.assignee_id,
+                        'assignee_id': $('#assignee_name').attr('ts-selected'),
                         'start_date': result.start_date,
                         'finish_date': result.finish_date,
                         'description': result.description,
@@ -232,7 +229,7 @@
                 }
             } else if(result.type == 'exist') {
                 if(result.mission_id == '') {
-                    layer.msg('未选择任务号！');
+                    layer.msg('未选择任务号', {icon: 5});
                 } else {
                     verify = true;
                     fields = $.extend({}, fields, {
@@ -241,13 +238,16 @@
                 }
             } else {
                 if(result.minute_id == '') {
-                    layer.msg('未选择会议号！');
+                    layer.msg('未选择会议号', {icon: 5});
                 } else {
                     verify = true;
                     fields = $.extend({}, fields, {
                         'minute_id': result.minute_id
                     });
                 }
+            }
+            if(!verify) {
+                return false;
             }
 
             layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
