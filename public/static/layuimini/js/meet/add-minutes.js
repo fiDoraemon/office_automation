@@ -362,12 +362,14 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         }
         minute_info.attend_users    = userIdList;
         minute_info.file            = uploadList;
+        var loadingIndex = layer.load(2);
         $.ajax({
             url: "/office_automation/public/index.php/index/minute_c/saveMinute",
             type:'post',
             timeout: 1000,
             data: minute_info,
             success: function(res){
+                layer.close(loadingIndex);
                 layer.alert('会议发起成功！', {title: '提示'},
                     function (index) {
                         layer.close(index);
