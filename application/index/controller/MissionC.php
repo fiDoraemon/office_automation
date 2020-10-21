@@ -585,7 +585,14 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS);
     }
 
-    // 将任务加进浏览记录
+    /**
+     * 将任务加进浏览记录
+     * @return array
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function recordMissionView() {
         $missionId = input('post.missionId');
         $sessionUserId = Session::get("info")["user_id"];
@@ -615,7 +622,13 @@ class MissionC extends Controller
         return Result::returnResult(Result::SUCCESS);
     }
 
-    // 获取最近浏览的 15 条任务
+    /**
+     * 获取最近浏览的 15 条任务
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function getMissionView() {
         $sessionUserId = Session::get("info")["user_id"];
         $missionView = new MissionView();
@@ -825,15 +838,26 @@ class MissionC extends Controller
     }
 
     /**
-     * 获取任务树列表
+     * 获取任务树详情
      * @param $id
      * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
-    public function missionTree($id) {
+    public function missionTreeDetail($id) {
+        // 获取任务树
         $missionService = new MissionService();
         $missionTree = $missionService->getMissionTree($id);
+        $sessionUserId = Session::get("info")["user_id"];
+        // 判断是否是管理员
+        $user = User::get(['user_id' => $sessionUserId]);
+        $data = [
+            'missionTree' => $missionTree,
+            'isSuper' => $user->super
+        ];
 
-        return Result::returnResult(Result::SUCCESS, $missionTree, count($missionTree));
+        return Result::returnResult(Result::SUCCESS, $data);
     }
 
     /**
@@ -974,7 +998,7 @@ class MissionC extends Controller
      * @return array
      * @throws \think\exception\DbException
      */
-    public function getInterestList($id) {
+    public function getParentDetail($id) {
 
         $mission = Mission::get($id);
         $nameArray = array();
@@ -985,8 +1009,12 @@ class MissionC extends Controller
             }
         }
         $interestNames = implode('，', $nameArray);
+        $data = [
+            'interestList' => $interestNames,
+            'parent_mission_id' => $mission->parent_mission_id
+        ];
 
-        return Result::returnResult(Result::SUCCESS, $interestNames);
+        return Result::returnResult(Result::SUCCESS, $data);
     }
 
     /**

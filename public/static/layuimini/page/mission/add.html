@@ -400,14 +400,15 @@
 
             layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
                 layer.close(index);
+                var index = layer.load(2);
                 $.post(
                     "/office_automation/public/mission",
                     result,
                     function (res) {
+                        layer.close(index);
                         if (res.code == 0) {
                             layer.alert('新建成功！', {title: '提示'},
                                 function (index) {
-                                    layer.close(index);
                                     // location.href = 'index.html';
                                     // 打开新的窗口
                                     miniTab.openNewTabByIframe({
@@ -421,6 +422,7 @@
                         }
                     }
                 );
+                layer.close(index);
             });
 
             return false;

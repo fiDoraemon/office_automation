@@ -188,7 +188,7 @@ class AdminC
         if($res->code == 0) {
             foreach ($res->data as $info) {
                 $user = User::getByUserName($info->name);
-                if($user) {
+                if($user && $user->dd_userid == '') {
                     $user->dd_userid = $info->userid;
                     $user->save();
                 }
@@ -234,14 +234,14 @@ class AdminC
         // 关联添加旧 OA 用户
         $department = Department::get($departmentId);
         $user = User::get(['user_id' => $userId]);
-        $password = '';
+        $password = 'XAPUHUECKGGSEXISXIPS';
         $userInfo = new UserInfo();
         $userInfo->data([
             'Name' => $userName,
             'User_ID' => $userId,
             'Password' => $password,
             'email' => $email,
-            'userid' => $user->userid,
+            'userid' => $user->dd_userid,
             'department' => $department->department_name
         ]);
         $userInfo->save();

@@ -94,57 +94,46 @@
         //监听提交
         form.on('submit(saveBtn)', function (data) {
             var result = data.field;
-            $.ajax({
-                url: "/office_automation/public/index.php/index/admin_c/addUser",
-                type:'post',
-                timeout: 2000,
-                data: {
-                    user_id         : result.user_id,
-                    user_name       : result.user_name,
-                    department_id   : result.department_id,
-                    phone           : result.phone,
-                    email           : result.email
-                },
-                success: function(res){
-                    switch (res.code) {
-                        case 0:
-                            layer.alert('添加成功！', {title: '提示'},
-                                function (index) {
-                                    layer.close(index);
-                                    miniTab.openNewTabByIframe({
-                                        href: "page/mission/index.html",
-                                        title: "我的任务",
-                                    });
-                                }
-                            );
-                            break;
-                        case 3:
-                            layer.alert('没有添加用户权限！', {title: '提示'},
-                                function (index) {
-                                    layer.close(index);
-                                    miniTab.openNewTabByIframe({
-                                        href: "page/mission/index.html",
-                                        title: "我的任务",
-                                    });
-                                }
-                            );
-                            break;
-                        case 31:
-                            layer.alert('员工ID已经存在！', {title: '提示'},
-                                function (index) {
-                                    layer.close(index);
-                                }
-                            );
-                            break;
-                        default:
-                            layer.msg('添加失败！');
-                            break;
-                    }
-                },
-                error: function(res){
 
-                }
+            layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
+                layer.close(index);
+                var index = layer.load(2);
+                $.ajax({
+                    url: "/office_automation/public/index.php/index/admin_c/addUser",
+                    type:'post',
+                    data: {
+                        user_id         : result.user_id,
+                        user_name       : result.user_name,
+                        department_id   : result.department_id,
+                        phone           : result.phone,
+                        email           : result.email
+                    },
+                    success: function(res){
+                        layer.close(index);
+                        switch (res.code) {
+                            case 0:
+                                layer.alert('添加成功！', {title: '提示'},
+                                    function (index) {
+                                        var index = parent.layer.getFrameIndex(window.name);
+                                        parent.layer.close(index);
+                                    }
+                                );
+                                break;
+                            case 3:
+                                layer.msg('没有添加用户权限！');
+                                break;
+                            case 31:
+                                layer.msg('员工ID已经存在！');
+                                break;
+                            default:
+                                layer.msg('添加失败！');
+                                break;
+                        }
+                    },
+                    error: function(res){}
+                });
             });
+
             return false;
         });
     });

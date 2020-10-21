@@ -90,14 +90,14 @@
             toolbar: '#toolbar',
             defaultToolbar: ['filter', 'exports', 'print'],
             cols: [[
-                {type: "checkbox", width: 50},
-                {field: 'mission_id', width: 60, title: 'ID', sort: true},
-                {field: 'mission_title', minWidth: 150, title: '任务标题'},
-                {field: 'assignee_name', width: 80, title: '处理人', align: "center"},
-                {field: 'status', width: 100, title: '任务状态', align: "center"},
-                {field: 'project_id', width: 120, title: '项目代号', sort: true, align: "center"},
-                {field: 'label', width: 100, title: '标签', align: "center"},
-                {title: '操作', minWidth: 150, toolbar: '#missionListBar', align: "center"}
+                {type: "checkbox", width: '5%'},
+                {field: 'mission_id', width: '5%', title: 'ID', sort: true},
+                {field: 'mission_title', width: '25%', title: '任务标题'},
+                {field: 'assignee_name', width: '10%', title: '处理人', align: "center"},
+                {field: 'status', width: '10%', title: '任务状态', align: "center"},
+                {field: 'project_id', width: '10%', title: '项目代号', sort: true, align: "center"},
+                {field: 'label', width: '15%', title: '标签', align: "center"},
+                {title: '操作', width: '20%', toolbar: '#missionListBar', align: "center"}
             ]],
             id: 'missionList',
             autoSort: false,
@@ -155,7 +155,7 @@
                         var array = iframeWin['location'].pathname.split('/');              // 分隔当前窗口的 url 为数组
 
                         if(array[array.length - 1] == 'tree-view.html') {
-                            return false;
+                            layer.close(index);
                         } else {
                             window.history.go(-1);
                         }

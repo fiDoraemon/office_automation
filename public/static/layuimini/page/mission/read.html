@@ -187,7 +187,7 @@
         <div class="layui-form-item">
             <div class="layui-input-block">
                 <button class="layui-btn layui-btn-normal return-btn" lay-submit lay-filter="saveBtn">提交</button>
-                <!--<a class="layui-btn layui-btn-normal" id="mission-tree">显示任务树</a>-->
+                <a class="layui-btn layui-btn-normal" id="mission-tree">显示任务树</a>
             </div>
         </div>
     </div>
@@ -336,7 +336,7 @@
         // 获取任务详情
         $.get(
             "/office_automation/public/mission/" + getQueryVariable('id'),
-            function (res, status) {
+            function (res) {
                 if(res.code == 0) {
                     // 填充项目下拉框
                     var projectList = res.data.projectList;
@@ -398,13 +398,13 @@
                         // }
                         var attachments = processList[i].attachments;
                         var tempArray = [];
-                        for(i in attachments) {
-                            tempArray.push(`<a href="${attachments[i].save_path}" download="${attachments[i].source_name}">${attachments[i].source_name}</a>`);
+                        for(j in attachments) {
+                            tempArray.push(`<a href="${attachments[j].save_path}" download="${attachments[j].source_name}">${attachments[j].source_name}</a>`);
                         }
                         var tempString = (tempArray.length != 0)? '<b>附件：</b>' + tempArray.join('，', tempArray) : '';
                         element += `
                         <tr>
-                            <td>${i + 1}</td>
+                            <td>${Number(i) + 1}</td>
                             <td>${result.handler['user_name']}</td>
                             <td>${result.status['status_name']}</td>
                             <td>${result.process_time}</td>
@@ -621,9 +621,9 @@
         });
 
         // 打开任务树
-        // $('#mission-tree').click(function () {
-        //     window.location.href = 'tree-view.html?id=' + $('#mission_id').val();
-        // });
+        $('#mission-tree').click(function () {
+            window.location.href = 'tree-view.html?id=' + $('#mission_id').val();
+        });
 
         // 加进任务浏览记录
         $.post(

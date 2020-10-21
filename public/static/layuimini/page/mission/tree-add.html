@@ -18,7 +18,7 @@
         <label class="layui-form-label">位置</label>
         <div class="layui-input-block">
             <input type="radio" name="position" value="child" title="子任务" checked="">
-            <input type="radio" name="position" value="sibling" title="同级任务">
+            <input type="radio" name="position" id="sibling" value="sibling" title="同级任务">
         </div>
     </div>
     <div class="layui-form-item">
@@ -186,12 +186,16 @@
             }
         });
 
-        // 获取父任务关注人列表
+        // 获取父任务详情（关注人列表和是否父任务）
         $.get(
-            "/office_automation/public/index/mission_c/getInterestList?id=" + getQueryVariable('id'),
+            "/office_automation/public/index/mission_c/getParentDetail?id=" + getQueryVariable('id'),
             function (res) {
                 if(res.code == 0) {
-                    $('#interest-users').text(res.data);
+                    $('#interest-users').text(res.data.interestList);
+                    if(res.data.parent_mission_id == -1) {
+                        console.log(1);
+                        $('#sibling').attr('disabled', true);
+                    }
                 }
             }
         );
@@ -245,9 +249,6 @@
                     });
                 }
             }
-            // if(verify == false) {
-            //     return false;
-            // }
 
             layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
                 layer.close(index);
