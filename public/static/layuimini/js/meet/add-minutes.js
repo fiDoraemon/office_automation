@@ -145,9 +145,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         elem: '#list-users',	//定义输入框input对象 必填
         checkedKey: 'user_id', //表格的唯一建值，非常重要，影响到选中状态 必填
         searchKey: 'keyword',	//搜索输入框的name值 默认keyword
-        searchList: [
-            {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
-        ],
+        searchPlaceholder: '员工名字 / 部门',
         table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
             url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=0',
             cols: [[

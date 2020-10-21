@@ -424,9 +424,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         elem: '#attended-user',	//定义输入框input对象 必填
         checkedKey: 'user_id', //表格的唯一建值，非常重要，影响到选中状态 必填
         searchKey: 'keyword',	//搜索输入框的name值 默认keyword
-        searchList: [
-            {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},  //搜索条件1
-        ],
+        searchPlaceholder: '员工名字 / 部门',
         table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
             url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=1&minuteId='+minute_id,
             cols: [[
@@ -454,9 +452,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         elem: '#new-attend-users',
         checkedKey: 'user_id',
         searchKey: 'keyword',
-        searchList: [
-            {searchKey: 'keyword', searchPlaceholder: '员工名字/部门'},
-        ],
+        searchPlaceholder: '员工名字 / 部门',
         table: {
             url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=2&minuteId='+minute_id,
             cols: [[
@@ -484,9 +480,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         elem: '#add-mission',
         checkedKey: 'mission_id',
         searchKey: 'keyword',
-        searchList: [
-            {searchKey: 'keyword', searchPlaceholder: '任务标题/任务ID'},  //搜索条件
-        ],
+        searchPlaceholder: '任务标题 / 任务ID',
         table: {
             url:'/office_automation/public/index/mission_c/selectIndex?type=1',
             cols: [[
