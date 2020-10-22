@@ -230,7 +230,6 @@ class UserC extends CommonController
                 $user -> where("department_id",$departmentId);
             }
             $listUser = $user -> field("user_id,user_name,department_id")
-                -> order("department_id")
                 -> page($page,$limit)
                 -> select();
             foreach ($listUser as $u){
