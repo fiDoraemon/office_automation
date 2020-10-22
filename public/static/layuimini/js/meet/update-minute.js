@@ -72,6 +72,8 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                     tempMinuteInfo();
                     break;
             }
+            // $("#minute-resolution").attr("rows",$("#minute-resolution").val().split(/\r?\n/).length + 1);
+            // $("#minute-context").attr("rows",$("#minute-context").val().split(/\r?\n/).length + 1);
         },
         error: function(res){
 
