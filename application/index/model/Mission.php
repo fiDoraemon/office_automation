@@ -15,7 +15,7 @@ class Mission extends Model
     // 关联处理人（一对一）
     public function assignee()
     {
-        return $this->hasOne('User','user_id', 'assignee_id')->field('user_name,dd_userid');
+        return $this->hasOne('User','user_id', 'assignee_id')->field('user_name,dd_userid,dd_open');
     }
 
     // 关联关注人（一对多）

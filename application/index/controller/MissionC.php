@@ -248,8 +248,7 @@ class MissionC extends Controller
             $useridArray = array();          // 钉钉 userid 列表
 
             foreach ($userIds as $userId) {
-                // 过滤发起人和处理人
-                if($userId == $mission->reporter_id || $userId == $mission->assignee_id) {
+                if($userId == $mission->reporter_id || $userId == $mission->assignee_id) {          // 过滤发起人和处理人
                     continue;
                 }
                 $missionInterest = new MissionInterest();
@@ -258,7 +257,7 @@ class MissionC extends Controller
                 $missionInterest->save();
 
                 $user = User::getByUserId($userId);
-                if($user->dd_userid != '') {
+                if($user->dd_userid != '' && $user->dd_open == 1) {
                     array_push($useridArray, $user->dd_userid);
                 }
             }
@@ -282,39 +281,29 @@ class MissionC extends Controller
         }
 
         // 发送钉钉消息(先发送基本信息，再发送链接)
+        $data = DataEnum::$msgData;
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
         $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?missionId=' . $mission->mission_id;
+        $templet = '● 标题：' . $mission->mission_title . "\n" . '● 描述：' . $mission->description . "\n" . "● 截止日期：" . $mission->finish_date;
+        if($attachmentList != '') {
+            $templet .= "\n" . '● 附件清单：' . $attachmentList;
+        }
+        $templet .= "\n" . '● 链接：' . $url;
         // 发送给处理人
-        if($userId != input('post.assignee_id') && $mission->assignee->dd_userid != '') {
-            $data = DataEnum::$msgData;
+        if($userId != input('post.assignee_id') && $mission->assignee->dd_userid != '' && $mission->assignee->dd_open == 1) {
             $data['userList'] = $mission->assignee->dd_userid;
-            $data['data']['title'] = '您有新的任务待处理';
-            $data['data']['detail'] = [
-                ['key' => '标题：', 'value' => $mission->mission_title],
-                ['key' => '描述：', 'value' =>  $mission->description],
-                ['key' => '截止日期：', 'value' =>  $mission->finish_date],
-                ['key' => '链接', 'value' => '链接见下方']
-            ];
-            if($attachmentList != '') {
-                array_splice($data['data']['detail'],3,0, [['key' => '附件清单', 'value' => $attachmentList]]);
-            }
+            $message = '◉ 您有新的任务(#' . $mission->mission_id . ')待处理' . "\n" . $templet;
+            $data['data']['content'] = $message;
 
-            curlUtil::post($postUrl, $data);
-            $data['data'] = ['type' => 'text', 'content' => $url];
             curlUtil::post($postUrl, $data);
         }
         // 发送给邀请关注的人
         if($useridList) {
             $data = DataEnum::$msgData;
             $data['userList'] = $useridList;
-            $data['data']['title'] = Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务';
-            $data['data']['detail'] = [
-                ['key' => '标题：', 'value' => $mission->mission_title],
-                ['key' => '链接', 'value' => '链接见下方']
-            ];
+            $message = '◉ ' . Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务' . "\n" . $templet;
+            $data['data']['content'] = $message;
 
-            curlUtil::post($postUrl, $data);
-            $data['data'] = ['type' => 'text', 'content' => $url];
             curlUtil::post($postUrl, $data);
         }
 
@@ -429,40 +418,47 @@ class MissionC extends Controller
         $mission->allowField(true)->save($fields);
 
         // 处理关注人列表
-        $newInterest = array();         // 新邀请关注的人
-        $oldInterest = array();        // 已关注的人
+        $newUserids = [];         // 新邀请关注人的钉钉 userid
+        $oldUserids = [];         // 已关注人的钉钉 userid
         if(input('put.invite_follow')) {
             $userIds = explode(',', input('put.invite_follow'));
-            // 获取关注人工号列表数组
+            // 获取当前的关注人列表
             $missionInterest = new MissionInterest();
-            $interestUserIds = $missionInterest->where('mission_id', $id)->column('user_id');
-            foreach ($userIds as $userId) {
-                // 过滤发起人和处理人
-                if($userId == $mission->reporter_id || $userId == $mission->assignee_id) {
-                    break;
-                }
-                $user = User::getByUserId($userId);
-                // 如果未存在 任务-关注人 对应关系就插入
-                if(!in_array($userId, $interestUserIds)) {
-                    $missionInterest = new MissionInterest();
-                    $missionInterest->mission_id = $id;
-                    $missionInterest->user_id = $userId;
-                    $missionInterest->save();
+            $currentUserIds = $missionInterest->where('mission_id', $id)->column('user_id');
+            $newUserIds = array_diff($userIds, $currentUserIds);         // 新邀请关注的人
+            $oldUserIds = array_intersect($userIds, $currentUserIds);           // 已关注的人
+            $cancelUserIds = array_diff($currentUserIds, $userIds);        // 取消关注的人
 
-                    if($user->dd_userid != '') {
-                        array_push($newInterest, $user->dd_userid);
-                    }
-                }  else {
-                    if($user->dd_userid != '') {
-                        array_push($oldInterest, $user->dd_userid);
-                    }
+            foreach ($newUserIds as $userId) {
+                if($userId == $mission->reporter_id || $userId == $mission->assignee_id) {          // 过滤发起人和处理人
+                    continue;
+                }
+                $missionInterest = new MissionInterest();
+                $missionInterest->mission_id = $id;
+                $missionInterest->user_id = $userId;
+                $missionInterest->save();
+
+                $user = User::getByUserId($userId);
+                if($userId != $sessionUserId && $user->dd_userid != '' && $user->dd_open == 1) {          // 过滤当前用户
+                    array_push($newUserids, $user->dd_userid);
+                }
+            }
+            foreach ($oldUserIds as $userId) {
+                $user = User::getByUserId($userId);
+                if($userId != $sessionUserId && $user->dd_userid != '' && $user->dd_open == 1) {
+                    array_push($oldUserids, $user->dd_userid);
+                }
+            }
+            foreach ($cancelUserIds as $userId) {
+                $missionInterest = MissionInterest::get(['mission_id' => $id, 'user_id' => $userId]);
+                if($missionInterest) {
+                    $missionInterest->delete();
                 }
             }
         }
 
         // 插入任务处理记录
         $attachmentList = '';           // 附件清单字符串
-        $process_note = input('put.process_note');
         if(input('put.process_note') != '' || input('put.attachment_list') != '') {
             $missionProcess = new MissionProcess();
             $missionProcess->data([
@@ -495,59 +491,54 @@ class MissionC extends Controller
         $status_name = MissionStatus::get($mission->status)->status_name;
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
         $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?missionId=' . $mission->mission_id;
+        $data = DataEnum::$msgData;
         if(input('put.process_note') != '' || input('put.attachment_list') != '') {
-            $data = DataEnum::$msgData;
-            $detail = [
-                ['key' => '标题：', 'value' => $mission->mission_title],
-                ['key' => '处理后状态：', 'value' => $status_name],
-                ['key' => '链接', 'value' => '链接见下方']
-            ];
-            $data['data']['detail'] = $detail;
+            $templet = '● 标题：' . $mission->mission_title . "\n" . '● 处理后状态：' . $status_name;
+            if(input('put.process_note') != '') {
+                $templet .= "\n" . '● 处理意见：' . input('put.process_note');
+            }
             if($attachmentList != '') {
-                array_splice($data['data']['detail'],2,0, [['key' => '附件清单', 'value' => $attachmentList]]);
+                $templet .= "\n" . '● 附件清单：' . $attachmentList;
             }
-            if($process_note != '') {
-                array_splice($data['data']['detail'],1,0, [['key' => '处理意见：', 'value' => $status_name]]);
-            }
-            // 当前用户是发起人，发送给处理人
-            if($sessionUserId == $mission->reporter_id && $sessionUserId != $mission->assignee_id && $mission->assignee->dd_userid != '') {
+            $templet .= "\n" . '● 链接：' . $url;
+
+            // 发送给处理人
+            if($sessionUserId != $mission->assignee_id && $mission->assignee->dd_userid != '') {
                 $data['userList'] = $mission->assignee->dd_userid;
-                $data['data']['title'] = Session::get("info")["user_name"] . '处理了' . $mission->mission_id . '号任务';
-            // 当前用户是处理人，发送给发起人
-            } else if($sessionUserId == $mission->assignee_id && $sessionUserId != $mission->reporter_id && $mission->reporter->dd_userid != '') {
-                $data['userList'] = $mission->reporter->dd_userid;
-                $data['data']['title'] = '您发起的' . $mission->mission_id . '号任务' . '正在被' . Session::get("info")["user_name"] . '处理';
-            }
-
-            curlUtil::post($postUrl, $data);
-            $data['data'] = ['type' => 'text', 'content' => $url];
-            curlUtil::post($postUrl, $data);
-
-            // 发送给已关注的人
-            if(!empty($oldInterest)) {
-                $data = DataEnum::$msgData;
-                $data['userList'] = implode(',', $oldInterest);
-                $data['data']['title'] = '您关注的' . $mission->mission_id . '号任务正在被' . Session::get("info")["user_name"] . '处理';
-                $data['data']['detail'] = array_slice($detail,0, 3);
+                $message = '◉ ' . Session::get("info")["user_name"] . '处理了' . $mission->mission_id . '号任务' . "\n" . $templet;
+                $data['data']['content'] = $message;
 
                 curlUtil::post($postUrl, $data);
-                $data['data'] = ['type' => 'text', 'content' =>$url];
+            }
+            // 发送给发起人
+            if($sessionUserId != $mission->reporter_id && $mission->reporter->dd_userid != '') {
+                $data['userList'] = $mission->reporter->dd_userid;
+                $message = '◉ ' . '您发起的' . $mission->mission_id . '号任务' . '正在被' . Session::get("info")["user_name"] . '处理' . "\n" . $templet;
+                $data['data']['content'] = $message;
+
+                curlUtil::post($postUrl, $data);
+            }
+            // 发送给已关注的人
+            if(!empty($oldUserids)) {
+                $data['userList'] = implode(',', $oldUserids);
+                $message = '◉ ' . '您关注的' . $mission->mission_id . '号任务正在被' . Session::get("info")["user_name"] . '处理' . "\n" . $templet;
+                $data['data']['content'] = $message;
+
                 curlUtil::post($postUrl, $data);
             }
         }
 
         // 发送给新邀请关注的人
-        if(!empty($newInterest)) {
-            $data = DataEnum::$msgData;
-            $data['userList'] = implode(',', $newInterest);
-            $data['data']['title'] = Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务';
-            $data['data']['detail'] = [
-                ['key' => '标题：', 'value' => $mission->mission_title],
-                ['key' => '链接', 'value' => '链接见下方']
-            ];
+        if(!empty($newUserids)) {
+            $data['userList'] = implode(',', $newUserids);
+            $templet = '● 标题：' . $mission->mission_title . "\n" . '● 描述：' . $mission->description . "\n" . "● 截止日期：" . $mission->finish_date;
+            if($attachmentList != '') {
+                $templet .= "\n" . '● 附件清单：' . $attachmentList;
+            }
+            $templet .= "\n" . '● 链接：' . $url;
+            $message = '◉ ' . Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务' . "\n" . $templet;
+            $data['data']['content'] = $message;
 
-            curlUtil::post($postUrl, $data);
-            $data['data'] = ['type' => 'text', 'content' => $url];
             curlUtil::post($postUrl, $data);
         }
 
@@ -599,6 +590,9 @@ class MissionC extends Controller
         $dateTime = date('Y-m-d H:i:s',time());
         if(!$missionId) {           // 如果缺少必需参数
             return Result::returnResult(Result::LACK_REQUIRED_PARAM);
+        }
+        if(!Mission::get($missionId)) {
+            return Result::returnResult(Result::OBJECT_NOT_EXIST);
         }
         $missionView = MissionView::get(['user_id' => $sessionUserId, 'mission_id' => $missionId]);
         if($missionView) {          // 如果有相同任务浏览记录

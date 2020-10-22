@@ -487,7 +487,6 @@ class MoveTableDataC
         return '附件转移完成';
     }
 
-    // 转移任务树表进展详情数据
     // 转移合作人表数据
     public function moveOverwatchData() {
         OverwatchListMission::chunk(100, function ($objects) {
@@ -561,12 +560,18 @@ class MoveTableDataC
         return '任务处理表数据重新导入完成';
     }
 
+    // 转移任务树表进展详情数据
+    public function moveProgressReportData() {
+        return '进展详情数据数据转移完成';
+    }
+
     public function moveAllData() {
         $this->moveUserData();
         $this->moveProjectData();
         $this->moveMissionData();
         $this->moveMissionHistoryData();
         $this->moveMinuteData();
+
         return '全部数据转移完成';
     }
 }

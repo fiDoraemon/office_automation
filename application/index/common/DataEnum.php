@@ -42,10 +42,8 @@ class DataEnum
     public static $msgData = [
         'userList' => '',
         'data' => [
-            'type' => 'oa',
-            'head' => 'OA通知',
-            'title' => '',
-            'detail'=> []
+            'type' => 'text',
+            'content' => ''
         ]
     ];
 }

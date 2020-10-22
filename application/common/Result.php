@@ -37,6 +37,7 @@ class Result
     const NOT_ROOT_MISSION              = 29;
     const LACK_REQUIRED_PARAM           = 30;
     const EXIST_USER                    = 31;
+    const OBJECT_NOT_EXIST              = 32;
 
     // 对应结果
     public static $resultMsg = [
@@ -70,7 +71,8 @@ class Result
         self::NOT_TEMP                  => '没有临时保存的信息',
         self::NOT_ROOT_MISSION          => '任务不是根任务',
         self::LACK_REQUIRED_PARAM       => '缺少必需参数',
-        self::EXIST_USER                => '该用户已经存在'
+        self::EXIST_USER                => '该用户已经存在',
+        self::OBJECT_NOT_EXIST         => '对象不存在'
     ];
 
     // 返回结果
