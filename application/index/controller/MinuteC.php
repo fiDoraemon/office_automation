@@ -845,24 +845,21 @@ class MinuteC
         $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?minuteId=' . $minute -> minute_id;
         $data = DataEnum::$msgData;
         $data['userList'] = $DDidList;
-        $data['data']['title'] = '您有新的会议要参加(#' . $minute -> minute_id .")";
-        $data['data']['detail'] = [
-            ['key' => '主题：', 'value' => $minute -> minute_theme],
-            ['key' => '时间：', 'value' => $minute -> minute_date . ' ' .$minute -> minute_time],
-            ['key' => '链接',   'value' => '链接见下方']
-        ];
-        if($fileList != "" ) {  //判断是否需要发送附件清单
-            array_splice($data['data']['detail'],2,0, [['key' => '附件清单', 'value' => $fileList]]);
-        }
+        $templet = '▘ 主题：' . $minute -> minute_theme . "\n" . '▘ 时间：' . $minute -> minute_date;
         if(!$this -> checkRecord($minute)){ //判断是否发送会议记录
-            array_splice($data['data']['detail'],2,0, [['key' => '记录：', 'value' => $minute -> record]]);
+            $templet .= "\n" . '▘ 记录：' . $minute -> record;
         }
         if(!$this -> checkResolution($minute)){ //判断是否发送会议决议
-            array_splice($data['data']['detail'],2,0, [['key' => '决议：', 'value' => $minute -> resolution]]);
+            $templet .= "\n" . '▘ 决议：' . $minute -> resolution;
         }
+        if($fileList != "" ) {  //判断是否需要发送附件清单
+            $templet .= "\n" . '▘ 附件清单：' . $fileList;
+        }
+        $templet .= "\n" . '▘ 链接：' . $url;
+        $message = '◉ ' . '您有新的会议要参加(#' . $minute -> minute_id . ')' . "\n" . $templet;
+        $data['data']['content'] = $message;
+
         $result = curlUtil::post($postUrl, $data);
-        $data['data'] = ['type' => 'text', 'content' => $url];
-        curlUtil::post($postUrl, $data);
         return true;
     }
 
