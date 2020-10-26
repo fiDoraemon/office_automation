@@ -464,7 +464,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 {field: 'department_name', title: '部门'},
             ]],
             limits: [10, 15, 20, 25, 50, 100],  //选择一次显示多少行
-            limit: 100,  //默认显示多少行数据
+            limit: 10,  //默认显示多少行数据
         },
         done: function (elem, data) {
             var NEWJSON = [];
