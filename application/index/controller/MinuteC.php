@@ -419,6 +419,7 @@ class MinuteC
             $minute -> resolution = $minuteResolution;
             $minute -> record = $minuteContext;
             $minute -> minute_type = $minuteType;
+            $minute -> create_time = date('Y-m-d H:i:s', time());
             $minute -> save();
             $minuteId = $minute -> minute_id;
             //保存会议应到人员

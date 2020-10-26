@@ -671,44 +671,49 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         var minuteResolution  = $("#minute-resolution").val();
         var minuteContext     = $("#minute-context").val();
         var minuteMission     = getMissionInfo();
-        $.ajax({
-            url: "/office_automation/public/index.php/index/minute_c/updateMinute",
-            type:'post',
-            timeout: 2000,
-            data: {
-                minuteId        : minute_id,
-                attendList      : attended,         //已到会人员（数组）
-                newAttended     : newAttended,      //新增应到会人
-                newMission      : newMission,       //关联新任务
-                minuteResolution: minuteResolution, //会议决议
-                minuteContext   : minuteContext,    //会议记录
-                minuteMission   : minuteMission,    //新会议任务（数组）
-                uploadList      : uploadList        //附件（数组）
-            },
-            beforeSend:function(){
-                var index = layer.load(1, {
-                    shade: [0.5,'#808080'] //0.1透明度的白色背景
-                });
-            },
-            success: function(res){
-                layer.alert('会议修改成功！', {title: '提示'},
-                    function (index) {
-                        layer.close(index);
-                        var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
-                        parent.layer.close(index); //再执行关闭
-                        location.reload();
-                    }
-                );
-            },
-            error: function(res){
-                layer.alert('会议修改失败！', {title: '提示'},
-                    function (index) {
-                        layer.close(index);
-                        location.reload();
-                    }
-                );
-            }
+
+        layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
+            layer.close(index);
+            $.ajax({
+                url: "/office_automation/public/index.php/index/minute_c/updateMinute",
+                type:'post',
+                timeout: 2000,
+                data: {
+                    minuteId        : minute_id,
+                    attendList      : attended,         //已到会人员（数组）
+                    newAttended     : newAttended,      //新增应到会人
+                    newMission      : newMission,       //关联新任务
+                    minuteResolution: minuteResolution, //会议决议
+                    minuteContext   : minuteContext,    //会议记录
+                    minuteMission   : minuteMission,    //新会议任务（数组）
+                    uploadList      : uploadList        //附件（数组）
+                },
+                beforeSend:function(){
+                    var index = layer.load(1, {
+                        shade: [0.5,'#808080'] //0.1透明度的白色背景
+                    });
+                },
+                success: function(res){
+                    layer.alert('会议修改成功！', {title: '提示'},
+                        function (index) {
+                            layer.close(index);
+                            var index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                            parent.layer.close(index); //再执行关闭
+                            location.reload();
+                        }
+                    );
+                },
+                error: function(res){
+                    layer.alert('会议修改失败！', {title: '提示'},
+                        function (index) {
+                            layer.close(index);
+                            location.reload();
+                        }
+                    );
+                }
+            });
         });
+
         return false;
     });
 
