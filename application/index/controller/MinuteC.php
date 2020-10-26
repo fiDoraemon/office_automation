@@ -845,17 +845,17 @@ class MinuteC
         $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?minuteId=' . $minute -> minute_id;
         $data = DataEnum::$msgData;
         $data['userList'] = $DDidList;
-        $templet = '▘ 主题：' . $minute -> minute_theme . "\n" . '▘ 时间：' . $minute -> minute_date;
+        $templet = '▪ 主题：' . $minute -> minute_theme . "\n" . '▪ 时间：' . $minute -> minute_date;
         if(!$this -> checkRecord($minute)){ //判断是否发送会议记录
-            $templet .= "\n" . '▘ 记录：' . $minute -> record;
+            $templet .= "\n" . '▪ 记录：' . $minute -> record;
         }
         if(!$this -> checkResolution($minute)){ //判断是否发送会议决议
-            $templet .= "\n" . '▘ 决议：' . $minute -> resolution;
+            $templet .= "\n" . '▪ 决议：' . $minute -> resolution;
         }
         if($fileList != "" ) {  //判断是否需要发送附件清单
-            $templet .= "\n" . '▘ 附件清单：' . $fileList;
+            $templet .= "\n" . '▪ 附件清单：' . $fileList;
         }
-        $templet .= "\n" . '▘ 链接：' . $url;
+        $templet .= "\n" . '▪ 链接：' . $url;
         $message = '◉ ' . '您有新的会议要参加(#' . $minute -> minute_id . ')' . "\n" . $templet;
         $data['data']['content'] = $message;
 

@@ -284,11 +284,11 @@ class MissionC extends Controller
         $data = DataEnum::$msgData;
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
         $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?missionId=' . $mission->mission_id;
-        $templet = '▘ 标题：' . $mission->mission_title . "\n" . '▘ 描述：' . $mission->description . "\n" . "▘ 截止日期：" . $mission->finish_date;
+        $templet = '▪ 标题：' . $mission->mission_title . "\n" . '▪ 描述：' . $mission->description . "\n" . "▪ 截止日期：" . $mission->finish_date;
         if($attachmentList != '') {
-            $templet .= "\n" . '▘ 附件清单：' . $attachmentList;
+            $templet .= "\n" . '▪ 附件清单：' . $attachmentList;
         }
-        $templet .= "\n" . '▘ 链接：' . $url;
+        $templet .= "\n" . '▪ 链接：' . $url;
         // 发送给处理人
         if($userId != input('post.assignee_id') && $mission->assignee->dd_userid != '' && $mission->assignee->dd_open == 1) {
             $data['userList'] = $mission->assignee->dd_userid;
@@ -493,14 +493,14 @@ class MissionC extends Controller
         $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?missionId=' . $mission->mission_id;
         $data = DataEnum::$msgData;
         if(input('put.process_note') != '' || input('put.attachment_list') != '') {
-            $templet = '▘ 标题：' . $mission->mission_title . "\n" . '▘ 处理后状态：' . $status_name;
+            $templet = '▪ 标题：' . $mission->mission_title . "\n" . '▪ 处理后状态：' . $status_name;
             if(input('put.process_note') != '') {
-                $templet .= "\n" . '▘ 处理意见：' . input('put.process_note');
+                $templet .= "\n" . '▪ 处理意见：' . input('put.process_note');
             }
             if($attachmentList != '') {
-                $templet .= "\n" . '▘ 附件清单：' . $attachmentList;
+                $templet .= "\n" . '▪ 附件清单：' . $attachmentList;
             }
-            $templet .= "\n" . '▘ 链接：' . $url;
+            $templet .= "\n" . '▪ 链接：' . $url;
 
             // 发送给处理人
             if($sessionUserId != $mission->assignee_id && $mission->assignee->dd_userid != '') {
@@ -531,11 +531,11 @@ class MissionC extends Controller
         // 发送给新邀请关注的人
         if(!empty($newUserids)) {
             $data['userList'] = implode(',', $newUserids);
-            $templet = '▘ 标题：' . $mission->mission_title . "\n" . '▘ 描述：' . $mission->description . "\n" . "▘ 截止日期：" . $mission->finish_date;
+            $templet = '▪ 标题：' . $mission->mission_title . "\n" . '▪ 描述：' . $mission->description . "\n" . "▪ 截止日期：" . $mission->finish_date;
             if($attachmentList != '') {
-                $templet .= "\n" . '▘ 附件清单：' . $attachmentList;
+                $templet .= "\n" . '▪ 附件清单：' . $attachmentList;
             }
-            $templet .= "\n" . '▘ 链接：' . $url;
+            $templet .= "\n" . '▪ 链接：' . $url;
             $message = '◉ ' . Session::get("info")["user_name"] . '邀请您关注' . $mission->mission_id . '号任务' . "\n" . $templet;
             $data['data']['content'] = $message;
 
@@ -933,16 +933,10 @@ class MissionC extends Controller
             $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?missionId=' . $mission->mission_id;
             if($sessionUserId != input('post.assignee_id') && $mission->assignee->dd_userid != '') {
                 $data['userList'] = $mission->assignee->dd_userid;
-                $data['data']['title'] = '您有新的任务待处理';
-                $data['data']['detail'] = [
-                    ['key' => '标题：', 'value' => $mission->mission_title],
-                    ['key' => '描述：', 'value' =>  $mission->description],
-                    ['key' => '截止日期：', 'value' =>  $mission->finish_date],
-                    ['key' => '链接：', 'value' =>  '链接见下方']
-                ];
+                $templet = '▪ 标题：' . $mission->mission_title . "\n" . '▪ 描述：' . $mission->description . "\n" . "▪ 截止日期：" . $mission->finish_date;
+                $templet .= "\n" . '▪ 链接：' . $url;
+                $message = '◉ 您有新的任务(#' . $mission->mission_id . ')待处理' . "\n" . $templet;
 
-                curlUtil::post($postUrl, $data);
-                $data['data'] = ['type' => 'text', 'content' => $url];
                 curlUtil::post($postUrl, $data);
             }
         }
