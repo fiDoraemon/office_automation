@@ -6,10 +6,13 @@ use app\common\util\ArrayAndStringUtil;
 use app\common\util\curlUtil;
 use app\common\util\dateUtil;
 use app\index\model\Attachment;
+use app\index\model\Label;
 use app\index\model\Minute;
+use app\index\model\MissionLabel;
 use app\index\model\MissionTree;
 use app\index\model\MissionView;
 use app\index\model\User;
+use app\index\service\LabelService;
 use app\index\service\MissionService;
 use app\index\common\DataEnum;
 use app\index\model\Mission;
@@ -138,6 +141,23 @@ class MissionC extends Controller
     }
 
     /**
+     * 获取新建任务页面所需信息
+     *
+     * @return \think\Response
+     */
+    public function create()
+    {
+        $projectList = ProjectService::getProjectList();            // 获取项目列表
+        $labelList = LabelService::getLabelList();          // 获取标签列表
+        $data = [
+            'projectList' => $projectList,
+            'labelList' => $labelList
+        ];
+
+        return Result::returnResult(Result::SUCCESS, $data);
+    }
+
+    /**
      * 搜索任务
      * @param int $page
      * @param int $limit
@@ -216,6 +236,9 @@ class MissionC extends Controller
      * 保存新建的任务
      * @param Request $request
      * @return array
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
     public function save(Request $request)
@@ -279,6 +302,23 @@ class MissionC extends Controller
                 array_push($attachmentArray, $attachment->source_name);
             }
             $attachmentList = implode('，', $attachmentArray);
+        }
+
+        // 处理任务标签
+        if(input('post.label_list')) {
+            $labelList = explode(' | ', input('post.label_list'));
+            foreach ($labelList as $label) {
+                $label = Label::get(['label_name' => $label]);
+                if(!$label) {
+                    $label = new Label();
+                    $label->label_name = $label;
+                    $label->save();
+                }
+                $missionLabel = new MissionLabel();
+                $missionLabel->mission_id = $mission->mission_id;
+                $missionLabel->label_id = $label->label_id;
+                $missionLabel->save();
+            }
         }
 
         // 发送钉钉消息(先发送基本信息，再发送链接)
@@ -349,7 +389,7 @@ class MissionC extends Controller
         unset($mission->missionInterests);          // 去除 任务-关注人 关联属性
 
         // 获取项目列表
-        $projectList = ProjectService::index();
+        $projectList = ProjectService::getProjectList();
 
         // 获取任务状态列表
         $missionStatus = new MissionStatus();
@@ -357,12 +397,6 @@ class MissionC extends Controller
 
         // 判断当前用户是否是发起人
         $isReporter = ($sessionUserId == $mission->reporter_id)? 1 : 0;
-        $data = [
-            'missionDetail' => $mission,
-            'projectList' => $projectList,
-            'statusList' => $statusList,
-            'isReporter' => $isReporter
-        ];
 
         // 获取任务附件列表
 //        foreach ($mission->attachments as $attachment) {
@@ -388,6 +422,18 @@ class MissionC extends Controller
 //            $process->attachment = implode('，', $tempArray);           // 附件信息
         }
 //        $mission->attachmentList = $attachmentList;
+
+
+        $mission->labelList = LabelService::getMissionLabelList($mission->mission_id);          // 获取任务标签列表
+        $labelList = LabelService::getLabelList();          // 获取标签列表
+
+        $data = [
+            'missionDetail' => $mission,
+            'projectList' => $projectList,
+            'statusList' => $statusList,
+            'labelList' => $labelList,
+            'isReporter' => $isReporter
+        ];
 
         return Result::returnResult(Result::SUCCESS, $data);
     }

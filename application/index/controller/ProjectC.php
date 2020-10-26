@@ -29,7 +29,9 @@ class ProjectC extends Controller
      */
     public function create()
     {
-        //
+        // 获取项目列表
+        $projectList = ProjectService::index();
+        // 获取任务标签列表
     }
 
     /**

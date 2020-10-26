@@ -95,8 +95,13 @@
             </div>
             <div class="layui-form-item">
                 <label class="layui-form-label">任务标签</label>
-                <div class="layui-input-block">
-                    <input type="text" name="label" class="layui-input" placeholder="请输入任务标签" readonly>
+                <div class="layui-input-inline" style="width: 30%">
+                    <input type="text" name="label_list" id="label-list" class="layui-input" placeholder="请选择或输入任务标签">
+                </div>
+                <div class="layui-input-inline">
+                    <select name="label-serach" id="label-serach" lay-filter="label-serach" lay-search>
+                        <option value="">直接选择或搜索选择</option>
+                    </select>
                 </div>
             </div>
             <div class="layui-form-item">
@@ -281,16 +286,23 @@
 
         // 获取项目列表
         $.get(
-            "/office_automation/public/project",
+            "/office_automation/public/mission/create",
             function (res) {
                 if(res.code == 0) {
                     // 填充项目下拉框
-                    var projectList = res.data;
+                    var projectList = res.data.projectList;
                     var element = '';
                     for(i in projectList) {
                         element += `<option value="${projectList[i].project_id}">${projectList[i].project_code}</option>`;
                     }
                     $('#project_id').append(element);
+                    // 填充标签选择搜索框
+                    var labelList = res.data.labelList;
+                    element = '';
+                    for(i in labelList) {
+                        element += `<option value="${labelList[i].label_id}">${labelList[i].label_name}</option>`;
+                    }
+                    $('#label-serach').append(element);
                     form.render('select');          // 刷新select选择框渲染
                 }
             }
@@ -403,9 +415,21 @@
             }
         });
 
+        // 监听选择搜索框
+        var labelList = [];
+        form.on('select(label-serach)', function(data){
+            var label_name = $(data.elem).find("option[value='" + data.value + "']").text();
+            if(!labelList.includes(label_name)) {
+                labelList.push(label_name);
+            }
+
+            $('#label-list').val(labelList.join(' | '));
+        });
+
         //监听提交
         form.on('submit(saveBtn)', function (data) {
             var result = data.field;
+            console.log(result);
 
             if(result.finish_date < result.start_date) {
                 layer.msg('截止日期不能在开始日期之前', {icon: 5});

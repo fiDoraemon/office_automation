@@ -13,10 +13,10 @@ use app\index\model\Project;
 class ProjectService
 {
     // 获取项目列表
-    public static function index() {
+    public static function getProjectList() {
         $project = new Project();
-        $data = $project->field('project_id, project_code')->select();
+        $projectList = $project->field('project_id, project_code')->select();
 
-        return $data;
+        return $projectList;
     }
 }
