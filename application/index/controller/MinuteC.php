@@ -470,6 +470,7 @@ class MinuteC
             $minuteContext = $_POST["minuteContext"];              //会议记录
             $minuteMission = input('post.minuteMission/a');   //添加会议任务纪要
             $uploadList = input('post.uploadList/a');      //上传的附件
+            $oldAttendList = MinuteAttend::where('minute_id',$minuteId)->column('user_id');
             //保存会议基本信息
             $minute = Minute::getByMinuteId($minuteId);
             $minute->resolution = $minuteResolution;
@@ -527,8 +528,14 @@ class MinuteC
                 $m->minuteTempMission()->delete();
                 $m->delete();
             }
-            //发送钉钉消息
+//            $minuteAttend = new MinuteAttend();
+//            $sendMesList = $minuteAttend -> where("minute_id",$minuteId)
+//                                         -> field("user_id")
+//                                         -> select();
+            //给新增应到会人员发送钉钉消息
             $this->sendAttendMessage($minute, $newAttend);
+            //给原本应到会人员发送钉钉消息
+            $this->sendAttendUpdateMessage($minute, $oldAttendList);
             return Result::returnResult(Result::SUCCESS, null);
         });
     }
@@ -857,6 +864,44 @@ class MinuteC
         }
         $templet .= "\n" . '▪ 链接：' . $url;
         $message = '◉ ' . '您有新的会议要参加(#' . $minute -> minute_id . ')' . "\n" . $templet;
+        $data['data']['content'] = $message;
+
+        $result = curlUtil::post($postUrl, $data);
+        return true;
+    }
+
+    /**
+     * 发送会议更新消息
+     * @param $minute
+     * @param $attendUsers
+     * @return bool
+     */
+    private function sendAttendUpdateMessage($minute, $attendUsers){
+        $DDidList = User::where('user_id','in',$attendUsers)->column('dd_userid');
+        $DDidList = implode(',',$DDidList);
+        $fileList = Attachment::where(['attachment_type' => 'minute','related_id' => $minute -> minute_id])->column('source_name');
+        if($fileList == null){
+            $fileList = "";
+        }else{
+            $fileList = implode('，',$fileList);
+        }
+
+        $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?minuteId=' . $minute -> minute_id;
+        $data = DataEnum::$msgData;
+        $data['userList'] = $DDidList;
+        $templet = '▪ 主题：' . $minute -> minute_theme . "\n" . '▪ 时间：' . $minute -> minute_date;
+        if(!$this -> checkRecord($minute)){ //判断是否发送会议记录
+            $templet .= "\n" . '▪ 记录：' . $minute -> record;
+        }
+        if(!$this -> checkResolution($minute)){ //判断是否发送会议决议
+            $templet .= "\n" . '▪ 决议：' . $minute -> resolution;
+        }
+        if($fileList != "" ) {  //判断是否需要发送附件清单
+            $templet .= "\n" . '▪ 附件清单：' . $fileList;
+        }
+        $templet .= "\n" . '▪ 链接：' . $url;
+        $message = '◉ ' . '会议(#' . $minute -> minute_id . ')更新信息' . "\n" . $templet;
         $data['data']['content'] = $message;
 
         $result = curlUtil::post($postUrl, $data);
