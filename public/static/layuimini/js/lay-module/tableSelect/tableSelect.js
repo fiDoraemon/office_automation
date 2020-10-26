@@ -125,6 +125,7 @@ layui.define(['table', 'jquery', 'form'], function (exports) {
 
             //渲染表格后选中
             function setChecked (res, curr, count) {
+                // console.log(checkedData);
                 for(var i=0;i<res.data.length;i++){
                     for (var j=0;j<checkedData.length;j++) {
                         if(res.data[i][opt.checkedKey] == checkedData[j][opt.checkedKey]){
@@ -148,14 +149,26 @@ layui.define(['table', 'jquery', 'form'], function (exports) {
             //写入默认选中值(puash checkedData)
             function defaultChecked (res, curr, count){
                 if(opt.checkedKey && elem.attr('ts-selected')){
-                    var selected = elem.attr('ts-selected').split(",");
-                    for(var i=0;i<res.data.length;i++){
-                        for(var j=0;j<selected.length;j++){
-                            if(res.data[i][opt.checkedKey] == selected[j]){
-                                checkedData.push(res.data[i])
+                    // var selected = elem.attr('ts-selected').split(",");
+                    // for(var i=0;i<res.data.length;i++){
+                    //     for(var j=0;j<selected.length;j++){
+                    //         if(res.data[i][opt.checkedKey] == selected[j]){
+                    //             checkedData.push(res.data[i])
+                    //         }
+                    //     }
+                    // }
+                    var result = res.data;
+                    $.ajax({
+                        url: "/office_automation/public/index/index/getSelectInfo",
+                        type: 'post',
+                        data: { "userIds": elem.attr('ts-selected') },
+                        async: false,
+                        success: function (res) {
+                            if(res.code == 0) {
+                                checkedData = res.data;
                             }
                         }
-                    }
+                    });
                     checkedData = uniqueObjArray(checkedData, opt.checkedKey);
                 }
             }

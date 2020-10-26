@@ -204,7 +204,7 @@ class UserC extends CommonController
      * @return array
      * @throws \think\Exception
      */
-    public function getAllUsers($limit = 10,$page = 1,$keyword = ""){
+    public function getAllUsers($limit = 10,$page = 1,$keyword = "") {
         $user = Session::get("info");
         $departmentId = $user["department_id"];
         //所有在职员工
@@ -235,13 +235,36 @@ class UserC extends CommonController
                 -> page($page,$limit)
                 -> select();
             foreach ($listUser as $u){
-                $u -> department;
                 $u -> department_name = $u -> department -> department_name;
+                unset($u -> department);
             }
             return Result::returnResult(Result::SUCCESS,$listUser,$count);
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
         }
+    }
+
+    /**
+     * 获取选择人部分信息
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
+    function getSelectInfo() {
+        $userIds = explode(',', input('post.userIds'));         // 工号字列表符串
+        $userInfo = [];
+
+        foreach ($userIds as $userId) {
+            $user = new User();
+            $one = $user->where('user_id', $userId)->field('user_id,user_name,department_id')->find();
+            $one->department_name = $one->department->department_name;
+            unset($one->department);
+
+            array_push($userInfo, $one);
+        }
+
+        return Result::returnResult(Result::SUCCESS, $userInfo);
     }
 }

@@ -43,4 +43,20 @@ class Index extends Controller
         return $menuList;
     }
 
+    // 获取选择人部分信息
+    function getSelectInfo() {
+        $userIds = explode(',', input('post.userIds'));
+        $userInfo = [];
+
+        foreach ($userIds as $userId) {
+            $user = new User();
+            $one = $user->where('user_id', $userId)->field('user_id,user_name,department_id')->find();
+            $one->department_name = $one->department->department_name;
+            unset($one->department);
+
+            array_push($userInfo, $one);
+        }
+
+        return Result::returnResult(Result::SUCCESS, $userInfo);
+    }
 }

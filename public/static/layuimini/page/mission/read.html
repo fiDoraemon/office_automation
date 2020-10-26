@@ -503,7 +503,12 @@
                 ]]
             },
             done: function (elem, data) {
-                elem.val(data.data[0].user_name)
+                var result = data.data;
+                if(result.length != 0) {
+                    elem.val(result[0].user_name);
+                } else {            // 如果没选择则置空
+                    elem.val('');
+                }
             }
         });
 
@@ -548,7 +553,12 @@
                 ,page: false
             },
             done: function (elem, data) {
-                elem.val(data.data[0].mission_id);
+                var result = data.data;
+                if(result.length != 0) {
+                    elem.val(result[0].mission_id);
+                } else {            // 如果没选择则置空
+                    elem.val('');
+                }
             }
         });
 
@@ -567,7 +577,12 @@
                 ]]
             },
             done: function (elem, data) {
-                elem.val(data.data[0].minute_id);
+                var result = data.data;
+                if(result.length != 0) {
+                    elem.val(result[0].minute_id);
+                } else {            // 如果没选择则置空
+                    elem.val('');
+                }
             }
         });
 
@@ -624,9 +639,8 @@
         });
 
         // 加进任务浏览记录
-        $.post(
-            "/office_automation/public/index/mission_c/recordMissionView",
-            { missionId: getQueryVariable('id') },
+        $.get(
+            "/office_automation/public/index/mission_c/recordMissionView?missionId=" + getQueryVariable('id'),
             function(res){
                 if(res.data) {
                     console.log('提示：已加入浏览任务列表');

@@ -311,9 +311,15 @@
                 ]]
             },
             done: function (elem, data) {
-                elem.val(data.data[0].user_name)
+                var result = data.data;
+                if(result.length != 0) {
+                    elem.val(result[0].user_name);
+                } else {            // 如果没选择则置空
+                    elem.val('');
+                }
             }
         });
+
         // 关注人下拉表格
         tableSelect.render({
             elem: '#invite_follow',
@@ -332,8 +338,8 @@
                 var NEWJSON = []
                 layui.each(data.data, function (index, item) {
                     NEWJSON.push(item.user_name)
-                })
-                elem.val(NEWJSON.join("，"))
+                });
+                elem.val(NEWJSON.join("，"));
             }
         });
 
@@ -355,7 +361,12 @@
                 ,page: false
             },
             done: function (elem, data) {
-                elem.val(data.data[0].mission_id);
+                var result = data.data;
+                if(result.length != 0) {
+                    elem.val(result[0].mission_id);
+                } else {            // 如果没选择则置空
+                    elem.val('');
+                }
             }
         });
 
@@ -374,7 +385,12 @@
                 ]]
             },
             done: function (elem, data) {
-                elem.val(data.data[0].minute_id);
+                var result = data.data;
+                if(result.length != 0) {
+                    elem.val(result[0].minute_id);
+                } else {            // 如果没选择则置空
+                    elem.val('');
+                }
             }
         });
 

@@ -229,6 +229,7 @@ class MissionC extends Controller
         ]);
         $mission = new Mission($infoArray);
         $mission->allowField(true)->save();
+        $this->recordMissionView($mission->mission_id);         // 加进任务浏览记录
 
         // 插入初始任务处理信息
         $missionProcess = new MissionProcess();
@@ -584,8 +585,7 @@ class MissionC extends Controller
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public function recordMissionView() {
-        $missionId = input('post.missionId');
+    public function recordMissionView($missionId) {
         $sessionUserId = Session::get("info")["user_id"];
         $dateTime = date('Y-m-d H:i:s',time());
         if(!$missionId) {           // 如果缺少必需参数
@@ -594,6 +594,7 @@ class MissionC extends Controller
         if(!Mission::get($missionId)) {
             return Result::returnResult(Result::OBJECT_NOT_EXIST);
         }
+
         $missionView = MissionView::get(['user_id' => $sessionUserId, 'mission_id' => $missionId]);
         if($missionView) {          // 如果有相同任务浏览记录
             $missionView->update_time = $dateTime;
@@ -903,6 +904,7 @@ class MissionC extends Controller
             ]);
             $mission = new Mission($infoArray);
             $mission->allowField(true)->save();
+            $this->recordMissionView($mission->mission_id);         // 加进任务浏览记录
         } else if($type == 'exist') {           // 已存在任务
             $existMission = Mission::get(input('post.mission_id'));
             if($existMission->parent_mission_id != 0) {
