@@ -102,13 +102,14 @@
         <div class="layui-form-item">
             <label class="layui-form-label">任务标签</label>
             <div class="layui-input-inline" style="width: 30%">
-                <input type="text" name="label_list" id="label-list" class="layui-input" placeholder="请选择或输入任务标签" readonly>
+                <input type="text" name="label_list" id="label-list" class="layui-input" placeholder="请选择或输入任务标签">
             </div>
-            <!--<div class="layui-input-inline">-->
-                <!--<select name="label-serach" id="label-serach" lay-filter="label-serach" lay-search>-->
-                    <!--<option value="">直接选择或搜索选择</option>-->
-                <!--</select>-->
-            <!--</div>-->
+            <div class="layui-input-inline">
+                <select name="label-serach" id="label-serach" lay-filter="label-serach" lay-search>
+                    <option value="">直接选择或搜索选择</option>
+                </select>
+            </div>
+            <div class="layui-form-mid layui-word-aux">标签与标签之间需用中文分号分隔(；)</div>
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">父任务号</label>
@@ -336,13 +337,10 @@
             }
         });
 
-        var labelList = [];
         // 获取任务详情
-        $.ajax({
-            url: "/office_automation/public/mission/" + getQueryVariable('id'),
-            type: 'get',
-            async: false,
-            success: function (res) {
+        $.get(
+            "/office_automation/public/mission/" + getQueryVariable('id'),
+            function (res) {
                 if(res.code == 0) {
                     // 填充项目下拉框
                     var projectList = res.data.projectList;
@@ -429,14 +427,14 @@
                         $('#mission_title').attr('readonly', false);
                     }
                     // 填充标签选择搜索框
-                    // var labelList = res.data.labelList;
-                    // element = '';
-                    // for(i in labelList) {
-                    //     element += `<option value="${labelList[i].label_id}">${labelList[i].label_name}</option>`;
-                    // }
-                    // $('#label-serach').append(element);
+                    var labelList = res.data.labelList;
+                    element = '';
+                    for(i in labelList) {
+                        element += `<option value="${labelList[i].label_id}">${labelList[i].label_name}</option>`;
+                    }
+                    $('#label-serach').append(element);
                     form.render('select');          // 刷新select选择框渲染
-                    // labelList = missionDetail.labelList.split(' | ');
+
                     // 填充附件信息表
                     // var attachmentList = missionDetail.attachmentList;
                     // element = '';
@@ -496,15 +494,9 @@
                             parent.layer.close(index);
                         }
                     });
-                    // layer.alert(res.msg, {icon: 5}, function(index){
-                    //     layer.close(index);
-                    //
-                    //     var index = parent.layer.getFrameIndex(window.name);
-                    //     parent.layer.close(index);
-                    // });
                 }
             }
-        });
+        );
 
         // 处理人下拉表格
         tableSelect.render({
@@ -615,21 +607,24 @@
 
         // 监听选择搜索框
         form.on('select(label-serach)', function(data){
+            var labelList = $('#label-list').val().split('；');
             var label_name = $(data.elem).find("option[value='" + data.value + "']").text();
-            if(!labelList.includes(label_name)) {
-                labelList.push(label_name);
-            }
 
-            $('#label-list').val(labelList.join(' | '));
+            if(!labelList.includes(label_name)) {
+                if($('#label-list').val() == '') {
+                    $('#label-list').val(label_name);
+                } else {
+                    $('#label-list').val($('#label-list').val() + '；' + label_name);
+                }
+            }
         });
 
         //监听提交
         form.on('submit(saveBtn)', function (data) {
             var result = data.field;
-
             result.assignee_id = $('#assignee_name').attr('ts-selected');
             result.invite_follow = result.invite_follow? $('#invite_follow').attr('ts-selected') : '';
-            console.log(result);
+
             // 去除多余数据
             delete result.mission_title;
             delete result.reporter_id;

@@ -111,7 +111,7 @@
             cols: [[
                 {type: "checkbox", width: '3%'},
                 {field: 'mission_id', width: '5%', title: 'ID', align: "center", sort: true},
-                {field: 'mission_title', width: '15%', title: '任务标题',
+                {field: 'mission_title', width: '14%', title: '任务标题',
                     templet: function(d){
                         return `<a class="url" lay-event="read">${d.mission_title}</a>`;
                     }
@@ -123,9 +123,9 @@
                         return '<div class="modify-priority"><i class="layui-icon layui-icon-subtraction" lay-event="reduce"></i> ' + d.priority + ' <i class="layui-icon layui-icon-addition" lay-event="add"></i></div>';
                     }
                 },
-                {field: 'label', width: '7%', title: '标签', align: "center"},
+                {field: 'labelList', width: '10%', title: '标签', align: "center"},
                 {field: 'finish_date', width: '10%', title: '截止日期', sort: true, align: "center"},
-                {field: 'process_note', width: '19%', title: '最近处理信息'},
+                {field: 'process_note', width: '17%', title: '最近处理信息'},
                 {field: 'process_time', width: '10%', title: '最近处理日期', align: "center"},
                 {title: '操作', width: '7%', toolbar: '#missionListBar', align: "center"}
             ]],

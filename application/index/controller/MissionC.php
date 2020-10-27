@@ -6,10 +6,13 @@ use app\common\util\ArrayAndStringUtil;
 use app\common\util\curlUtil;
 use app\common\util\dateUtil;
 use app\index\model\Attachment;
+use app\index\model\Label;
 use app\index\model\Minute;
+use app\index\model\MissionLabel;
 use app\index\model\MissionTree;
 use app\index\model\MissionView;
 use app\index\model\User;
+use app\index\service\LabelService;
 use app\index\service\MissionService;
 use app\index\common\DataEnum;
 use app\index\model\Mission;
@@ -54,10 +57,11 @@ class MissionC extends Controller
         }
         if(input('get.label') != '') {          // 标签
             $label = input('get.label');
-            $mission->where('label', 'like', "%$label%");
+            $mission->alias('m')->join('oa_mission_label ml',"m.mission_id = ml.mission_id")->join('oa_label l',"l.label_id = ml.label_id and label_name like '%$label%'");
         }
         $count = $mission->where('assignee_id', $userId)->where('status', 'in', '0,1')->count();
         // 如果传入关键词、项目代号、标签 TODO
+        $mission->alias('m');
         if($keyword != '') {            // 标题
             $mission->where('mission_title','like',"%$keyword%");
         }
@@ -66,7 +70,8 @@ class MissionC extends Controller
         }
         if(input('get.label') != '') {          // 标签
             $label = input('get.label');
-            $mission->where('label', 'like', "%$label%");
+            $mission->join('oa_mission_label ml',"m.mission_id = ml.mission_id")->join('oa_label l',"l.label_id = ml.label_id and label_name like '%$label%'");
+
         }
         $mission->where('assignee_id', $userId)->where('status', 'in', '0,1');
         if(input('get.field') != '') {          // 排序
@@ -74,22 +79,18 @@ class MissionC extends Controller
         } else {
             $mission->order('priority desc');
         }
-        $missions = $mission->field('mission_id,mission_title,reporter_id,status,priority,label,finish_date')->page("$page, $limit")->select();
+        $missions = $mission->field('m.mission_id,mission_title,reporter_id,status,priority,finish_date')->page("$page, $limit")->select();
 
         // 处理结果集
         foreach ($missions as $one) {
             $one->reporter_name = $one->reporter->user_name;            // 关联查找用户名
             $one->status = DataEnum::$missionStatus[$one->status];          // 转换状态码成信息
             // 获取最近一条任务处理信息
-            if($one->process) {
-                $one->process_note = $one->process[0]->process_note;
-                $one->process_time = explode(' ', $one->process[0]->process_time)[0];
-            } else {
-                $one->process_note = '';
-                $one->process_time = '';
-            }
-
-            unset($one->process);
+            $one->process_note = $one->process? $one->process[0]->process_note : '';
+            $one->process_time = $one->process? explode(' ', $one->process[0]->process_time)[0] : '';
+            unset($one->reporter_id, $one->reporter, $one->process);
+            // 获取标签列表
+            $one->labelList = LabelService::getMissionLabelList($one->mission_id);
         }
 
         return Result::returnResult(Result::SUCCESS, $missions, $count);
@@ -145,10 +146,10 @@ class MissionC extends Controller
     public function create()
     {
         $projectList = ProjectService::getProjectList();            // 获取项目列表
-//        $labelList = LabelService::getLabelList();          // 获取标签列表
+        $labelList = LabelService::getLabelList();          // 获取标签列表
         $data = [
-            'projectList' => $projectList
-//            'labelList' => $labelList
+            'projectList' => $projectList,
+            'labelList' => $labelList
         ];
 
         return Result::returnResult(Result::SUCCESS, $data);
@@ -183,12 +184,13 @@ class MissionC extends Controller
             }
             if(input('get.label') != '') {          // 标签
                 $label = input('get.label');
-                $mission->where('label', 'like', "%$label%");
+                $mission->alias('m')->join('oa_mission_label ml',"m.mission_id = ml.mission_id")->join('oa_label l',"l.label_id = ml.label_id and label_name like '%$label%'");
             }
         }
 
         $count = $mission->count();
         // 如果传入关键词、项目代号、标签 TODO
+        $mission->alias('m');
         if(input('get.mission_id') != '') {            // 任务号
             $mission->where('mission_id',input('get.mission_id'));
         } else {
@@ -200,7 +202,7 @@ class MissionC extends Controller
             }
             if(input('get.label') != '') {          // 标签
                 $label = input('get.label');
-                $mission->where('label', 'like', "%$label%");
+                $mission->join('oa_mission_label ml',"m.mission_id = ml.mission_id")->join('oa_label l',"l.label_id = ml.label_id and label_name like '%$label%'");
             }
         }
         if(input('get.field') != '') {          // 排序
@@ -208,20 +210,18 @@ class MissionC extends Controller
         } else {
             $mission->order('mission_id desc');
         }
-        $missions = $mission->field('mission_id,mission_title,reporter_id,assignee_id,status,priority,label,finish_date')->page("$page, $limit")->select();
+        $missions = $mission->field('m.mission_id,mission_title,reporter_id,assignee_id,status,priority,label,finish_date')->page("$page, $limit")->select();
 
         // 处理结果集
         foreach ($missions as $one) {
-            // 关联查找用户名
             $one->reporter_name = $one->reporter->user_name;
             $one->assignee_name = $one->assignee->user_name;
-            $one->status = MissionStatus::get($one->status)->status_name;          // 查找状态码对应的信息
+            $one->status = MissionStatus::get($one->status)->status_name;
             // 获取最近一条任务处理信息
-            if($one->process) {
-                $one->process_time = explode(' ', $one->process[0]->process_time)[0];
-            } else {
-                $one->process_time = '';
-            }
+            $one->process_time = $one->process? explode(' ', $one->process[0]->process_time)[0] : '';
+            // 获取标签列表
+            $one->labelList = LabelService::getMissionLabelList($one->mission_id);
+
             // 删除多余字段
             unset($one->reporter_id, $one->assignee_id, $one->reporter, $one->assignee, $one->process);
         }
@@ -303,19 +303,19 @@ class MissionC extends Controller
 
         // 处理任务标签
         if(input('post.label_list')) {
-//            $labelList = explode(' | ', input('post.label_list'));
-//            foreach ($labelList as $label) {
-//                $label = Label::get(['label_name' => $label]);
-//                if(!$label) {
-//                    $label = new Label();
-//                    $label->label_name = $label;
-//                    $label->save();
-//                }
-//                $missionLabel = new MissionLabel();
-//                $missionLabel->mission_id = $mission->mission_id;
-//                $missionLabel->label_id = $label->label_id;
-//                $missionLabel->save();
-//            }
+            $labelList = explode('；', input('post.label_list'));
+            foreach ($labelList as $label) {
+                $label = Label::get(['label_name' => $label]);
+                if(!$label) {
+                    $label = new Label();
+                    $label->label_name = $label;
+                    $label->save();
+                }
+                $missionLabel = new MissionLabel();
+                $missionLabel->mission_id = $mission->mission_id;
+                $missionLabel->label_id = $label->label_id;
+                $missionLabel->save();
+            }
         }
 
         // 发送钉钉消息(先发送基本信息，再发送链接)
@@ -421,14 +421,14 @@ class MissionC extends Controller
 //        $mission->attachmentList = $attachmentList;
 
 
-//        $mission->labelList = LabelService::getMissionLabelList($mission->mission_id);          // 获取任务标签列表
-//        $labelList = LabelService::getLabelList();          // 获取标签列表
+        $mission->labelList = LabelService::getMissionLabelList($mission->mission_id);          // 获取任务标签列表
+        $labelList = LabelService::getLabelList();          // 获取标签列表
 
         $data = [
             'missionDetail' => $mission,
             'projectList' => $projectList,
             'statusList' => $statusList,
-//            'labelList' => $labelList,
+            'labelList' => $labelList,
             'isReporter' => $isReporter
         ];
 
@@ -528,6 +528,26 @@ class MissionC extends Controller
                     array_push($attachmentArray, $attachment->source_name);
                 }
                 $attachmentList = implode('，', $attachmentArray);
+            }
+        }
+
+        // 处理任务标签
+        if(input('put.label_list')) {
+            $labelList = explode('；', input('put.label_list'));
+            foreach ($labelList as $label) {
+                $label = Label::get(['label_name' => $label]);
+                if(!$label) {
+                    $label = new Label();
+                    $label->label_name = $label;
+                    $label->save();
+                }
+                $missionLabel = MissionLabel::get(['mission_id' => $mission->mission_id, 'label_id' => $label->label_id]);
+                if(!$missionLabel) {
+                    $missionLabel = new MissionLabel();
+                    $missionLabel->mission_id = $mission->mission_id;
+                    $missionLabel->label_id = $label->label_id;
+                    $missionLabel->save();
+                }
             }
         }
 
@@ -699,7 +719,7 @@ class MissionC extends Controller
         }
         if(input('get.label') != '') {          // 标签
             $label = input('get.label');
-            $mission->where('label', 'like', "%$label%");
+            $mission->alias('m')->join('oa_mission_label ml',"m.mission_id = ml.mission_id")->join('oa_label l',"l.label_id = ml.label_id and label_name like '%$label%'");
         }
         $count = $mission->where('parent_mission_id', -1)->alias('m')->join('oa_mission_interest mi',"mi.user_id= '$sessionUserId' and m.mission_id = mi.mission_id")->count();
         // 如果传入关键词、项目代号、标签、根任务 TODO
@@ -708,7 +728,7 @@ class MissionC extends Controller
         }
         if(input('get.label') != '') {          // 标签
             $label = input('get.label');
-            $mission->where('label', 'like', "%$label%");
+            $mission->alias('m')->join('oa_mission_label ml',"m.mission_id = ml.mission_id")->join('oa_label l',"l.label_id = ml.label_id and label_name like '%$label%'");
         }
         $mission->where('parent_mission_id', -1);
         if(input('get.field') != '') {          // 排序
@@ -723,7 +743,10 @@ class MissionC extends Controller
             $one->assignee_name = $one->assignee->user_name;            // 关联处理人
             $one->status = $one->missionStatus->status_name;          // 转换状态码成信息
             $one->project_id = $one->project->project_code;            // 关联项目
-            unset($one->assignee, $one->missionStatus, $one->project);
+            unset($one->assignee_id, $one->assignee, $one->label, $one->missionStatus, $one->project);
+
+            // 获取标签列表
+            $one->labelList = LabelService::getMissionLabelList($one->mission_id);
         }
 
         return Result::returnResult(Result::SUCCESS, $missions, $count);

@@ -90,7 +90,7 @@
             cols: [[
                 {type: "checkbox", width: '5%'},
                 {field: 'mission_id', width: '5%', title: 'ID', align: "center", sort: true},
-                {field: 'mission_title', width: '19%', title: '任务标题',
+                {field: 'mission_title', width: '16%', title: '任务标题',
                     templet: function(d){
                         return `<a class="url" lay-event="read">${d.mission_title}</a>`;
                     }
@@ -99,7 +99,7 @@
                 {field: 'assignee_name', width: '8%', title: '处理人', align: "center"},
                 {field: 'status', width: '8%', title: '任务状态', align: "center"},
                 {field: 'priority', width: '8%', title: '优先级', align: "center"},
-                {field: 'label', width: '9%', title: '标签', align: "center"},
+                {field: 'labelList', width: '11%', title: '标签', align: "center"},
                 {field: 'finish_date', width: '10%', title: '截止日期', sort: true, align: "center"},
                 {field: 'process_time', width: '10%', title: '最近处理日期', align: "center"},
                 {title: '操作', width: '10%', toolbar: '#missionListBar', align: "center"}

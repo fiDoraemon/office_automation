@@ -21,7 +21,7 @@ class LabelService
     // 获取标签列表
     public static function getLabelList() {
         $label = new Label();
-        $labelList = $label->field('label_id, label_name')->select();
+        $labelList = $label->field('label_id, label_name')->order('label_id desc')->limit(50)->select();
 
         return $labelList;
     }
@@ -36,6 +36,6 @@ class LabelService
             array_push($labelList, $missionLabel->label->label_name);
         }
 
-        return implode(' | ', $labelList);
+        return implode('；', $labelList);
     }
 }

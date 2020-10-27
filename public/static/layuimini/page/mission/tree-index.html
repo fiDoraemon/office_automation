@@ -96,7 +96,7 @@
                 {field: 'assignee_name', width: '10%', title: '处理人', align: "center"},
                 {field: 'status', width: '10%', title: '任务状态', align: "center"},
                 {field: 'project_id', width: '10%', title: '项目代号', sort: true, align: "center"},
-                {field: 'label', width: '15%', title: '标签', align: "center"},
+                {field: 'labelList', width: '15%', title: '标签', align: "center"},
                 {title: '操作', width: '20%', toolbar: '#missionListBar', align: "center"}
             ]],
             id: 'missionList',
@@ -107,9 +107,9 @@
             page: true,
             skin: 'line',
             done: function(res, curr, count){
-                if(res.code == 0 && count == 0) {
-                    var element  = `<div class="layui-none">无数据</div>`;
-                    $('.layui-table-body').append(element);
+                // 解决刚进来时如果无数据不显示“无数据”问题
+                if($('.layui-table-body table tbody').children().length == 0 && $('.layui-table-body').children().length == 1) {
+                    $('.layui-table-body').append(`<div class="layui-none">无数据</div>`);
                 }
             }
         });
