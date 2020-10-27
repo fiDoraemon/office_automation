@@ -40,7 +40,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
     $.ajax({
         url: "/office_automation/public/index.php/index/minute_c/hasTempMinute",
         type:'get',
-        timeout: 1000,
         data: {
             minuteId : minute_id,
         },
@@ -86,7 +85,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
     $.ajax({
         url: "/office_automation/public/index.php/index/minute_c/getAllDepartment",
         type:'get',
-        timeout: 2000,
         data: {
         },
         success: function(res){
@@ -123,7 +121,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         $.ajax({
             url: "/office_automation/public/index.php/index/minute_c/getTempMinuteInfo",
             type: 'get',
-            timeout: 1000,
             data: {
                 minuteId : minute_id
             },
@@ -287,7 +284,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         $.ajax({ //临时保存
             url: "/office_automation/public/index.php/index/minute_c/saveTemp",
             type: 'post',
-            timeout: 1000,
             data: {
                 minuteId        : minute_id,
                 attendList      : attended,         //已到会人员（数组）
@@ -317,7 +313,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         $.ajax({
             url: "/office_automation/public/index.php/index/minute_c/getMinuteInfo",
             type:'get',
-            timeout: 1000,
             data: {
                 minuteId : minute_id,
             },
@@ -632,7 +627,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         $.ajax({
             url: "/office_automation/public/index.php/index/user_c/getUserByDepartment",
             type:'get',
-            timeout: 1000,
             data: {
                 departmentId : department_id,
             },
@@ -677,7 +671,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
             $.ajax({
                 url: "/office_automation/public/index.php/index/minute_c/updateMinute",
                 type:'post',
-                timeout: 2000,
                 data: {
                     minuteId        : minute_id,
                     attendList      : attended,         //已到会人员（数组）

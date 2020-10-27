@@ -853,7 +853,7 @@ class MinuteC
         $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?minuteId=' . $minute -> minute_id;
         $data = DataEnum::$msgData;
         $data['userList'] = $DDidList;
-        $templet = '▪ 主题：' . $minute -> minute_theme . "\n" . '▪ 时间：' . $minute -> minute_date;
+        $templet = '▪ 主题：' . $minute -> minute_theme . "\n" . '▪ 时间：' . $minute -> minute_date ." " . $minute -> minute_time;
         if(!$this -> checkRecord($minute)){ //判断是否发送会议记录
             $templet .= "\n" . '▪ 记录：' . $minute -> record;
         }
@@ -891,7 +891,7 @@ class MinuteC
         $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?minuteId=' . $minute -> minute_id;
         $data = DataEnum::$msgData;
         $data['userList'] = $DDidList;
-        $templet = '▪ 主题：' . $minute -> minute_theme . "\n" . '▪ 时间：' . $minute -> minute_date;
+        $templet = '▪ 主题：' . $minute -> minute_theme . "\n" . '▪ 时间：' . $minute -> minute_date ." " . $minute -> minute_time;
         if(!$this -> checkRecord($minute)){ //判断是否发送会议记录
             $templet .= "\n" . '▪ 记录：' . $minute -> record;
         }

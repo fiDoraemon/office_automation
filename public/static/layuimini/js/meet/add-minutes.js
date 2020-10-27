@@ -19,7 +19,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
     $.ajax({
         url: "/office_automation/public/index.php/index/minute_c/getAddInfo",
         type:'post',
-        timeout: 2000,
         data: {},
         success: function(res){
             var departmentName = res["data"]["departmentName"];
@@ -56,7 +55,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
     $.ajax({
         url: "/office_automation/public/index.php/index/minute_c/hasNewTempMinute",
         type:'get',
-        timeout: 1000,
         data: {},
         success: function(res){
             var data = res.data;
@@ -114,7 +112,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         $.ajax({ //临时保存
             url: "/office_automation/public/index.php/index/minute_c/saveNewTemp",
             type: 'post',
-            timeout: 1000,
             data: {
                 minute_type     : minute_type,
                 minute_theme    : minute_theme,
@@ -368,7 +365,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             $.ajax({
                 url: "/office_automation/public/index.php/index/minute_c/saveMinute",
                 type:'post',
-                timeout: 1000,
                 data: minute_info,
                 success: function(res){
                     layer.close(index);
