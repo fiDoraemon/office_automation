@@ -364,7 +364,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         minute_info.file            = uploadList;
         layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
             layer.close(index);
-            var loadingIndex = layer.load(2);
+            var index = layer.load(2);
             $.ajax({
                 url: "/office_automation/public/index.php/index/minute_c/saveMinute",
                 type:'post',
