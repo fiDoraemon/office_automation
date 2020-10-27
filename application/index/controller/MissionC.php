@@ -306,19 +306,19 @@ class MissionC extends Controller
 
         // 处理任务标签
         if(input('post.label_list')) {
-            $labelList = explode(' | ', input('post.label_list'));
-            foreach ($labelList as $label) {
-                $label = Label::get(['label_name' => $label]);
-                if(!$label) {
-                    $label = new Label();
-                    $label->label_name = $label;
-                    $label->save();
-                }
-                $missionLabel = new MissionLabel();
-                $missionLabel->mission_id = $mission->mission_id;
-                $missionLabel->label_id = $label->label_id;
-                $missionLabel->save();
-            }
+//            $labelList = explode(' | ', input('post.label_list'));
+//            foreach ($labelList as $label) {
+//                $label = Label::get(['label_name' => $label]);
+//                if(!$label) {
+//                    $label = new Label();
+//                    $label->label_name = $label;
+//                    $label->save();
+//                }
+//                $missionLabel = new MissionLabel();
+//                $missionLabel->mission_id = $mission->mission_id;
+//                $missionLabel->label_id = $label->label_id;
+//                $missionLabel->save();
+//            }
         }
 
         // 发送钉钉消息(先发送基本信息，再发送链接)
@@ -424,14 +424,14 @@ class MissionC extends Controller
 //        $mission->attachmentList = $attachmentList;
 
 
-        $mission->labelList = LabelService::getMissionLabelList($mission->mission_id);          // 获取任务标签列表
-        $labelList = LabelService::getLabelList();          // 获取标签列表
+//        $mission->labelList = LabelService::getMissionLabelList($mission->mission_id);          // 获取任务标签列表
+//        $labelList = LabelService::getLabelList();          // 获取标签列表
 
         $data = [
             'missionDetail' => $mission,
             'projectList' => $projectList,
             'statusList' => $statusList,
-            'labelList' => $labelList,
+//            'labelList' => $labelList,
             'isReporter' => $isReporter
         ];
 
