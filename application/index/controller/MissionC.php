@@ -6,13 +6,10 @@ use app\common\util\ArrayAndStringUtil;
 use app\common\util\curlUtil;
 use app\common\util\dateUtil;
 use app\index\model\Attachment;
-use app\index\model\Label;
 use app\index\model\Minute;
-use app\index\model\MissionLabel;
 use app\index\model\MissionTree;
 use app\index\model\MissionView;
 use app\index\model\User;
-use app\index\service\LabelService;
 use app\index\service\MissionService;
 use app\index\common\DataEnum;
 use app\index\model\Mission;
@@ -148,10 +145,10 @@ class MissionC extends Controller
     public function create()
     {
         $projectList = ProjectService::getProjectList();            // 获取项目列表
-        $labelList = LabelService::getLabelList();          // 获取标签列表
+//        $labelList = LabelService::getLabelList();          // 获取标签列表
         $data = [
-            'projectList' => $projectList,
-            'labelList' => $labelList
+            'projectList' => $projectList
+//            'labelList' => $labelList
         ];
 
         return Result::returnResult(Result::SUCCESS, $data);
