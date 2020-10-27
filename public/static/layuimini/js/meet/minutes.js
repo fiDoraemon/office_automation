@@ -5,7 +5,6 @@ function selectInfo(form){
     $.ajax({
         url: "/office_automation/public/index.php/index/minute_c/getInfo",
         type:'get',
-        timeout: 2000,
         data: {
         },
         success: function(res){
