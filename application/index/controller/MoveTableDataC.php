@@ -19,10 +19,12 @@ use app\common\util\EncryptionUtil;
 use app\index\model\Attachment;
 use app\index\model\Cooperation;
 use app\index\model\Department;
+use app\index\model\Label;
 use app\index\model\Minute;
 use app\index\model\MinuteAttend;
 use app\index\model\Mission;
 use app\index\model\MissionInterest;
+use app\index\model\MissionLabel;
 use app\index\model\MissionProcess;
 use app\index\model\MissionView;
 use app\index\model\Project;
@@ -563,6 +565,34 @@ class MoveTableDataC
     // 转移任务树表进展详情数据
     public function moveProgressReportData() {
         return '进展详情数据数据转移完成';
+    }
+
+    // 转移任务中的标签
+    public function moveMissionLabelData() {
+        Mission::chunk(100, function ($objects) {
+            foreach ($objects as $object) {
+                $labelList = explode(';', $object->label);
+                foreach ($labelList as $label) {
+                    if($label == '') {
+                        continue;
+                    }
+                    $labelModel = Label::get(['label_name' => $label]);
+                    if(!$labelModel) {
+                        $labelModel = new Label();
+                        $labelModel->label_name = $label;
+                        $labelModel->save();
+                    }
+                    $missionLabel = MissionLabel::get(['mission_id' => $object->mission_id, 'label_id' => $labelModel->label_id]);
+                    if(!$missionLabel) {
+                        $missionLabel = new MissionLabel();
+                        $missionLabel->mission_id = $object->mission_id;
+                        $missionLabel->label_id = $labelModel->label_id;
+                        $missionLabel->save();
+                    }
+                }
+            }
+        });
+        return '任务表数据更新完成';
     }
 
     public function moveAllData() {
