@@ -371,7 +371,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 timeout: 1000,
                 data: minute_info,
                 success: function(res){
-                    layer.close(loadingIndex);
+                    layer.close(index);
                     layer.alert('会议发起成功！', {title: '提示'},
                         function (index) {
                             layer.close(index);
