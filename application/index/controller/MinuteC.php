@@ -609,7 +609,7 @@ class MinuteC
         $info = Session::get("info");
         $userId = $info["user_id"];
         $minuteId = $_GET["minuteId"];
-        $hasPerm = $this -> verifyPermission($minuteId,$userId);//判断是否有权限修改会议信息
+        $hasPerm = $this -> isAttendUser($minuteId,$userId);//判断是否有权限修改会议信息(是否为应到会人员)
         if(!$hasPerm){  //没有修改权限
             return Result::returnResult(Result::NOT_MODIFY_PERMISSION);
         }
@@ -781,6 +781,21 @@ class MinuteC
     private function verifyPermission($minuteId,$userId){
         $minuteHost = Minute::where('minute_id',$minuteId)->value('host_id');
         if($minuteHost == $userId){
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 验证是否为应到会人员
+     * @param $minuteId
+     * @param $userId
+     * @return bool
+     * @throws DbException
+     */
+    private function isAttendUser($minuteId,$userId){
+        $minuteAttend = MinuteAttend::get(['minute_id' => $minuteId,'user_id' => $userId]);
+        if($minuteAttend != null){
             return true;
         }
         return false;
