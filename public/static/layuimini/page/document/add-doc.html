@@ -143,22 +143,16 @@
             type:'get',
             success: function(res){
                 var projectCodes = res.data.projectCodes;
-                var projectStages = res.data.projectStages;
                 var reviewers = res.data.reviewer;
                 var $projectCodes = "";
-                var $projectStages = "";
                 var $reviewers = "";
                 for (var i = 0; i < projectCodes.length; i++){
                     $projectCodes += "<option value='" + projectCodes[i]["project_id"] + "'>" + projectCodes[i]["project_code"] + "</option>";
                 }
-                // for (var i = 0; i < projectStages.length; i++){
-                //     $projectStages += "<option value='" + projectStages[i]["id"] + "'>" + projectStages[i]["stage_name"] + "</option>";
-                // }
                 for (var i = 0; i < reviewers.length; i++){
-                    $reviewers += "<option value='" + reviewers[i]["user_id"] + "'>" + reviewers[i]["user"]["user_name"] + "</option>";
+                    $reviewers += "<option value='" + reviewers[i]["user_id"] + "'>" + reviewers[i]["user_name"] + "</option>";
                 }
                 $("#projectSelect").append($projectCodes);
-                // $("#stageSelect").append($projectStages);
                 $("#reviewerSelect").append($reviewers);
                 //需要重新加载
                 form.render('select');

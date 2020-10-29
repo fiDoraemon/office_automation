@@ -10,16 +10,15 @@ namespace app\index\controller;
 
 
 use app\common\Result;
-use app\common\util\CacheUtil;
+use app\common\util\curlUtil;
+use app\index\common\DataEnum;
 use app\index\model\Attachment;
 use app\index\model\DocCodeCount;
 use app\index\model\DocFile;
 use app\index\model\DocRequest;
-use app\index\model\DocReviewer;
-use app\index\model\DocTemp;
 use app\index\model\Project;
-use app\index\model\ProjectStage;
-use think\Cache;
+use app\index\model\User;
+use app\index\model\UserRole;
 use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
@@ -43,7 +42,7 @@ class DocumentC
         $listReviewer =  $this ->getAllReviewer();
         $resultArray = [
             "projectCodes"   => $listCodes,          //项目类型
-            "reviewer"       => $listReviewer          //作者
+            "reviewer"       => $listReviewer          //审批人
         ];
         return Result::returnResult(Result::SUCCESS,$resultArray);
     }
@@ -56,9 +55,12 @@ class DocumentC
         $listCodes = $this -> getProjectCode();
         //查询所有评审人
         $listAuthor =  $this -> getAllAuthor();
+        //是否为文控
+        $isDocAdmin = $this -> isDocAdmin();
         $resultArray = [
             "projectCodes"   => $listCodes,          //项目类型
-            "authors"         => $listAuthor          //作者
+            "authors"        => $listAuthor,         //作者
+            "isDocAdmin"     => $isDocAdmin          //是否为文控
         ];
         return Result::returnResult(Result::SUCCESS,$resultArray);
     }
@@ -445,7 +447,7 @@ class DocumentC
             //保存发起的评审文档
             if($result > 0){
                 //发送钉钉消息给审批人
-
+                $this -> sendRequestMessage($docRequest);
                 return Result::returnResult(Result::SUCCESS, null);
             }
         });
@@ -457,17 +459,19 @@ class DocumentC
      */
     public function noPassRequest(){
         $requestId = $_POST["requestId"];
-        $reviewOpnion = $_POST["reviewOpnion"];
+        $reviewOpinion = $_POST["reviewOpinion"];
         $info = Session::get("info");
         $userId = $info["user_id"];
         $req = DocRequest::get($requestId);
         if($req -> approver_id != $userId){
             return Result::returnResult(Result::NOT_MODIFY_PERMISSION, null);
         }
-        $req -> review_opinion = $reviewOpnion;
+        $req -> review_opinion = $reviewOpinion;
         $req -> review_time = date('Y-m-d H:i:s', time());
         $req -> status = -1;
         $req -> save();
+        //发送钉钉消息
+        $this -> sendNoPassMessage($req);
         return Result::returnResult(Result::SUCCESS, null);
     }
 
@@ -476,14 +480,14 @@ class DocumentC
      */
     public function passRequest(){
         $requestId = $_POST["requestId"];
-        $reviewOpnion = $_POST["reviewOpnion"];
+        $reviewOpinion = $_POST["reviewOpinion"];
         $info = Session::get("info");
         $userId = $info["user_id"];
         $req = DocRequest::get($requestId);
         if($req -> approver_id != $userId){
             return Result::returnResult(Result::NOT_MODIFY_PERMISSION, null);
         }
-        $req -> review_opinion = $reviewOpnion;
+        $req -> review_opinion = $reviewOpinion;
         $req -> review_time = date('Y-m-d H:i:s', time());
         $req -> status = 1;
         $req -> save();
@@ -510,6 +514,8 @@ class DocumentC
             //移动文档文件到指定位置
             $this -> moveDocFile($file -> save_path, $newPath,$file -> storage_name);
         }
+        //发送钉钉消息
+        $this -> sendPassMessage($req);
         return Result::returnResult(Result::SUCCESS, null);
     }
 
@@ -560,19 +566,20 @@ class DocumentC
      * 获取所有的审批人
      */
     private function getAllReviewer(){
-        $docReviewer = new DocReviewer();
-        // 查询数据集
+        $userRole = new UserRole();
         try {
-            $listReviewer = $docReviewer -> field("user_id")
-                                         -> select();
+            $listReviewer = $userRole->where("role_id", 2)
+                ->select();
             foreach ($listReviewer as $review){
-                $review -> user;
+                $review -> user_name =  $review -> user -> user_name;
+                unset( $review -> user);
             }
             return $listReviewer;
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
         }
+        return null;
     }
 
     /**
@@ -664,4 +671,116 @@ class DocumentC
             -> column("id");
         return $fileIdList;
     }
+
+    /**
+     * 判断是否为文件管理员（文控）
+     * @return bool
+     * @throws DbException
+     */
+    private function isDocAdmin(){
+        $info = Session::get("info");
+        $userId = $info["user_id"];
+        $userRole = UserRole::get(["user_id" => $userId,"role_id" => 1]);
+        if($userRole == null){
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 发送钉钉消息(发起申请给审批人发，驳回、通过给申请人发)
+     */
+    private function sendRequestMessage($req){
+        $approverId = $req -> approver_id;
+        $DDidList = User::where('user_id',$approverId)->column('dd_userid');
+        $DDidList = implode(',',$DDidList);
+        $fileList = Attachment::where(['attachment_type' => 'doc',
+                                            'related_id' => $req -> request_id])
+                                -> column('source_name');
+        if($fileList == null){
+            $fileList = "";
+        }else{
+            $fileList = implode('，',$fileList);
+        }
+        $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestId=' . $req -> request_id;
+        $authorName = $req -> requestUser -> user_name;
+        $remark = $req -> remark;
+        $requestId =  $req -> request_id;
+        $data = DataEnum::$msgData;
+        $data['userList'] = $DDidList;
+        $templet  = '▪ 申请人：'   . $authorName . "\n";
+        $templet .= '▪ 文档描述：' . $remark  . "\n";
+        $templet .= '▪ 文档列表：' . $fileList  . "\n";
+        $templet .= '▪ 链接：' . $url;
+        $message = '◉ ' . '您有新文档审批需要处理！(#' . $requestId . ')' . "\n" . $templet;
+        $data['data']['content'] = $message;
+        $result = curlUtil::post($postUrl, $data);
+        return true;
+    }
+
+    /**
+     * 发送钉钉消息(发起申请给审批人发，驳回、通过给申请人发)
+     */
+    private function sendNoPassMessage($req){
+        $authorId = $req -> author_id;
+        $DDidList = User::where('user_id',$authorId)->column('dd_userid');
+        $DDidList = implode(',',$DDidList);
+        $fileList = Attachment::where(['attachment_type' => 'doc',
+            'related_id' => $req -> request_id])
+            -> column('source_name');
+        if($fileList == null){
+            $fileList = "";
+        }else{
+            $fileList = implode('，',$fileList);
+        }
+        $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestId=' . $req -> request_id;
+        $approverName = $req -> approverUser -> user_name;
+        $opinion = $req -> review_opinion;
+        $requestId =  $req -> request_id;
+        $data = DataEnum::$msgData;
+        $data['userList'] = $DDidList;
+        $templet  = '▪ 评审人：'   . $approverName . "\n";
+        $templet .= '▪ 评审意见：' . $opinion . "\n";
+        $templet .= '▪ 文档列表：' . $fileList . "\n";
+        $templet .= '▪ 链接：' . $url;
+        $message = '◉ ' . '您的文档审批(#' . $requestId . ')被驳回！' . "\n" . $templet;
+        $data['data']['content'] = $message;
+        $result = curlUtil::post($postUrl, $data);
+        return true;
+    }
+
+    /**
+     * 发送钉钉消息(发起申请给审批人发，驳回、通过给申请人发)
+     */
+    private function sendPassMessage($req){
+        $authorId = $req -> author_id;
+        $DDidList = User::where('user_id',$authorId)->column('dd_userid');
+        $DDidList = implode(',',$DDidList);
+        $fileList = Attachment::where(['attachment_type' => 'doc',
+            'related_id' => $req -> request_id])
+            -> column('source_name');
+        if($fileList == null){
+            $fileList = "";
+        }else{
+            $fileList = implode('，',$fileList);
+        }
+        $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestId=' . $req -> request_id;
+        $approverName = $req -> approverUser -> user_name;
+        $opinion = $req -> review_opinion;
+        $requestId =  $req -> request_id;
+        $data = DataEnum::$msgData;
+        $data['userList'] = $DDidList;
+        $templet  = '▪ 评审人：'   . $approverName . "\n";
+        $templet .= '▪ 评审意见：' . $opinion . "\n";
+        $templet .= '▪ 文档列表：' . $fileList . "\n";
+        $templet .= '▪ 链接：' . $url;
+        $message = '◉ ' . '您的文档审批(#' . $requestId . ')已通过！' . "\n" . $templet;
+        $data['data']['content'] = $message;
+        $result = curlUtil::post($postUrl, $data);
+        return true;
+    }
+
 }

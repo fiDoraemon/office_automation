@@ -236,6 +236,12 @@
                 href: "page/meet/update-minute.html?minute_id=" + getQueryVariable('minuteId'),
                 title: "会议详情"
             });
+        } else if(getQueryVariable('requestId')){
+            console.log(getQueryVariable('requestId'));
+            miniTab.openNewTabByIframe({
+                href: "page/document/review-doc.html?requestId= " + getQueryVariable('requestId'),
+                title: "待处理申请"
+            });
         }
 
     });

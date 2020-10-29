@@ -60,12 +60,6 @@
                 <div class="layui-input-inline">
                     <input type="text" id="author" name="" lay-verify="" autocomplete="off" class="layui-input" disabled="disabled">
                 </div>
-                <label class="layui-form-label">审批人</label>
-                <div class="layui-input-inline">
-                    <input type="text" id="approver" name="approver" lay-verify="" autocomplete="off" class="layui-input" disabled="disabled">
-                </div>
-            </div>
-            <div class="layui-form-item">
                 <label class="layui-form-label">申请时间</label>
                 <div class="layui-input-inline">
                     <input type="text" id="request_date" name="" lay-verify="" autocomplete="off" class="layui-input" disabled="disabled">
@@ -99,21 +93,25 @@
             </fieldset>
 
             <div class="layui-form-item">
-                <label class="layui-form-label required input-title" id="opnion">评审意见</label>
+                <label class="layui-form-label required input-title" id="opinion">评审意见</label>
                 <div class="layui-input-block">
-                    <textarea lay-verify="required" placeholder="请输入意见" name="review_opnion" id="reviewOpnion" class="layui-textarea" rows="5"></textarea>
+                    <textarea lay-verify="required" placeholder="请输入意见" name="review_opinion" id="reviewOpinion" class="layui-textarea" rows="5"></textarea>
                 </div>
             </div>
 
             <div class="layui-form-item" id="reviewDate-item">
-                <label class="layui-form-label required input-title" >评审时间</label>
+                <label class="layui-form-label input-title">审批人</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="approver" name="approver" lay-verify="" autocomplete="off" class="layui-input" disabled="disabled">
+                </div>
+                <label class="layui-form-label input-title" >评审时间</label>
                 <div class="layui-input-inline">
                     <input type="text" id="reviewDate" name="" lay-verify="" autocomplete="off" class="layui-input" disabled="disabled">
                 </div>
             </div>
 
             <div class="layui-form-item">
-                <label class="layui-form-label required input-title" >评审状态</label>
+                <label class="layui-form-label input-title" >评审状态</label>
                 <div class="layui-input-block" id="status">
                 </div>
             </div>
@@ -180,7 +178,6 @@
                     requestId : requestId
                 },
                 success: function(res){
-                    console.log(res);
                     layer.close(loadingIndex);
                     if(res.code === 0){
                         var data = res.data;
@@ -190,7 +187,7 @@
                         $("#approver").val(data.approver_name);
                         $("#request_date").val(data.request_time);
                         $("#remark").val(data.remark);
-                        $("#reviewOpnion").val(data.review_opnion);
+                        $("#reviewOpinion").val(data.review_opinion);
                         $("#reviewDate").val(data.review_time);
                         if(data.status === 0){
                             $("#status").append('<span style=\"color:#01AAED;font-size: 25px\" > 待审批</span>');
@@ -219,7 +216,7 @@
                         if(data.isAuthor === 0){
                             $("#form-btn").remove();
                             // $(".download-btn").remove();
-                            $("#reviewOpnion").attr("disabled",true);
+                            $("#reviewOpinion").attr("disabled",true);
                         }else{
                             $("#reviewDate-item").remove();
                         }
@@ -244,7 +241,7 @@
                     type:'post',
                     data: {
                         requestId : requestId,
-                        reviewOpnion : result.review_opnion
+                        reviewOpinion : result.review_opinion
                     },
                     success: function(res){
                         layer.close(loadingIndex);
@@ -276,7 +273,7 @@
                     type:'post',
                     data: {
                         requestId : requestId,
-                        reviewOpnion : result.review_opnion
+                        reviewOpinion : result.review_opinion
                     },
                     success: function(res){
                         layer.close(loadingIndex);
