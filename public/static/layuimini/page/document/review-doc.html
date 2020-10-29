@@ -189,13 +189,6 @@
                         $("#remark").val(data.remark);
                         $("#reviewOpinion").val(data.review_opinion);
                         $("#reviewDate").val(data.review_time);
-                        if(data.status === 0){
-                            $("#status").append('<span style=\"color:#01AAED;font-size: 25px\" > 待审批</span>');
-                        }else if(data.status === 1){
-                            $("#status").append('<span style="color:#009688;font-size: 25px" > 已通过</span>');
-                        }else{
-                            $("#status").append('<span style="color:#FF5722;font-size: 25px" > 已驳回</span>');
-                        }
                         //上传附件
                         var attachmentList = data.attachments;
                         element = '';
@@ -213,9 +206,17 @@
                         `;
                         }
                         $('#fileList').append(element);
+                        if(data.status === 0){
+                            $("#status").append('<span style=\"color:#01AAED;font-size: 25px\" > 待审批</span>');
+                        }else if(data.status === 1){
+                            $(".download-btn").remove();
+                            $("#status").append('<span style="color:#009688;font-size: 25px" > 已通过</span>');
+                        }else{
+                            $(".download-btn").remove();
+                            $("#status").append('<span style="color:#FF5722;font-size: 25px" > 已驳回</span>');
+                        }
                         if(data.isAuthor === 0){
                             $("#form-btn").remove();
-                            // $(".download-btn").remove();
                             $("#reviewOpinion").attr("disabled",true);
                         }else{
                             $("#reviewDate-item").remove();
