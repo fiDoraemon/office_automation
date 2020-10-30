@@ -9,6 +9,7 @@ use app\index\model\MissionView;
 use app\index\model\Project;
 use app\index\model\User;
 use app\common\Result;
+use app\index\model\UserRole;
 use app\index\service\UserService;
 use app\other\model\MissionInfo;
 use app\other\model\UserMission;
@@ -35,11 +36,11 @@ class Index extends Controller
         $sessionUserId = Session::get("info")["user_id"];
         $menuList = json_decode(file_get_contents($filePath));
         $user = User::get(['user_id' => $sessionUserId]);
+        $userRole = UserRole::get(["user_id" => $sessionUserId, "role_id" => 3]);
         // 如果不是管理员
-        if($user->super == 0) {
+        if($userRole == null) {
             unset($menuList->menuInfo[1]);
         }
-
         return $menuList;
     }
 

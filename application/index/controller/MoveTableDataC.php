@@ -592,7 +592,7 @@ class MoveTableDataC
                 }
             }
         });
-        return '任务表数据更新完成';
+        return '任务表标签数据转移完成';
     }
 
     public function moveAllData() {
