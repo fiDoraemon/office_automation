@@ -95,10 +95,10 @@ class UserC extends CommonController
         $ddOpen = $_POST["ddOpen"];
         $updateResult = User::where('user_id', $userId)
             ->update(['user_name' => $userName,
-                'department_id' => $departmentId,
-                'phone' => $userPhone,
-                'email' => $userEmail,
-                'dd_open' => $ddOpen
+                'department_id'   => $departmentId,
+                'phone'           => $userPhone,
+                'email'           => $userEmail,
+                'dd_open'         => $ddOpen
             ]);
         $this -> updateInfo();//更新session中的用户信息
         return Result::returnResult(Result::SUCCESS,null);
@@ -138,9 +138,9 @@ class UserC extends CommonController
     public function selectAllUser(){
         try {
             $userList = Db::table('oa_user')
-                ->where('user_status', 1)
-                ->field("id,user_id,user_name,phone,email,dd_userid,department_id")
-                ->select();
+                            ->where('user_status', 1)
+                            ->field("id,user_id,user_name,phone,email,dd_userid,department_id")
+                            ->select();
             return Result::returnResult(Result::USER_SELECT_SUCCESS,$userList);
         } catch (DbException $e) {
         }
@@ -155,10 +155,10 @@ class UserC extends CommonController
         $val = "%" . $val . "%";
         try {
             $userList = Db::table('oa_user')
-                ->where('user_name', 'like', $val)
-                ->where('user_status', 1)
-                ->field("id,user_id,user_name,phone,email,dd_userid,department_id")
-                ->select();
+                -> where('user_name', 'like', $val)
+                -> where('user_status', 1)
+                -> field("id,user_id,user_name,phone,email,dd_userid,department_id")
+                -> select();
             return Result::returnResult(Result::SUCCESS,$userList);
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
@@ -189,9 +189,9 @@ class UserC extends CommonController
         $user = Session::get("info");
         $userId = $user["user_id"];
         $userInfo = Db::table('oa_user')
-            ->field("id,user_id,user_name,dd_userid,department_id,token,token_time_out")
-            ->where('user_id','=',$userId)
-            ->find();
+                        ->field("id,user_id,user_name,dd_userid,department_id,token,token_time_out")
+                        ->where('user_id','=',$userId)
+                        ->find();
         Session::set("info",$userInfo);
     }
 
