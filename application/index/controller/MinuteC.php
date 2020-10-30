@@ -196,8 +196,11 @@ class MinuteC
                 $Department = new Department();
                 $listDepartmentId = $Department -> where("department_name", "like", "%$keyword%")
                       -> column("department_id");
-                $user -> where("user_name","like" ,"%$keyword%")
-                      -> whereOr('department_id','in',$listDepartmentId);
+                if(count($listDepartmentId) > 0){   //不判断数组是否为空的话会查询出department_id 为0 的所有用户
+                    $user -> whereOr('department_id','in',$listDepartmentId);
+                }else{
+                    $user -> where("user_name","like" ,"%$keyword%");
+                }
             }
 
             $count = $user -> count();  //获取条件符合的总人数
@@ -221,11 +224,12 @@ class MinuteC
             if($keyword != ""){
                 $Department = new Department();
                 $listDepartmentId = $Department -> where("department_name", "like", "%$keyword%")
-                                                ->column("department_id");
-                $user -> where("user_name","like" ,"%$keyword%")
-                      -> whereOr('department_id','in',$listDepartmentId);
+                                                -> column("department_id");
+                $user -> where("user_name","like" ,"%$keyword%");
+                if(count($listDepartmentId) > 0){
+                    $user -> whereOr('department_id','in',$listDepartmentId);
+                }
             }
-
             $listUser = $user -> field("user_id,user_name,department_id")
                               -> order("department_id,user_id")
                               -> page($page,$limit)

@@ -15,6 +15,7 @@ use app\common\util\EncryptionUtil;
 use app\index\model\Department;
 use app\index\model\Minute;
 use app\index\model\User;
+use app\index\model\UserRole;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
 use think\exception\DbException;
@@ -208,9 +209,10 @@ class AdminC
         $email        = $_POST["email"];
         $password     = EncryptionUtil::Md5Encryption("123",$userId);
         $info = Session::get("info");
-        $hasSuper = $info["super"];
+        $sessionUserId = $info["user_id"];
         //判断当前用户是否为管理员
-        if($hasSuper === 0){
+        $isAdmin = $this -> isAdmin($sessionUserId);
+        if(!$isAdmin){
             return Result::returnResult(Result::NO_ACCESS);
         }
         //判断员工id是否已经存在
@@ -224,13 +226,12 @@ class AdminC
             'password'       =>  $password,
             'department_id'  =>  $departmentId,
             'phone'          =>  $phone,
-            'email'          =>  $email
+            'email'          =>  $email,
+            'create_time'    =>  date('Y-m-d H:i:s', time())
         ]);
         $result = $user->save();
-
         // 更新所有用户 userid
         $this->updateUserid();
-
         // 关联添加旧 OA 用户
         $department = Department::get($departmentId);
         $user = User::get(['user_id' => $userId]);
@@ -245,7 +246,6 @@ class AdminC
             'department' => $department->department_name
         ]);
         $userInfo->save();
-
         if($result > 0){
             return Result::returnResult(Result::SUCCESS);
         }
@@ -297,5 +297,18 @@ class AdminC
         return false;
     }
 
-
+    /**
+     * 判断是否为管理员
+     * @param $userId
+     * @return bool
+     * @throws DbException
+     */
+    private function isAdmin($userId){
+        $userRole = UserRole::get(["user_id" => $userId, "role_id" => 3]);
+        // 如果不是管理员
+        if($userRole == null) {
+           return false;
+        }
+        return true;
+    }
 }

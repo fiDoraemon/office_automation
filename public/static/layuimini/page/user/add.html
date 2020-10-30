@@ -97,7 +97,7 @@
 
             layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
                 layer.close(index);
-                var index = layer.load(2);
+                var loadingIndex = layer.load(2);
                 $.ajax({
                     url: "/office_automation/public/index.php/index/admin_c/addUser",
                     type:'post',
@@ -109,13 +109,14 @@
                         email           : result.email
                     },
                     success: function(res){
-                        layer.close(index);
+                        layer.close(loadingIndex);
                         switch (res.code) {
                             case 0:
-                                layer.alert('添加成功！', {title: '提示'},
-                                    function (index) {
-                                        var index = parent.layer.getFrameIndex(window.name);
-                                        parent.layer.close(index);
+                                var index =layer.alert('添加成功！', {title: '提示'},
+                                    function () {
+                                        layer.close(index);
+                                        var frameIndex = parent.layer.getFrameIndex(window.name);
+                                        parent.layer.close(frameIndex);
                                     }
                                 );
                                 break;
