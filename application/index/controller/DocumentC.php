@@ -159,10 +159,10 @@ class DocumentC
         $count = count($result);
         $docFile = new DocFile();
         $fileList = $docFile -> where("id", "in",$result)
-            -> field("request_id,file_code,save_name,source_name,upload_time,path")
-            -> order("upload_time","desc")
-            -> page($page, $limit)
-            -> select();
+                             -> field("request_id,file_code,save_name,source_name,upload_time,path")
+                             -> order("upload_time","desc")
+                             -> page($page, $limit)
+                             -> select();
         foreach ($fileList as $file){
             $file -> author = $file -> request -> requestUser -> user_name;
             $file -> project = $file -> request -> projectCode -> project_code;
@@ -223,9 +223,9 @@ class DocumentC
         $docRequest -> where("author_id", $userId);
         try {
             $listRequest = $docRequest -> field("request_id,author_id,approver_id,project_id,stage,remark,request_time,status")
-                -> order("request_time","desc")
-                -> page($page, $limit)
-                -> select();
+                                       -> order("request_time","desc")
+                                       -> page($page, $limit)
+                                       -> select();
             foreach ($listRequest as $req){
                 $req -> requestUser;
                 $req -> approverUser;
@@ -266,9 +266,9 @@ class DocumentC
         }
         try {
             $listRequest = $docRequest -> field("request_id,author_id,approver_id,project_id,stage,remark,request_time,status")
-                -> order("request_time","desc")
-                -> page($page, $limit)
-                -> select();
+                                       -> order("request_time","desc")
+                                       -> page($page, $limit)
+                                       -> select();
             foreach ($listRequest as $req){
                 $req -> requestUser;
                 $req -> approverUser;
@@ -317,9 +317,9 @@ class DocumentC
         }
         try {
             $listRequest = $docRequest -> field("request_id,author_id,approver_id,project_id,stage,remark,request_time,status")
-                -> order("request_time","desc")
-                -> page($page, $limit)
-                -> select();
+                                       -> order("request_time","desc")
+                                       -> page($page, $limit)
+                                       -> select();
             foreach ($listRequest as $req){
                 $req -> requestUser;
                 $req -> approverUser;
@@ -356,9 +356,9 @@ class DocumentC
         $docRequest -> where("status", 0);
         try {
             $listRequest = $docRequest -> field("request_id,author_id,approver_id,project_id,stage,remark,request_time,status")
-                -> order("request_time","desc")
-                -> page($page, $limit)
-                -> select();
+                                       -> order("request_time","desc")
+                                       -> page($page, $limit)
+                                       -> select();
             foreach ($listRequest as $req){
                 $req -> requestUser;
                 $req -> approverUser;
@@ -395,9 +395,9 @@ class DocumentC
         $docRequest -> where("status", 0);
         try {
             $listRequest = $docRequest -> field("request_id,author_id,approver_id,project_id,stage,remark,request_time,status")
-                -> order("request_time","desc")
-                -> page($page, $limit)
-                -> select();
+                                       -> order("request_time","desc")
+                                       -> page($page, $limit)
+                                       -> select();
             foreach ($listRequest as $req){
                 $req -> requestUser;
                 $req -> approverUser;
@@ -650,11 +650,11 @@ class DocumentC
             $docReq -> where("remark","like","%$keyword%" );
         }
         $reqIdList = $docReq -> where("status", 1)
-            -> column("request_id");
+                             -> column("request_id");
         $docFile = new DocFile();
         $fileIdList = $docFile -> where("status",1)
-            -> where("request_id","in", $reqIdList)
-            -> column("id");
+                               -> where("request_id","in", $reqIdList)
+                               -> column("id");
         return $fileIdList;
     }
 
@@ -666,9 +666,9 @@ class DocumentC
     private function getFileIdOfCodeOrName($keyword){
         $docFile = new DocFile();
         $fileIdList = $docFile -> where("status",1)
-            -> where("file_code","like", "%$keyword%")
-            -> whereOr("source_name","like", "%$keyword%")
-            -> column("id");
+                               -> where("file_code","like", "%$keyword%")
+                               -> whereOr("source_name","like", "%$keyword%")
+                               -> column("id");
         return $fileIdList;
     }
 
@@ -713,7 +713,7 @@ class DocumentC
         $templet .= '▪ 文档描述：' . $remark  . "\n";
         $templet .= '▪ 文档列表：' . $fileList  . "\n";
         $templet .= '▪ 链接：' . $url;
-        $message = '◉ ' . '您有新文档审批需要处理！(#' . $requestId . ')' . "\n" . $templet;
+        $message  = '◉ ' . '您有新文档审批需要处理！(#' . $requestId . ')' . "\n" . $templet;
         $data['data']['content'] = $message;
         $result = curlUtil::post($postUrl, $data);
         return true;
@@ -726,8 +726,9 @@ class DocumentC
         $authorId = $req -> author_id;
         $DDidList = User::where('user_id',$authorId)->column('dd_userid');
         $DDidList = implode(',',$DDidList);
-        $fileList = Attachment::where(['attachment_type' => 'doc',
-            'related_id' => $req -> request_id])
+        $fileList = Attachment::where(
+            ['attachment_type' => 'doc',
+            'related_id'       => $req -> request_id])
             -> column('source_name');
         if($fileList == null){
             $fileList = "";
@@ -745,7 +746,7 @@ class DocumentC
         $templet .= '▪ 评审意见：' . $opinion . "\n";
         $templet .= '▪ 文档列表：' . $fileList . "\n";
         $templet .= '▪ 链接：' . $url;
-        $message = '◉ ' . '您的文档审批(#' . $requestId . ')被驳回！' . "\n" . $templet;
+        $message  = '◉ ' . '您的文档审批(#' . $requestId . ')被驳回！' . "\n" . $templet;
         $data['data']['content'] = $message;
         $result = curlUtil::post($postUrl, $data);
         return true;
@@ -777,7 +778,7 @@ class DocumentC
         $templet .= '▪ 评审意见：' . $opinion . "\n";
         $templet .= '▪ 文档列表：' . $fileList . "\n";
         $templet .= '▪ 链接：' . $url;
-        $message = '◉ ' . '您的文档审批(#' . $requestId . ')已通过！' . "\n" . $templet;
+        $message  = '◉ ' . '您的文档审批(#' . $requestId . ')已通过！' . "\n" . $templet;
         $data['data']['content'] = $message;
         $result = curlUtil::post($postUrl, $data);
         return true;

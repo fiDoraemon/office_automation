@@ -156,9 +156,9 @@ class AdminC
             }
         }
         $listMineMeet = $minutes -> field("minute_id,minute_theme,host_id,minute_date,minute_time,project_id,minute_type,review_status,project_stage")
-            -> page($page,$limit)
-            -> order("minute_id","desc")
-            -> select();
+                                 -> page($page,$limit)
+                                 -> order("minute_id","desc")
+                                 -> select();
         foreach ($listMineMeet as $minute){
             $users = "";                                                            //所有应到的员工
             $minute -> minute_host  = $minute -> user         -> user_name;         //会议主持人名字
@@ -238,11 +238,11 @@ class AdminC
         $password = 'XAPUHUECKGGSEXISXIPS';
         $userInfo = new UserInfo();
         $userInfo->data([
-            'Name' => $userName,
-            'User_ID' => $userId,
-            'Password' => $password,
-            'email' => $email,
-            'userid' => $user->dd_userid,
+            'Name'       => $userName,
+            'User_ID'    => $userId,
+            'Password'   => $password,
+            'email'      => $email,
+            'userid'     => $user->dd_userid,
             'department' => $department->department_name
         ]);
         $userInfo->save();
@@ -266,8 +266,8 @@ class AdminC
     public function getUserInfo(){
         $userId = $_GET["userId"];
         $userInfo = User::where('user_id','=',$userId)
-            -> field("id,user_id,user_name,email,phone,department_id")
-            -> find();
+                        -> field("id,user_id,user_name,email,phone,department_id")
+                        -> find();
         return Result::returnResult(Result::SUCCESS,$userInfo);
     }
 
@@ -282,7 +282,11 @@ class AdminC
         $email = $_POST["email"];
         $user = new User();
         $user -> where('user_id', $userId)
-              -> update(['user_name' => $userName,'department_id' => $departmentId,'phone' => $phone,'email' => $email]);
+              -> update([
+                  'user_name'     => $userName,
+                  'department_id' => $departmentId,
+                  'phone'         => $phone,
+                  'email'         => $email]);
         return Result::returnResult(Result::SUCCESS);
     }
 

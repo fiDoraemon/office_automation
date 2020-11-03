@@ -377,9 +377,9 @@ class MinuteC
                         -> whereOr("minute_theme","like","%$keyword%");
             }
             $minuteList = $minute -> field("minute_id,minute_theme,host_id")
-                    -> order("minute_id desc")
-                    -> page($page,$limit)
-                    -> select();
+                                  -> order("minute_id desc")
+                                  -> page($page,$limit)
+                                  -> select();
             foreach ($minuteList as $m){
                 $m -> host_name = $m -> user -> user_name;
             }
@@ -484,9 +484,9 @@ class MinuteC
             if (is_array($attended)) {
                 foreach ($attended as $att) {
                     $minuteAttend = new MinuteAttend();
-                    $minuteAttend->where("minute_id", $minuteId)
-                        ->where("user_id", $att)
-                        ->setField('status', 1);
+                    $minuteAttend -> where("minute_id", $minuteId)
+                                  -> where("user_id", $att)
+                                  -> setField('status', 1);
                 }
             }
             if (is_array($newAttend)) {
@@ -507,21 +507,21 @@ class MinuteC
             if (is_array($minuteMission)) {
                 foreach ($minuteMission as $mis) {
                     $mission = new Mission();
-                    $mission->mission_title = $mis['missionTitle'];
-                    $mission->reporter_id = $user_id;
-                    $mission->assignee_id = $mis['assigneeId'];
-                    $mission->finish_date = $mis['finishDate'];
-                    $mission->description = $mis['description'];
-                    $mission->minute_id = $minuteId;
-                    $mission->create_time = date('Y-m-d H:i:s', time());
-                    $mission->save();
+                    $mission -> mission_title = $mis['missionTitle'];
+                    $mission -> reporter_id   = $user_id;
+                    $mission -> assignee_id   = $mis['assigneeId'];
+                    $mission -> finish_date   = $mis['finishDate'];
+                    $mission -> description   = $mis['description'];
+                    $mission -> minute_id     = $minuteId;
+                    $mission -> create_time   = date('Y-m-d H:i:s', time());
+                    $mission -> save();
                 }
             }
             if (is_array($uploadList)) {
                 foreach ($uploadList as $file) {
                     $attachment = new Attachment();
-                    $attachment->where("attachment_id", $file)
-                        ->update(['attachment_type' => "minute", "related_id" => $minuteId]);
+                    $attachment -> where("attachment_id", $file)
+                                -> update(['attachment_type' => "minute", "related_id" => $minuteId]);
                 }
             }
             //删除临时保存的会议信息
@@ -529,9 +529,9 @@ class MinuteC
             $minuteTemp = new MinuteTemp();
             $m = $minuteTemp->where(['minute_id' => $minuteId, 'status' => 1])->find();
             if ($m != null) {
-                $m->minuteAttends()->delete();
-                $m->minuteTempMission()->delete();
-                $m->delete();
+                $m -> minuteAttends() -> delete();
+                $m -> minuteTempMission() -> delete();
+                $m -> delete();
             }
 //            $minuteAttend = new MinuteAttend();
 //            $sendMesList = $minuteAttend -> where("minute_id",$minuteId)
@@ -646,30 +646,30 @@ class MinuteC
             if ($minuteTemp == null) {//没有，需要创建一条
                 $minuteTemp = new MinuteTemp();
             }
-            $minuteTemp->minute_id = $minuteId;
-            $minuteTemp->department_id = $minute->department_id;
-            $minuteTemp->minute_theme = $minute->minute_theme;
-            $minuteTemp->project_id = $minute->project -> project_code;
-            $minuteTemp->minute_date = $minute->minute_date;
-            $minuteTemp->minute_time = $minute->minute_time;
-            $minuteTemp->place = $minute->place;
-            $minuteTemp->host_id = $minute->host_id;
-            $minuteTemp->minute_type = $minute->minute_type;
-            $minuteTemp->review_status = $minute->review_status;
-            $minuteTemp->project_stage = $minute->project_stage;
-            $minuteTemp->resolution = $minuteResolution;
-            $minuteTemp->record = $minuteContext;
-            $minuteTemp->status = 1;  //标记是修改会议页面临时保存的信息
-            $minuteTemp->save();
+            $minuteTemp -> minute_id      = $minuteId;
+            $minuteTemp -> department_id  = $minute->department_id;
+            $minuteTemp -> minute_theme   = $minute->minute_theme;
+            $minuteTemp -> project_id     = $minute->project -> project_code;
+            $minuteTemp -> minute_date    = $minute->minute_date;
+            $minuteTemp -> minute_time    = $minute->minute_time;
+            $minuteTemp -> place          = $minute->place;
+            $minuteTemp -> host_id        = $minute->host_id;
+            $minuteTemp -> minute_type    = $minute->minute_type;
+            $minuteTemp -> review_status  = $minute->review_status;
+            $minuteTemp -> project_stage  = $minute->project_stage;
+            $minuteTemp -> resolution     = $minuteResolution;
+            $minuteTemp -> record         = $minuteContext;
+            $minuteTemp -> status         = 1;  //标记是修改会议页面临时保存的信息
+            $minuteTemp -> save();
             if (is_array($attended)) {  //新增已到会人员
                 //插入前删除所有已经保存的临时到会人员信息
                 MinuteAttendTemp::destroy(['minute_id' => $minuteId, "status" => 1]);
                 foreach ($attended as $att) {
                     $attendTemp = new MinuteAttendTemp();
-                    $attendTemp->minute_id = $minuteId;
-                    $attendTemp->user_id = $att;
-                    $attendTemp->status = 1;
-                    $attendTemp->save();
+                    $attendTemp -> minute_id = $minuteId;
+                    $attendTemp -> user_id = $att;
+                    $attendTemp -> status = 1;
+                    $attendTemp -> save();
                 }
             }
             if (is_array($newAttend)) {   //新增应到
@@ -677,9 +677,9 @@ class MinuteC
                 MinuteAttendTemp::destroy(['minute_id' => $minuteId, "status" => 0]);
                 foreach ($newAttend as $att) {
                     $attendTemp = new MinuteAttendTemp();
-                    $attendTemp->minute_id = $minuteId;
-                    $attendTemp->user_id = $att;
-                    $attendTemp->save();
+                    $attendTemp -> minute_id = $minuteId;
+                    $attendTemp -> user_id = $att;
+                    $attendTemp -> save();
                 }
             }
             MissionTemp::destroy(['minute_id' => $minuteId]);
@@ -696,13 +696,13 @@ class MinuteC
                         }
                         $missionTemp->new_temp_list = $newTempList;
                     }
-                    $missionTemp->mission_title = $mis['missionTitle'];
-                    $missionTemp->reporter_id = $user_id;
-                    $missionTemp->assignee_id = $mis['assigneeId'];
-                    $missionTemp->finish_date = $mis['finishDate'];
-                    $missionTemp->description = $mis['description'];
-                    $missionTemp->minute_id = $minuteId;
-                    $missionTemp->save();
+                    $missionTemp -> mission_title = $mis['missionTitle'];
+                    $missionTemp -> reporter_id = $user_id;
+                    $missionTemp -> assignee_id = $mis['assigneeId'];
+                    $missionTemp -> finish_date = $mis['finishDate'];
+                    $missionTemp -> description = $mis['description'];
+                    $missionTemp -> minute_id = $minuteId;
+                    $missionTemp -> save();
                 }
             } elseif (is_array($newMission)) {
                 $missionTemp = new MissionTemp();
@@ -713,9 +713,9 @@ class MinuteC
                     }
                     $newTempList = $newTempList . $newMission[$i];
                 }
-                $missionTemp->minute_id = $minuteId;
-                $missionTemp->new_temp_list = $newTempList;
-                $missionTemp->save();
+                $missionTemp -> minute_id = $minuteId;
+                $missionTemp -> new_temp_list = $newTempList;
+                $missionTemp -> save();
             }
             return Result::returnResult(Result::SUCCESS, null);
         });
@@ -744,25 +744,25 @@ class MinuteC
                 if ($minuteTemp == null) {
                     $minuteTemp = new MinuteTemp();
                 }
-                $minuteTemp->department_id = $departmentId;
-                $minuteTemp->minute_theme = $minuteTheme;
-                $minuteTemp->project_id = $projectCode;
-                $minuteTemp->minute_date = $date;
-                $minuteTemp->minute_time = $time;
-                $minuteTemp->place = $place;
-                $minuteTemp->host_id = $hostId;
-                $minuteTemp->resolution = $minuteResolution;
-                $minuteTemp->record = $minuteContext;
-                $minuteTemp->minute_type = $minuteType;
+                $minuteTemp -> department_id = $departmentId;
+                $minuteTemp -> minute_theme = $minuteTheme;
+                $minuteTemp -> project_id = $projectCode;
+                $minuteTemp -> minute_date = $date;
+                $minuteTemp -> minute_time = $time;
+                $minuteTemp -> place = $place;
+                $minuteTemp -> host_id = $hostId;
+                $minuteTemp -> resolution = $minuteResolution;
+                $minuteTemp -> record = $minuteContext;
+                $minuteTemp -> minute_type = $minuteType;
                 $result = $minuteTemp->save();
                 if (is_array($attendUsers)) {
                     //保存之前先把之前的删除，否则会有人员重复现象
                     MinuteAttendTemp::destroy(['minute_id' => $minuteTemp->id]);
                     foreach ($attendUsers as $att) {
                         $minuteAttendTemp = new MinuteAttendTemp();
-                        $minuteAttendTemp->minute_id = $minuteTemp->id;
-                        $minuteAttendTemp->user_id = $att;
-                        $minuteAttendTemp->save();
+                        $minuteAttendTemp -> minute_id = $minuteTemp->id;
+                        $minuteAttendTemp -> user_id = $att;
+                        $minuteAttendTemp -> save();
                     }
                 }
                 if ($result == 1) {
@@ -827,8 +827,8 @@ class MinuteC
         //查询会议类型
         try {
             $listMeet = Db::table('oa_minute_type')
-                ->field("type_id,type_name")
-                ->select();
+                        ->field("type_id,type_name")
+                        ->select();
             return $listMeet;
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
@@ -843,8 +843,8 @@ class MinuteC
     private function getProjectCode(){
         try {
             $listProjectCodes = Db::table('oa_project')
-                ->field("project_id,project_code")
-                ->select();
+                                ->field("project_id,project_code")
+                                ->select();
             return $listProjectCodes;
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
