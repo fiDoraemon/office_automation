@@ -74,6 +74,32 @@
           ]
         },
         {
+          "title": "文件归档",
+          "href": "",
+          "icon": "fa fa-file",
+          "target": "_self",
+          "child": [
+            {
+              "title": "文档搜索",
+              "href": "page/document/index-doc.html",
+              "icon": "fa fa-search",
+              "target": "_self"
+            },
+            {
+              "title": "发起归档",
+              "href": "page/document/add-doc.html",
+              "icon": "fa fa-plus",
+              "target": "_self"
+            },
+            {
+              "title": "待处理申请",
+              "href": "page/document/appending-doc.html",
+              "icon": "fa fa-list",
+              "target": "_self"
+            }
+          ]
+        },
+        {
           "title": "ERP",
           "href": "",
           "icon": "fa fa-superpowers",

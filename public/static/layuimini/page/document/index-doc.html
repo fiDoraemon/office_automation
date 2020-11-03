@@ -96,60 +96,61 @@
                 $("#projectSelect").append($projectCodes);
                 $("#stageSelect").append($projectStages);
                 $("#authorSelect").append($authors);
-                //需要重新加载
+                tableRender();   //防止出现文控没有下载权限情况
                 form.render('select');
-
             },
             error: function(res){
             }
         });
 
-        table.render({
-            elem: '#fileList',
-            url: '/office_automation/public/index.php/index/document_c/getAllDocFile',
-            toolbar: '#toolbar',
-            defaultToolbar: ['filter', 'exports', 'print', {
-                title:    '提示',
-                layEvent: 'LAYTABLE_TIPS',
-                icon:     'layui-icon-tips'
-            }],
-            cols: [[
-                {title: ' '  , width:50 ,
-                    templet: function(d){
-                        return `<i class="layui-icon layui-icon-file-b"></i>`;
-                    }
-                },
-                {field: 'file_code',  title: '文档编码', width:180},
-                {field: 'source_name',title: '文件名' ,
-                    templet: function(d){
-                       if(isDocAdmin){
-                           return `<a style="color:#009688" href="/Office_Automation/public/upload/${d.path}" download="${d.source_name}">
+        function tableRender(){
+            table.render({
+                elem: '#fileList',
+                url: '/office_automation/public/index.php/index/document_c/getAllDocFile',
+                toolbar: '#toolbar',
+                defaultToolbar: ['filter', 'exports', 'print', {
+                    title:    '提示',
+                    layEvent: 'LAYTABLE_TIPS',
+                    icon:     'layui-icon-tips'
+                }],
+                cols: [[
+                    {title: ' '  , width:50 ,
+                        templet: function(d){
+                            return `<i class="layui-icon layui-icon-file-b"></i>`;
+                        }
+                    },
+                    {field: 'file_code',  title: '文档编码', width:180},
+                    {field: 'source_name',title: '文件名' ,
+                        templet: function(d){
+                            if(isDocAdmin){
+                                return `<a style="color:#009688" href="/Office_Automation/public/upload/${d.path}" download="${d.file_code} ${d.source_name}">
                                         <i class="layui-icon layui-icon-download-circle"></i> ${d.source_name}
                                     </a>`;
-                       }
-                       return d.source_name;
-                    }
-                 },
-                {field: 'remark',     title: '文档说明'},
-                {field: 'author',     title: '上传人',   width: 100},
-                {field: 'project',    title: '所属项目', width: 100},
-                {field: 'stage',      title: '项目阶段', width: 100},
-                {field: 'upload_time',title: '归档日期', width: 200, sort: true},
-                {title: '操作',       width:100,         align: "center",
-                    templet: function(d){
-                        if(isDocAdmin){
-                            return `<a class="layui-btn layui-btn-xs"  href="/Office_Automation/public/upload/${d.path}" download="${d.source_name}">下载</a></a>`;
+                            }
+                            return d.source_name;
                         }
-                        return "无权下载";
+                    },
+                    {field: 'remark',     title: '文档说明'},
+                    {field: 'author',     title: '上传者',   width: 100},
+                    {field: 'project',    title: '所属项目', width: 100},
+                    {field: 'stage',      title: '项目阶段', width: 100},
+                    {field: 'upload_time',title: '归档日期', width: 200, sort: true},
+                    {title: '操作',       width:100,         align: "center",
+                        templet: function(d){
+                            if(isDocAdmin){
+                                return `<a class="layui-btn layui-btn-xs"  href="/Office_Automation/public/upload/${d.path}" download="${d.file_code} ${d.source_name}">下载</a></a>`;
+                            }
+                            return "无权下载";
+                        }
                     }
-                 }
-            ]],
-            id: 'fileList',
-            limits: [10, 15, 20, 25, 50, 100],
-            limit: 15,
-            page: true,
-            skin: 'line'
-        });
+                ]],
+                id: 'fileList',
+                limits: [10, 15, 20, 25, 50, 100],
+                limit: 15,
+                page: true,
+                skin: 'line'
+            });
+        }
 
         /**
          * 监听所属项目复选框选择

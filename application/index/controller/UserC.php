@@ -94,7 +94,7 @@ class UserC extends CommonController
         $userId = $user["user_id"];
         $ddOpen = $_POST["ddOpen"];
         $updateResult = User::where('user_id', $userId)
-            ->update(['user_name' => $userName,
+            -> update(['user_name'=> $userName,
                 'department_id'   => $departmentId,
                 'phone'           => $userPhone,
                 'email'           => $userEmail,
@@ -255,16 +255,14 @@ class UserC extends CommonController
     function getSelectInfo() {
         $userIds = explode(',', input('post.userIds'));         // 工号字列表符串
         $userInfo = [];
-
         foreach ($userIds as $userId) {
             $user = new User();
             $one = $user->where('user_id', $userId)->field('user_id,user_name,department_id')->find();
             $one->department_name = $one->department->department_name;
             unset($one->department);
-
             array_push($userInfo, $one);
         }
-
         return Result::returnResult(Result::SUCCESS, $userInfo);
     }
+
 }
