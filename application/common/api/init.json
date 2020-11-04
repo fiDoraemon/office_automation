@@ -100,6 +100,26 @@
           ]
         },
         {
+          "title": "IQC",
+          "href": "",
+          "icon": "fa fa-file",
+          "target": "_self",
+          "child": [
+            {
+              "title": "IQC缺陷浏览",
+              "href": "page/iqc/index-iqc.html",
+              "icon": "fa fa-search",
+              "target": "_self"
+            },
+            {
+              "title": "IQC缺陷提交",
+              "href": "page/iqc/add-iqc.html",
+              "icon": "fa fa-plus",
+              "target": "_self"
+            }
+          ]
+        },
+        {
           "title": "ERP",
           "href": "",
           "icon": "fa fa-superpowers",
