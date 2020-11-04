@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>缺陷详情</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <style>
+        .layui-form-item .layui-input-company {
+            width: auto;padding-right: 10px;line-height: 38px;
+        }
+        .input-title{
+            font-weight: bold;
+        }
+        .not-input{
+            color: #999999;
+        }
+
+        #material-name{
+            width: 300px;
+        }
+    </style>
+
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <form class="layui-form layuimini-form">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label input-title">物料编码</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="material-code" disabled="disabled" name="materialCode"  lay-verify="title"class="layui-input">
+                </div>
+                <label class="layui-form-label input-title">物料名称</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="material-name" disabled="disabled"  lay-verify="title" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label input-title">提交人</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="proposer" disabled="disabled" name="materialCode"  lay-verify="title" class="layui-input">
+                </div>
+                <label class="layui-form-label input-title">提交时间</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="create-time" disabled="disabled"  lay-verify="title" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label input-title">批号</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="batch-num" disabled="disabled" name="batchNum"   lay-verify="title" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label input-title">缺陷说明</label>
+                <div class="layui-input-block">
+                    <textarea disabled="disabled" name="describe" id="describe" class="layui-textarea" rows="5"></textarea>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script src="../../js/common.js" charset="utf-8"></script>
+<script>
+    layui.use(['form','miniTab','upload'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            layer = layui.layer,
+            upload = layui.upload,
+            miniTab = layui.miniTab;
+
+        var IQC_id = getQueryVariable('IQC_id');
+
+        $.ajax({
+            url:"/office_automation/public/index.php/index/iqc_c/getIqcMatInfoOfId",
+            type:"get",
+            data:{
+                id: IQC_id
+            },
+            success: function(res){
+                console.log(res);
+                if(res.code === 0){
+                    var data = res.data;
+                    $("#material-code").val(data.code);
+                    $("#material-name").val(data.name);
+                    $("#proposer").val(data.proposer_name);
+                    $("#create-time").val(data.create_time);
+                    $("#batch-num").val(data.batch_num);
+                    $("#describe").val(data.describe);
+                }
+            },
+            error: function(res){
+
+            }
+        });
+    });
+</script>
+</body>
+</html>
