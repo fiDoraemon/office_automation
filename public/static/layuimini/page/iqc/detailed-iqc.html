@@ -66,6 +66,11 @@
                 </div>
             </div>
 
+            <div class="layui-form-item">
+                <label class="layui-form-label input-title">缺陷图片</label>
+                <div class="layui-input-block" id="mat-pic">
+                </div>
+            </div>
         </form>
     </div>
 </div>
@@ -91,13 +96,22 @@
             success: function(res){
                 console.log(res);
                 if(res.code === 0){
-                    var data = res.data;
+                    var data = res.data.info;
                     $("#material-code").val(data.code);
                     $("#material-name").val(data.name);
                     $("#proposer").val(data.proposer_name);
                     $("#create-time").val(data.create_time);
                     $("#batch-num").val(data.batch_num);
                     $("#describe").val(data.describe);
+                    var picArr = res.data.picList;
+                    var $pic = "";
+                    for (let i = 0; i < picArr.length; i++) {
+                        let name = picArr[i]["source_name"];
+                        let path = picArr[i]["save_path"];
+                        console.log(path)
+                        $pic +=  '<img src="/Office_Automation/public/upload/iqc-pic/'+ path +'" alt="'+ name +'"/>';
+                    }
+                    $("#mat-pic").append($pic);
                 }
             },
             error: function(res){

@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
+    <link rel="stylesheet" type="text/css" href="../../css/uploadPic/preview.css" />
     <style type="text/css">
         #iqc-name-tips{
             border-radius: 0 2px 2px 0;
@@ -15,6 +16,50 @@
             color: #009688;
             margin-left: 20px;
             width: 300px;
+        }
+        .layui-table-cell {
+            height: 120px;
+            line-height: 120px;
+        }
+        th .layui-table-cell {
+            height: 30px;
+            line-height: 30px;
+        }
+        th .laytable-cell-1-0-7 {
+            height: 30px;
+            line-height: 30px;
+        }
+        .layui-table img {
+            max-width:100px;
+            max-height:100px;
+        }
+
+        img.zoomImg:hover
+        {
+            margin: 2px;
+            border: 2px solid #009688;
+        }
+
+        .context{
+            border-radius: 3px;
+            border: 0px;
+            padding: 2px 8px;
+            background-color: #fff;
+            width: 500px;
+            height: 116px;
+            margin-top: 2px;
+            resize:none;
+        }
+        .content {
+            width: 640px;
+            padding: 20px;
+            margin: 20px auto;
+            border: 1px solid #DDDDDD;
+        }
+
+        .content img {
+            width: 100px;
+            height: 100px;
         }
     </style>
 </head>
@@ -31,12 +76,12 @@
                             <label class="layui-form-label">物料编码</label>
                             <div class="layui-input-inline">
                                 <select lay-filter="pre_code" id="select-iqc-type" >
-                                    <option value="" selected>所有</option>
+                                    <option value="" selected>--请选择--</option>
                                 </select>
                             </div>
                             <div class="layui-input-inline">
                                 <select lay-filter="material_code" id="select-iqc-code">
-                                    <option value="" selected>所有</option>
+                                    <option value="" selected>--请选择--</option>
                                 </select>
                             </div>
                             <div class="layui-inline" style="float: right">
@@ -54,7 +99,7 @@
                         <div class="layui-inline" style="float: right">
                             <label class="layui-form-label">物料编码</label>
                             <div class="layui-input-inline">
-                                <input type="text" id="material-code" name="keyword" autocomplete="off" class="layui-input">
+                                <input type="text" id="material-code" name="keyword"  onkeyup="this.value=this.value.replace(/[, ]/g,'')" autocomplete="off" class="layui-input">
                             </div>
                         </div>
                     </div>
@@ -73,7 +118,11 @@
 <script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="../../lib/layui-v2.5.5/layui.all.js" charset="utf-8"></script>
 <script src="../../js/meet/minutes.js" charset="utf-8"></script> <!--引入查询所有部门和所有会议类型信息js-->
+<script src="../../js/preview-img/preview.js" type="text/javascript" charset="utf-8"></script>
 <script>
+    showZoomImg('.zoomImg', 'img');
+    showZoomImg('.zoomImgshow', 'text');
+
     layui.use(['form', 'table'], function () {
         var $ = layui.jquery,
             form = layui.form,
@@ -96,20 +145,30 @@
 
         table.render({
             elem: '#currentTableId',
-            url: '/office_automation/public/index.php/index/iqc_c/getAllIqcMatInfo',
-            toolbar: '#toolbarDemo',
+            url: '/office_automation/public/index.php/index/iqc_c/getIqcMatOfCode',
             cols: [[
-                {field: 'code', title: '物料编码'},
-                {field: 'name', title: '物料名称'},
-                {field: 'batch_num', title: '批号'},
-                {field: 'describe', title: '描述'},
-                {field: 'proposer_name', title: '提交者'},
-                {field: 'create_time', title: '提交时间'},
-                {title: '详细', toolbar: '#currentTableBar', align: "center"}
+                {field: 'batch_num', title: '批号', width: 100},
+                {field: 'proposer_name', title: '提交者', width: 100},
+                {field: 'create_time', title: '提交时间', width: 180},
+                {field: 'describe', title: '描述',templet: function(d){
+                        // return '<div class="" style="line-height: 30px;width: 100px;display:block;word-break: break-all;word-wrap: break-word;">' + d.describe + '</div>';
+                        return '<textarea class="context" disabled>' + d.describe + '</textarea>';
+                    }
+                },
+                {field: 'picList', title: '缺陷图片',height: 200,templet: function(d){
+                        var picArr = d.picList;
+                        var $picList = '<div class="zoomImgBox">';
+                        for(let i = 0;i< picArr.length; i++){
+                            let name = picArr[i]["source_name"];
+                            let path = picArr[i]["save_path"];
+                            $picList += '<a href="#"><img class="zoomImg" data-caption="' + name + '" src="/Office_Automation/public/upload/iqc-pic/'+ path +'" alt="'+ name +'"/></a>';
+                        }
+                        $picList += '</div>';
+                        return $picList;
+                    }
+                },
             ]],
-            limits: [10, 15, 20, 25, 50, 100],  //选择一次显示多少行
-            limit: 10,  //默认显示多少行数据
-            page: true,
+            page: false,
             skin: 'line'
         });
 
@@ -118,14 +177,10 @@
          */
         form.on('submit(data-search-btn)', function (data) {
             var result = data.field;
-            console.log(result.keyword);
             //执行搜索重载
             table.reload('currentTableId', {
                 url:"/office_automation/public/index.php/index/iqc_c/getIqcMatOfCode",
-                page: {
-                    curr: 1
-                }
-                , where: {
+                where: {
                     matCode: result.keyword
                 }
             }, 'data');
@@ -135,7 +190,7 @@
         $("#material-code").bind("input propertychange", function() {
             var matCode = $("#material-code").val();
             if(matCode.length < 13){
-                $("#iqc-name-tips").val("无此编码");
+                $("#iqc-name-tips").val("无此编码  -->");
                 return;
             }
             $.ajax({
@@ -146,9 +201,9 @@
                 },
                 success: function(res){
                     if(res.code === 0){
-                        $("#iqc-name-tips").val(res.data);
+                        $("#iqc-name-tips").val(res.data + "  -->");
                     }else{
-                        $("#iqc-name-tips").val("无此编码");
+                        $("#iqc-name-tips").val("无此编码  -->");
                     }
                 },
                 error: function(res){}
@@ -169,7 +224,7 @@
                     if(res.code === 0){
                         $("#select-iqc-code").empty();
                         var codeArray = res.data;
-                        var $option = "<option value=\"\" selected>所有</option>";
+                        var $option = "<option value=\"\" selected>--请选择--</option>";
                         for (var i = 0; i < codeArray.length; i++){
                             $option += "<option value='" + codeArray[i]["material_code"] + "'>" + codeArray[i]["material_code"] + "</option>";
                         }
@@ -196,7 +251,7 @@
                 },
                 success: function(res){
                     if(res.code === 0){
-                        $("#iqc-name-tips").val(res.data);
+                        $("#iqc-name-tips").val("<--  " + res.data);
                     }else{
                         $("#iqc-name-tips").val("");
                     }
@@ -205,35 +260,32 @@
             });
             table.reload('currentTableId', {
                 url:"/office_automation/public/index.php/index/iqc_c/getIqcMatOfCode",
-                page: {
-                    curr: 1
-                }
-                , where: {
+                where: {
                     matCode: data.value,
                 }
             }, 'data');
             return false;
         });
 
-        table.on('tool(currentTableFilter)', function (obj) {
-            var data = obj.data;
-            var IQC_id = data["id"];
-            if (obj.event === 'edit') {
-                var index = layer.open({
-                    title: '缺陷详情',
-                    type: 2,
-                    shade: 0.2,
-                    maxmin:true,
-                    shadeClose: true,
-                    area: ['100%', '100%'],
-                    content: 'detailed-iqc.html?IQC_id=' + IQC_id,
-                });
-                $(window).on("resize", function () {
-                    layer.full(index);
-                });
-                return false;
-            }
-        });
+        // table.on('tool(currentTableFilter)', function (obj) {
+        //     var data = obj.data;
+        //     var IQC_id = data["id"];
+        //     if (obj.event === 'edit') {
+        //         var index = layer.open({
+        //             title: '缺陷详情',
+        //             type: 2,
+        //             shade: 0.2,
+        //             maxmin:true,
+        //             shadeClose: true,
+        //             area: ['100%', '100%'],
+        //             content: 'detailed-iqc.html?IQC_id=' + IQC_id,
+        //         });
+        //         $(window).on("resize", function () {
+        //             layer.full(index);
+        //         });
+        //         return false;
+        //     }
+        // });
     });
 </script>
 
