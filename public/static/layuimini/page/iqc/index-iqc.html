@@ -45,7 +45,7 @@
             border: 0px;
             padding: 2px 8px;
             background-color: #fff;
-            width: 500px;
+            width: 270px;
             height: 116px;
             margin-top: 2px;
             resize:none;
@@ -147,12 +147,18 @@
             elem: '#currentTableId',
             url: '/office_automation/public/index.php/index/iqc_c/getIqcMatOfCode',
             cols: [[
-                {field: 'batch_num', title: '批号', width: 100},
-                {field: 'proposer_name', title: '提交者', width: 100},
-                {field: 'create_time', title: '提交时间', width: 180},
-                {field: 'describe', title: '描述',templet: function(d){
+                {field: 'code', title: '编码', width: 130},
+                {field: 'batch_num', title: '批号', width: 80},
+                {field: 'supplier', title: '供应商', width: 80},
+                {field: 'proposer_name', title: '提交者', width: 80},
+                {field: 'create_time', title: '提交时间', width: 160},
+                {field: 'describe', title: '描述', width: 300, templet: function(d){
                         // return '<div class="" style="line-height: 30px;width: 100px;display:block;word-break: break-all;word-wrap: break-word;">' + d.describe + '</div>';
                         return '<textarea class="context" disabled>' + d.describe + '</textarea>';
+                    }
+                },
+                {field: 'measures', title: '解决措施', width: 300, templet: function(d){
+                        return '<textarea class="context" disabled>' + d.measures + '</textarea>';
                     }
                 },
                 {field: 'picList', title: '缺陷图片',height: 200,templet: function(d){
@@ -211,7 +217,7 @@
         });
 
         /**
-         * 监听物料编号前三位数
+         * 监听物料编号前三位数(物料类型)
          */
         form.on('select(pre_code)',function(data){
             $.ajax({
@@ -236,6 +242,12 @@
 
                 }
             });
+            table.reload('currentTableId', {
+                url:"/office_automation/public/index.php/index/iqc_c/getIqcMatInfoOfType",
+                where: {
+                    matCode: data.value,
+                }
+            }, 'data');
             return false;
         });
 
