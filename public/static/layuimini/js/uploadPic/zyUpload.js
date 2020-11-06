@@ -17,7 +17,7 @@
 			
 			var defaults = {
 					width            : "700px",  					// 宽度
-					height           : "400px",  					// 宽度
+					height           : "380px",  					// 高度
 					itemWidth        : "140px",                     // 文件项的宽度
 					itemHeight       : "120px",                     // 文件项的高度
 					url              : "/upload/UploadAction",  	// 上传文件的路径
@@ -58,8 +58,8 @@
 					html += '			<div class="upload_choose">';
 	            	html += '				<div class="convent_choice">';
 	            	html += '					<div class="andArea">';
-	            	html += '						<div class="filePicker">点击选择文件</div>';
-	            	html += '						<input id="fileImage" type="file" size="30" name="fileselect[]" '+multiple+'>';
+	            	html += '						<div class="filePicker">点击选择图片</div>';
+	            	html += '						<input id="fileImage" type="file" size="30" accept = "image/*" name="fileselect[]" '+multiple+'>';
 	            	html += '					</div>';
 	            	html += '				</div>';
 					html += '				<span id="fileDragArea" class="upload_drag_area">或者将文件拖到此处</span>';
@@ -71,7 +71,7 @@
 		            html += '					<div class="upload_btn">开始上传</div>';
 		            html += '				</div>';
 		            html += '			</div>';
-					html += '			<div id="preview" class="upload_preview"></div>';
+					html += '			<div id="preview" class="upload_preview zoomImgBox"></div>';
 					html += '		</div>';
 					html += '		<div class="upload_submit">';
 					html += '			<button type="button" id="fileSubmit" class="upload_submit_btn">确认上传文件</button>';
@@ -199,7 +199,7 @@
 					html += '	</div>';
 					html += '	<a style="height:'+para.itemHeight+';width:'+para.itemWidth+';" href="#" class="imgBox">';
 					html += '		<div class="uploadImg" style="width:'+imgWidth+'px">';				
-					html += '			<img id="uploadImage_'+file.index+'" class="upload_image" src="' + e.target.result + '" style="width:expression(this.width > '+imgWidth+' ? '+imgWidth+'px : this.width)" />';                                                                 
+					html += '			<img id="uploadImage_'+file.index+'" class="upload_image zoomImg" src="' + e.target.result + '" style="width:expression(this.width > '+imgWidth+' ? '+imgWidth+'px : this.width)" />';
 					html += '		</div>';
 					html += '	</a>';
 					html += '	<p id="uploadProgress_'+file.index+'" class="file_progress"></p>';
@@ -318,6 +318,7 @@
 					onDelete: function(file, files) {
 						// 移除效果
 						$("#uploadList_" + file.index).fadeOut();
+                        $("#uploadImage_" + file.index).remove();
 						// 重新设置统计栏信息
 						self.funSetStatusInfo(files);
                         delete uploadFileIf[file.index];
@@ -337,7 +338,7 @@
 						$("#uploadSuccess_" + file.index).show();
                         uploadFileIf[file.index] = response.replace(/["]/g,"");
                         console.log(uploadFileIf[file.index])
-						$("#uploadInf").append("<p>上传成功，文件id是：" + response + "</p>");
+						// $("#uploadInf").append("<p>上传成功，文件id是：" + response + "</p>");
 						// 根据配置参数确定隐不隐藏上传成功的文件
 						if(para.finishDel){
 							// 移除效果
@@ -349,7 +350,7 @@
 					onFailure: function(file) {
 						$("#uploadProgress_" + file.index).hide();
 						$("#uploadSuccess_" + file.index).show();
-						$("#uploadInf").append("<p>文件" + file.name + "上传失败！</p>");	
+						$("#uploadInf").append("<p>文件" + file.name + "上传失败！</p>");
 						//$("#uploadImage_" + file.index).css("opacity", 0.2);
 					},
 					onComplete: function(response){

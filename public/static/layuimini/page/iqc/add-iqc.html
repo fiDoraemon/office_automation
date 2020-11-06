@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <link rel="stylesheet" href="../../css/uploadPic/zyUpload.css" media="all">
+    <link rel="stylesheet" type="text/css" href="../../css/uploadPic/preview.css" />
     <style>
         .input-title{
             font-weight: bold;
@@ -47,9 +48,23 @@
             </div>
 
             <div class="layui-form-item">
+                <label class="layui-form-label input-title">供应商</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="supplier" name="supplier"  lay-verify="title" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
                 <label class="layui-form-label required input-title">缺陷说明</label>
                 <div class="layui-input-block">
                     <textarea placeholder="请输入IQC缺陷说明" lay-verify="required" name="describe" id="describe" class="layui-textarea" rows="5"></textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label input-title">缺陷说明</label>
+                <div class="layui-input-block">
+                    <textarea lay-verify="required" name="measures" id="measures" class="layui-textarea" rows="5"></textarea>
                 </div>
             </div>
 
@@ -78,11 +93,14 @@
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script src="../../js/common.js" charset="utf-8"></script>
-<script src="http://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+<script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="../../js/uploadPic/zyUpload.js" charset="utf-8"></script>
 <script src="../../js/uploadPic/zyFile.js" charset="utf-8"></script>
 <script src="../../js/uploadPic/jq22.js" charset="utf-8"></script>
+<script src="../../js/preview-img/preview.js" type="text/javascript" charset="utf-8"></script>
 <script>
+    showZoomImg('.zoomImg', 'img');
+    showZoomImg('.zoomImgshow', 'text');
     layui.use(['form','miniTab','upload'], function () {
         var $ = layui.jquery,
             form = layui.form,

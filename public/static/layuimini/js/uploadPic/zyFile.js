@@ -209,10 +209,6 @@ var ZYFILE = {
 
 
 
- /* www.jq22.com */
-
-
-
 
 
 

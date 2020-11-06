@@ -14,6 +14,7 @@ use app\index\model\Attachment;
 use app\index\model\Iqc;
 use app\index\model\IqcMaterial;
 use app\index\model\IqcType;
+use think\Db;
 use think\Session;
 
 class IqcC
@@ -24,6 +25,7 @@ class IqcC
      * @throws \think\exception\DbException
      */
     public function getMaterialNameByCode(){
+        header('Access-Control-Allow-Origin: *');
         $matCode = $_GET["matCode"];
         $iqc = IqcMaterial::get(['material_code' => $matCode]);
         if($iqc != null){
@@ -47,12 +49,13 @@ class IqcC
     public function getIqcCodeOfPre(){
         $preCode = $_GET["preCode"];
         $iqc = new IqcMaterial();
-        $iqcList = $iqc -> where("material_code","like" ,"$preCode%")
+        $iqcCodeList = $iqc -> where("material_code","like" ,"$preCode%")
                         -> field("material_code")
                         -> order("material_code")
                         -> select();
-        return Result::returnResult(Result::SUCCESS,$iqcList);
+        return Result::returnResult(Result::SUCCESS,$iqcCodeList);
     }
+
 
     /**
      * 保存发起的iqc缺陷
@@ -61,7 +64,9 @@ class IqcC
     public function saveIQC(){
         $describe     = $_POST["describe"];
         $batchNum     = $_POST["batchNum"];
+        $supplier     = $_POST["supplier"];
         $materialCode = $_POST["materialCode"];
+        $measures     = $_POST["measures"];
         $fileIdList   = input('post.file/a');
         $userInfo = Session::get('info');
         $userId = $userInfo["user_id"];
@@ -69,7 +74,9 @@ class IqcC
             "proposer_id" => $userId,
             "code"        => $materialCode,
             "batch_num"   => $batchNum,
+            "measures"    =>$measures,
             "describe"    => $describe,
+            "supplier"    =>$supplier,
             "create_time" => date('Y-m-d H:i:s', time())
         ]);
         $resCount = $iqc -> save();
@@ -88,37 +95,34 @@ class IqcC
     /**
      * 获取所有iqc缺陷信息
      */
-//    public function getAllIqcMatInfo($limit = 15, $page = 1){
-//        $iqc = new Iqc();
-//        $iqcList = $iqc -> where("status",1)
-//                        -> field("id,proposer_id,code,batch_num,describe,create_time")
-//                        -> order("id","desc")
-//                        -> page($page, $limit)
-//                        -> select();
-//        foreach ($iqcList as $iqcItem){
-//            $iqcItem -> proposer_name = $iqcItem -> proposer -> user_name;
-//            $iqcItem -> name = $iqcItem -> material -> material_name;
-//            unset($iqcItem -> proposer,$iqcItem -> material);
-//        }
-//        return Result::returnResult(Result::SUCCESS,$iqcList);
-//    }
+    public function getAllIqcMatInfo($limit = 15, $page = 1){
+        $iqc = new Iqc();
+        $iqcList = $iqc -> where("status",1)
+                        -> field("id,proposer_id,code,batch_num,supplier,describe,measures,create_time")
+                        -> order("id","desc")
+                        -> page($page, $limit)
+                        -> select();
+        foreach ($iqcList as $iqcItem){
+            $iqcItem -> proposer_name = $iqcItem -> proposer -> user_name;
+            $iqcItem -> name = $iqcItem -> material -> material_name;
+            unset($iqcItem -> proposer,$iqcItem -> material);
+        }
+        return Result::returnResult(Result::SUCCESS,$iqcList);
+    }
 
     /**
-     * 根据iqc编码查询缺陷信息
-     * @param $matCode
-     * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
+     * 根据物料类型查询物料缺陷信息（物料编码前三位数）
      */
-    public function getIqcMatOfCode($matCode = ""){
-        if($matCode == ""){
+    public function getIqcMatInfoOfType(){
+        $preCode = $_GET["matCode"];
+        if($preCode == null){
             return Result::returnResult(Result::SUCCESS);
         }
         $iqc = new Iqc();
         $iqcList = $iqc -> where("status",1)
-                        -> where("code",$matCode)
-                        -> field("id,proposer_id,code,batch_num,describe,create_time")
+                        -> where("code","like","$preCode%")
+                        -> field("id,proposer_id,code,batch_num,supplier,describe,measures,create_time")
+                        -> order("code")
                         -> order("id desc")
                         -> select();
         foreach ($iqcList as $iqcInfo){
@@ -136,6 +140,82 @@ class IqcC
     }
 
     /**
+     * 根据iqc编码查询缺陷信息
+     * @param $matCode
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function getIqcMatOfCode($matCode = ""){
+        if($matCode == ""){
+            return Result::returnResult(Result::SUCCESS);
+        }
+        $iqc = new Iqc();
+        $iqcList = $iqc -> where("status",1)
+                        -> where("code",$matCode)
+                        -> field("id,proposer_id,code,batch_num,supplier,describe,measures,create_time")
+                        -> order("id desc")
+                        -> select();
+        foreach ($iqcList as $iqcInfo){
+            $iqcInfo -> proposer_name = $iqcInfo -> proposer -> user_name;
+            $iqcInfo -> name          = $iqcInfo -> material -> material_name;
+            unset($iqcInfo -> proposer,$iqcInfo -> material);
+            $attach = new Attachment();
+            $picList = $attach -> where("attachment_type", "iqc")
+                               -> where("related_id",$iqcInfo -> id)
+                               -> field("source_name,save_path")
+                               -> select();
+            $iqcInfo -> picList = $picList;
+        }
+        return Result::returnResult(Result::SUCCESS,$iqcList);
+    }
+
+    /**
+     * 同时接受iqc信息和缺陷图片（多张）
+     * iqc上传缺陷移动端接口
+     */
+    public function saveIqcInfoAndPic(){
+        header('Access-Control-Allow-Origin: *');
+        //开始事务
+        $describe     = $_POST["describe"];
+        $batchNum     = $_POST["batchNum"];
+        $supplier     = $_POST["supplier"];
+        $materialCode = $_POST["materialCode"];
+        $userId       = $_POST["userId"];
+        $measures     = $_POST["measures"];
+        $fileIdList = request() -> file('fileList');
+        $iqc = new Iqc([
+            "proposer_id" => $userId,
+            "code"        => $materialCode,
+            "batch_num"   => $batchNum,
+            "measures"    => $measures,
+            "describe"    => $describe,
+            "supplier"    => $supplier,
+            "create_time" => date('Y-m-d H:i:s', time())
+        ]);
+        $resCount = $iqc -> save();
+        foreach ($fileIdList as $imgFile){
+            $info = $imgFile -> move(ROOT_PATH . 'public' . DS . 'upload'. DS .'iqc-pic');
+            $fileInfo = $imgFile -> getInfo();
+            $attachment = new Attachment([
+                'source_name'     => $fileInfo["name"],
+                'storage_name'    => $info -> getFilename(),
+                'uploader_id'     => $userId,
+                'file_size'       => $info -> getSize(),
+                'save_path'       => $info -> getSaveName(),
+                'attachment_type' => "iqc",
+                'related_id'      => $iqc -> id
+            ]);
+            $attachment->save();
+        }
+        if($resCount > 0){
+            return Result::returnResult(Result::SUCCESS);
+        }
+        return Result::returnResult(Result::ERROR);
+    }
+
+    /**
      * 根据id号查询详细缺陷信息
      */
     public function getIqcMatInfoOfId(){
@@ -143,7 +223,7 @@ class IqcC
         $iqc = new Iqc();
         $iqcInfo = $iqc -> where("status",1)
                         -> where("id",$iqcId)
-                        -> field("id,proposer_id,code,batch_num,describe,create_time")
+                        -> field("id,proposer_id,code,batch_num,supplier,describe,measures,create_time")
                         -> order("id","desc")
                         -> find();
         $iqcInfo -> proposer_name = $iqcInfo -> proposer -> user_name;
@@ -175,7 +255,7 @@ class IqcC
     }
 
     //上传图片函数
-    public function upload(){
+    private function upload(){
         // 获取表单上传的文件，例如上传了一张图片
         $file = request() -> file('fileList');
         if($file){
