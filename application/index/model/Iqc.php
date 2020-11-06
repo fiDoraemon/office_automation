@@ -21,7 +21,12 @@ class Iqc extends Model
         return $this->hasOne('User',"user_id","proposer_id")->field('user_name');
     }
 
+    /**
+     * 和iqc缺陷描述一对一对应
+     * @return \think\model\relation\HasOne
+     */
     public function material(){
         return $this->hasOne('IqcMaterial',"material_code","code")->field('material_name');
     }
+
 }

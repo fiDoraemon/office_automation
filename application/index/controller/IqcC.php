@@ -10,6 +10,7 @@ namespace app\index\controller;
 
 
 use app\common\Result;
+use app\index\model\Attachment;
 use app\index\model\Iqc;
 use app\index\model\IqcMaterial;
 use app\index\model\IqcType;
@@ -48,17 +49,20 @@ class IqcC
         $iqc = new IqcMaterial();
         $iqcList = $iqc -> where("material_code","like" ,"$preCode%")
                         -> field("material_code")
+                        -> order("material_code")
                         -> select();
         return Result::returnResult(Result::SUCCESS,$iqcList);
     }
 
     /**
      * 保存发起的iqc缺陷
+     * @throws \think\exception\DbException
      */
     public function saveIQC(){
         $describe     = $_POST["describe"];
         $batchNum     = $_POST["batchNum"];
         $materialCode = $_POST["materialCode"];
+        $fileIdList   = input('post.file/a');
         $userInfo = Session::get('info');
         $userId = $userInfo["user_id"];
         $iqc = new Iqc([
@@ -69,6 +73,12 @@ class IqcC
             "create_time" => date('Y-m-d H:i:s', time())
         ]);
         $resCount = $iqc -> save();
+        foreach ($fileIdList as $fileId){
+            $att = Attachment::get(['attachment_id' => $fileId]);
+            $att -> attachment_type = "iqc";
+            $att -> related_id = $iqc -> id;
+            $att -> save();
+        }
         if($resCount > 0){
             return Result::returnResult(Result::SUCCESS);
         }
@@ -78,45 +88,49 @@ class IqcC
     /**
      * 获取所有iqc缺陷信息
      */
-    public function getAllIqcMatInfo($limit = 15, $page = 1){
-        $iqc = new Iqc();
-        $iqcList = $iqc -> where("status",1)
-                        -> field("id,proposer_id,code,batch_num,describe,create_time")
-                        -> order("id","desc")
-                        -> page($page, $limit)
-                        -> select();
-        foreach ($iqcList as $iqcItem){
-            $iqcItem -> proposer_name = $iqcItem -> proposer -> user_name;
-            $iqcItem -> name = $iqcItem -> material -> material_name;
-            unset($iqcItem -> proposer,$iqcItem -> material);
-        }
-        return Result::returnResult(Result::SUCCESS,$iqcList);
-    }
+//    public function getAllIqcMatInfo($limit = 15, $page = 1){
+//        $iqc = new Iqc();
+//        $iqcList = $iqc -> where("status",1)
+//                        -> field("id,proposer_id,code,batch_num,describe,create_time")
+//                        -> order("id","desc")
+//                        -> page($page, $limit)
+//                        -> select();
+//        foreach ($iqcList as $iqcItem){
+//            $iqcItem -> proposer_name = $iqcItem -> proposer -> user_name;
+//            $iqcItem -> name = $iqcItem -> material -> material_name;
+//            unset($iqcItem -> proposer,$iqcItem -> material);
+//        }
+//        return Result::returnResult(Result::SUCCESS,$iqcList);
+//    }
 
     /**
      * 根据iqc编码查询缺陷信息
-     * @param $page
-     * @param $limit
      * @param $matCode
      * @return array
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException
      */
-    public function getIqcMatOfCode($page, $limit, $matCode){
-        $iqc = new Iqc();
-        if($matCode != ""){
-            $iqc -> where("code",$matCode);
+    public function getIqcMatOfCode($matCode = ""){
+        if($matCode == ""){
+            return Result::returnResult(Result::SUCCESS);
         }
+        $iqc = new Iqc();
         $iqcList = $iqc -> where("status",1)
+                        -> where("code",$matCode)
                         -> field("id,proposer_id,code,batch_num,describe,create_time")
-                        -> order("id","desc")
-                        -> page($page, $limit)
+                        -> order("id desc")
                         -> select();
-        foreach ($iqcList as $iqcItem){
-            $iqcItem -> proposer_name = $iqcItem -> proposer -> user_name;
-            $iqcItem -> name = $iqcItem -> material -> material_name;
-            unset($iqcItem -> proposer,$iqcItem -> material);
+        foreach ($iqcList as $iqcInfo){
+            $iqcInfo -> proposer_name = $iqcInfo -> proposer -> user_name;
+            $iqcInfo -> name          = $iqcInfo -> material -> material_name;
+            unset($iqcInfo -> proposer,$iqcInfo -> material);
+            $attach = new Attachment();
+            $picList = $attach -> where("attachment_type", "iqc")
+                               -> where("related_id",$iqcInfo -> id)
+                               -> field("source_name,save_path")
+                               -> select();
+            $iqcInfo -> picList = $picList;
         }
         return Result::returnResult(Result::SUCCESS,$iqcList);
     }
@@ -135,7 +149,57 @@ class IqcC
         $iqcInfo -> proposer_name = $iqcInfo -> proposer -> user_name;
         $iqcInfo -> name = $iqcInfo -> material -> material_name;
         unset($iqcInfo -> proposer,$iqcInfo -> material);
-        return Result::returnResult(Result::SUCCESS,$iqcInfo);
+        $attach = new Attachment();
+        $picList = $attach -> where("attachment_type", "iqc")
+                           -> where("related_id",$iqcInfo -> id)
+                           -> field("source_name,save_path")
+                           -> select();
+        $matInfo = ["info"    => $iqcInfo,
+                    "picList" => $picList];
+        return Result::returnResult(Result::SUCCESS,$matInfo);
     }
+
+    //定义一个方法名upload_img，和view/TestImage文件夹下面的upload_img同名，提交信息时匹配文件
+    public function uploadImg(){
+        //判断是否是post 方法提交的
+        if(request()->isPost()){
+            $data = input('post.');
+            //处理图片上传
+            //提交时在浏览器存储的临时文件名称
+            if($_FILES['fileList']['tmp_name']){
+                $data['image'] = $this -> upload();
+            }
+            return $data['image'];
+        }
+        return Result::returnResult(Result::ERROR);
+    }
+
+    //上传图片函数
+    public function upload(){
+        // 获取表单上传的文件，例如上传了一张图片
+        $file = request() -> file('fileList');
+        if($file){
+            //将传入的图片移动到框架应用根目录/public/uploads/ 目录下，ROOT_PATH是根目录下，DS是代表斜杠 /
+            $info = $file -> move(ROOT_PATH . 'public' . DS . 'upload'. DS .'iqc-pic');
+            if($info){
+                // 插入附件信息
+                $fileInfo = $file -> getInfo();
+                $userId = Session::get("info")["user_id"];
+                $attachment = new Attachment([
+                    'source_name'  => $fileInfo["name"],
+                    'storage_name' => $info -> getFilename(),
+                    'uploader_id'  => $userId,
+                    'file_size'    => $info -> getSize(),
+                    'save_path'    => $info -> getSaveName()
+                ]);
+                $attachment->save();
+                return $attachment -> attachment_id;
+            }else{
+                // 上传失败获取错误信息
+                return Result::returnResult(Result::ERROR);
+            }
+        }
+    }
+
 
 }

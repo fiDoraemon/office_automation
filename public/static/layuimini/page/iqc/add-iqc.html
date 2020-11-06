@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
+    <link rel="stylesheet" href="../../css/uploadPic/zyUpload.css" media="all">
     <style>
         .input-title{
             font-weight: bold;
@@ -30,7 +31,7 @@
             <div class="layui-form-item">
                 <label class="layui-form-label input-title required">物料编码</label>
                 <div class="layui-input-inline">
-                    <input type="text" id="material-code" lay-verify="required" name="materialCode"  lay-verify="title" autocomplete="off" placeholder="请输入物料编码" class="layui-input">
+                    <input type="text" id="material-code" lay-verify="required" name="materialCode"  onkeyup="this.value=this.value.replace(/[, ]/g,'')" autocomplete="off" placeholder="请输入物料编码" class="layui-input">
                 </div>
                 <label class="layui-form-label input-title not-input">物料名称</label>
                 <div class="layui-input-inline">
@@ -52,6 +53,13 @@
                 </div>
             </div>
 
+            <div class="layui-form-item" style="margin-top: 40px">
+                <label class="layui-form-label required input-title">上传图片</label>
+                <div class="layui-input-block">
+                    <div id="demo" class="demo" style="width: 1000px;"></div>
+                </div>
+            </div>
+
             <div class="layui-form-item">
                 <div class="layui-container">
                     <div class="layui-row layui-col-space10">
@@ -70,6 +78,10 @@
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script src="../../js/common.js" charset="utf-8"></script>
+<script src="http://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+<script src="../../js/uploadPic/zyUpload.js" charset="utf-8"></script>
+<script src="../../js/uploadPic/zyFile.js" charset="utf-8"></script>
+<script src="../../js/uploadPic/jq22.js" charset="utf-8"></script>
 <script>
     layui.use(['form','miniTab','upload'], function () {
         var $ = layui.jquery,
@@ -77,6 +89,8 @@
             layer = layui.layer,
             upload = layui.upload,
             miniTab = layui.miniTab;
+
+        uploadFileIf = [];  //已上传的文件id,必须为全局的
 
         var hasData = 0;
 
@@ -108,11 +122,16 @@
 
         //监听提交
         form.on('submit(save)', function (data) {
+            if(uploadFileIf.length < 1){
+                layer.msg("请先上传缺陷图片", {icon: 5});
+                return false;
+            }
             if(hasData === 0){
                 layer.msg("数据库中没有对应的物料信息", {icon: 5});
                 return false;
             }
             var result = data.field;
+            result.file = getObjectValues(uploadFileIf);
             layer.confirm('确定提交缺陷？', {icon: 3, title:'提示'}, function(index){
                 layer.close(index);
                 var loadingIndex = layer.load(2);
@@ -121,6 +140,7 @@
                     type:'post',
                     data: result,
                     success: function(res){
+                        console.log(res)
                         layer.close(loadingIndex);
                         if(res.code === 0){
                             var index = layer.alert("发起成功", {
@@ -144,6 +164,15 @@
             });
             return false;
         });
+
+        function getObjectValues(object)
+        {
+            var values = [];
+            for (var property in object)
+                values.push(object[property]);
+            console.log(values);
+            return values;
+        }
     });
 </script>
 </body>
