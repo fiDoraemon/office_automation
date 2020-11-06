@@ -102,7 +102,7 @@
         {
           "title": "IQC",
           "href": "",
-          "icon": "fa fa-file",
+          "icon": "fa fa-cubes",
           "target": "_self",
           "child": [
             {

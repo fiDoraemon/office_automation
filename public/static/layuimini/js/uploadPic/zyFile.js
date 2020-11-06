@@ -100,8 +100,6 @@ var ZYFILE = {
 			
 			// 执行选择回调
 			this.onSelect(selectFile, this.uploadFile);
-			console.info("继续选择");
-			console.info(this.uploadFile);
 			return this;
 		},
 		// 处理需要删除的文件  isCb代表是否回调onDelete方法  
@@ -112,7 +110,6 @@ var ZYFILE = {
 			var tmpFile = [];  // 用来替换的文件数组
 			// 合并下上传的文件
 			var delFile = this.perUploadFile[delFileIndex];
-			console.info(delFile);
 			// 目前是遍历所有的文件，对比每个文件  删除
 			$.each(this.uploadFile, function(k, v){
 				if(delFile != v){
@@ -127,9 +124,6 @@ var ZYFILE = {
 				// 回调删除方法，供外部进行删除效果的实现
 				self.onDelete(delFile, this.uploadFile);
 			}
-			
-			console.info("还剩这些文件没有上传:");
-			console.info(this.uploadFile);
 			return true;
 		},
 		// 上传多个文件

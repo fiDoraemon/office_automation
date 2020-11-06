@@ -17,7 +17,7 @@
 			
 			var defaults = {
 					width            : "700px",  					// 宽度
-					height           : "380px",  					// 高度
+					height           : "400px",  					// 高度
 					itemWidth        : "140px",                     // 文件项的宽度
 					itemHeight       : "120px",                     // 文件项的高度
 					url              : "/upload/UploadAction",  	// 上传文件的路径
@@ -323,8 +323,6 @@
 						self.funSetStatusInfo(files);
                         delete uploadFileIf[file.index];
                         $("#fileImage").val("");
-						console.info("剩下的文件");
-						console.info(files);
 					},
 					onProgress: function(file, loaded, total) {
 						var eleProgress = $("#uploadProgress_" + file.index), percent = (loaded / total * 100).toFixed(2) + '%';
@@ -337,7 +335,6 @@
 						$("#uploadProgress_" + file.index).hide();
 						$("#uploadSuccess_" + file.index).show();
                         uploadFileIf[file.index] = response.replace(/["]/g,"");
-                        console.log(uploadFileIf[file.index])
 						// $("#uploadInf").append("<p>上传成功，文件id是：" + response + "</p>");
 						// 根据配置参数确定隐不隐藏上传成功的文件
 						if(para.finishDel){
@@ -354,7 +351,6 @@
 						//$("#uploadImage_" + file.index).css("opacity", 0.2);
 					},
 					onComplete: function(response){
-						console.info(response);
 					},
 					onDragOver: function() {
 						$(this).addClass("upload_drag_hover");
