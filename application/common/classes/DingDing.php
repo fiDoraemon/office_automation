@@ -154,9 +154,9 @@ class DingDing
      * $userList 用户 userid 列表，以分号分隔
      * $data 数据数组
      */
-    public function sendMessage($userList, $data)
+    public function sendMessage($userList, $data, $type = 1)
     {
-        $accessToken = $this->getAccessToken();
+        $accessToken = $this->getAccessToken($type);
         $c = new DingTalkClient(DingTalkConstant::$CALL_TYPE_OAPI, DingTalkConstant::$METHOD_POST , DingTalkConstant::$FORMAT_JSON);
         $req = new OapiMessageCorpconversationAsyncsendV2Request;
         $req->setAgentId($this->app['AgentId']);

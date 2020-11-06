@@ -6,6 +6,7 @@ use app\common\util\ArrayAndStringUtil;
 use app\common\util\curlUtil;
 use app\common\util\dateUtil;
 use app\index\model\Attachment;
+use app\index\model\Data;
 use app\index\model\Label;
 use app\index\model\Minute;
 use app\index\model\MissionLabel;
@@ -22,6 +23,7 @@ use app\index\model\MissionStatus;
 use app\index\service\ProjectService;
 use app\common\Result;
 use app\index\service\UserService;
+use app\common\model\LittleMission;
 use think\Controller;
 use think\Request;
 use think\Session;
@@ -1125,5 +1127,40 @@ class MissionC extends Controller
         }
 
         return Result::returnResult(Result::SUCCESS, $missions, count($missions));
+    }
+
+    /**
+     * 更新小任务到 OA
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public function getLittleMission() {
+        // 获取上一次保存的最后一个任务号
+        $data = Data::get(['data_name' => 'little_mission']);
+        $current_id = $data->data_value;
+
+        $littleMission = new LittleMission();
+        $littleMissionList = $littleMission->where('mission_id', '>', $current_id)->select();
+        foreach ($littleMissionList as $key => $littleMission) {
+            $mission = new Mission();
+            $mission->data([
+                'mission_title' => $littleMission->mission_title,
+                'reporter_id' => $littleMission->reporter_id,
+                'assignee_id' => $littleMission->assignee_id,
+                'description' => $littleMission->description,
+                'status' => 0,
+                'start_date' => $littleMission->start_date,
+                'finish_date' => $littleMission->finish_date,
+                'create_time' => $littleMission->create_time
+            ]);
+            $mission->save();
+            $littleMission->oa_mission_id = $mission->mission_id;
+            $littleMission->save();
+            if($key == count($littleMissionList) - 1) {         // 最后一个
+                $data->data_value = $littleMission->mission_id;
+                $data->save();
+            }
+        }
     }
 }

@@ -89,8 +89,23 @@
             </div>
             <div class="layui-form-item">
                 <label class="layui-form-label">邀请关注</label>
-                <div class="layui-input-block">
-                    <input type="text" name="invite_follow" id="invite_follow" class="layui-input" autocomplete="off" placeholder="请选择要邀请关注任务的人" readonly>
+                <div class="layui-input-inline">
+                    <select name="department" id="department">
+                        <option value="">请选择部门</option>
+                        <option value="0">写作</option>
+                        <option value="1">阅读</option>
+                        <option value="2">游戏</option>
+                        <option value="3">音乐</option>
+                        <option value="4">旅行</option>
+                    </select>
+                </div>
+                <div class="layui-input-inline">
+                    <select name="user" id="user">
+                        <option value="">请选择用户</option>
+                    </select>
+                </div>
+                <div class="layui-input-inline" style="width: 40%">
+                    <input type="text" name="invite_follow" id="invite_follow" autocomplete="off" placeholder="请选择要邀请关注任务的人" class="layui-input" readonly>
                 </div>
             </div>
             <div class="layui-form-item">
@@ -334,27 +349,27 @@
         });
 
         // 关注人下拉表格
-        tableSelect.render({
-            elem: '#invite_follow',
-            checkedKey: 'user_id',
-            searchPlaceholder: '用户/部门关键词',
-            table: {
-                url: '/office_automation/public/index.php/index/user_c/getAllUsers'
-                ,cols: [[
-                    { type: 'checkbox' },
-                    { field: 'user_id', title: '工号' },
-                    { field: 'user_name', title: '姓名' },
-                    { field: 'department_name', title: '部门'}
-                ]]
-            },
-            done: function (elem, data) {
-                var NEWJSON = []
-                layui.each(data.data, function (index, item) {
-                    NEWJSON.push(item.user_name)
-                });
-                elem.val(NEWJSON.join("，"));
-            }
-        });
+        // tableSelect.render({
+        //     elem: '#invite_follow',
+        //     checkedKey: 'user_id',
+        //     searchPlaceholder: '用户/部门关键词',
+        //     table: {
+        //         url: '/office_automation/public/index.php/index/user_c/getAllUsers'
+        //         ,cols: [[
+        //             { type: 'checkbox' },
+        //             { field: 'user_id', title: '工号' },
+        //             { field: 'user_name', title: '姓名' },
+        //             { field: 'department_name', title: '部门'}
+        //         ]]
+        //     },
+        //     done: function (elem, data) {
+        //         var NEWJSON = []
+        //         layui.each(data.data, function (index, item) {
+        //             NEWJSON.push(item.user_name)
+        //         });
+        //         elem.val(NEWJSON.join("，"));
+        //     }
+        // });
 
         // 父任务号下拉表格
         tableSelect.render({

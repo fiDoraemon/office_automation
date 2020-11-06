@@ -10,6 +10,7 @@ namespace app\index\service;
 
 use app\index\model\Cooperation;
 use app\index\model\Mission;
+use app\index\model\MissionInterest;
 use app\index\model\User;
 
 /**
@@ -94,13 +95,17 @@ class MissionService
      */
     public static function isView($userId, $missionId) {
         $mission = Mission::get($missionId);
-
+        // 是否是发起人或者处理人
         if($userId != $mission->reporter_id && $userId != $mission->assignee_id) {
-            $user = User::get(['user_id' => $userId]);
-            if($user->super != 1) {
-                if(!Cooperation::get(['manager_id' => $mission->reporter_id, 'member_id' => $userId]) &&
-                    !Cooperation::get(['manager_id' => $mission->assignee_id, 'member_id' => $userId])) {
-                    return false;
+            // 是否是关注人
+            if(!MissionInterest::get(['mission_id' => $missionId, 'user_id' => $userId])) {
+                // 是否是管理员
+                $user = User::get(['user_id' => $userId]);
+                if($user->super != 1) {
+                    if(!Cooperation::get(['manager_id' => $mission->reporter_id, 'member_id' => $userId]) &&
+                        !Cooperation::get(['manager_id' => $mission->assignee_id, 'member_id' => $userId])) {
+                        return false;
+                    }
                 }
             }
         }

@@ -30,8 +30,7 @@ class DataEnum
     // 附件类型
     public static $attachmentType = [
         0 => 'mission',         // 任务
-        1 => 'mission_process',           // 任务处理
-        2 => 'minute'           // 会议
+        1 => 'minute'           // 会议
 
     ];
 

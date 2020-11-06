@@ -14,7 +14,9 @@ use app\common\model\MissionHistory;
 use app\common\model\MissionInfo;
 use app\common\model\OverwatchListMission;
 use app\common\model\ReferenceProjectInfo;
+use app\common\model\USDepartment;
 use app\common\model\UserInfo;
+use app\common\model\USUser;
 use app\common\util\EncryptionUtil;
 use app\index\model\Attachment;
 use app\index\model\Cooperation;
@@ -603,5 +605,31 @@ class MoveTableDataC
         $this->moveMinuteData();
 
         return '全部数据转移完成';
+    }
+
+    // 更新阿里云上面的部门和用户表
+    public function updateUser() {
+        User::chunk(100, function ($objects) {
+            foreach ($objects as $object) {
+                $USUser = USUser::get(['user_id' => $object->user_id]);
+                if(!$USUser) {
+                    $USUser = new USUser();
+                }
+                $department_name = $object->department->department_name;
+                $USDepartment = USDepartment::get(['department_name' => $department_name]);
+                if(!$USDepartment) {
+                    $USDepartment = new USDepartment();
+                    $USDepartment->department_name = $department_name;
+                    $USDepartment->save();
+                }
+                $USUser->user_id = $object->user_id;
+                $USUser->user_name = $object->user_name;
+                $USUser->department_id = $USDepartment->department_id;
+                $USUser->userid = $object->dd_userid;
+                $USUser->su = $object->super;
+                $USUser->obsolete = $object->user_status? 0 : 1;
+                $USUser->save();
+            }
+        });
     }
 }
