@@ -1,8 +1,8 @@
 $(function(){
 	// 初始化插件
 	$("#demo").zyUpload({
-		width            :   "100%",                 // 宽度
-		height           :   "400px",                 // 宽度
+		width            :   "100%",                  // 宽度
+		height           :   "340px",                 // 高度
 		itemWidth        :   "120px",                 // 文件项的宽度
 		itemHeight       :   "100px",                 // 文件项的高度
 		url              :   "/office_automation/public/index.php/index/iqc_c/uploadImg",  // 上传文件的路径
@@ -12,28 +12,28 @@ $(function(){
 		finishDel        :   false,  				  // 是否在上传文件完成后删除预览
 		/* 外部获得的回调接口 */
 		onSelect: function(files, allFiles){                    // 选择文件的回调方法
-			console.info("当前选择了以下文件：");
-			console.info(files);
-			console.info("之前没上传的文件：");
-			console.info(allFiles);
+			// console.info("当前选择了以下文件：");
+			// console.info(files);
+			// console.info("之前没上传的文件：");
+			// console.info(allFiles);
 		},
 		onDelete: function(file, surplusFiles){                     // 删除一个文件的回调方法
-			console.info("当前删除了此文件：");
-			console.info(file);
-			console.info("当前剩余的文件：");
-			console.info(surplusFiles);
+			// console.info("当前删除了此文件：");
+			// console.info(file);
+			// console.info("当前剩余的文件：");
+			// console.info(surplusFiles);
 		},
 		onSuccess: function(file){                    // 文件上传成功的回调方法
-			console.info("此文件上传成功：");
-			console.info(file);
+			// console.info("此文件上传成功：");
+			// console.info(file);
 		},
 		onFailure: function(file){                    // 文件上传失败的回调方法
-			console.info("此文件上传失败：");
-			console.info(file);
+			// console.info("此文件上传失败：");
+			// console.info(file);
 		},
 		onComplete: function(responseInfo){           // 上传完成的回调方法
-			console.info("文件上传完成");
-			console.info(responseInfo);
+			// console.info("文件上传完成");
+			// console.info(responseInfo);
 		}
 	});
 });

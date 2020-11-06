@@ -114,7 +114,7 @@
 
         $("#material-code").bind("input propertychange", function() {
             var matCode = $("#material-code").val();
-            if(matCode.length < 13){
+            if(matCode.length !== 13){
                 hasData = 0;
                 $("#material-name").val("无此编码");
                 return;
