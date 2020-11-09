@@ -40,14 +40,33 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 var $option = "<option value='" + projectArray[i]["project_id"] + "'>" + projectArray[i]["project_code"] + "</option>";
                 $("#select-project-code").append($option);
             }
-            if( $('#list-users').val() === null ||  $('#list-users').val() === ""){
-                $('#list-users').attr('ts-selected', hostId);
-                $('#list-users').val(hostName);
-            }
+            let userInfo = ' <a href="javascript:;" class="test">' +
+                ' <span lay-value="' + hostId + '">' + hostName + '('+ hostId +')' +  '</span>' +
+                ' <i class="layui-icon layui-icon-close"></i>' +
+                ' </a>';
+            $("#userList").append(userInfo);
             //需要重新加载
             form.render('select');
         },
         error: function(data){
+        }
+    });
+
+    $.ajax({
+        url:"/office_automation/public/index.php/index/user_c/getAllDepartment",
+        type: "get",
+        data:{},
+        success: function(res){
+            console.log(res);
+            let departmentArray = res.data;
+            let departmentInfo = "";
+            for (var i = 0; i < departmentArray.length; i++){
+                departmentInfo += "<option value='" + departmentArray[i]["department_id"] + "'>" + departmentArray[i]["department_name"] + "</option>";
+            }
+            $("#select-department").append(departmentInfo);
+            form.render();
+        },
+        error: function(res){
         }
     });
 
@@ -57,6 +76,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         type:'get',
         data: {},
         success: function(res){
+            console.log(res)
             var data = res.data;
             if(res.code === 0){
                 layer.confirm('是否读取临时保存的会议纪要？', {
@@ -72,19 +92,20 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                     $("#minute-resolution").val(data.resolution);
                     $("#minute-context").val(data.record);
                     var attend_users = data.minuteNewAttends;
-                    var userId = "";
-                    var userNameList = "";
+                    let userInfo = "";
+                    userIdList = [];
                     for (var i = 0; i < attend_users.length; i++){
-                        if(i>0){
-                            userId += ",";
-                            userNameList += "，";
-                        }
-                        userId += attend_users[i]["user_id"];
-                        userNameList += attend_users[i]["user"].user_name;
+                        let userId = attend_users[i].user_id + "";
+                        let userName = attend_users[i]["user"].user_name + "";
+                        userIdList.push(userId);
+                        userInfo += ' <a href="javascript:;" class="test">' +
+                            ' <span lay-value="' + userId + '">' + userName + '('+ userId +')' +  '</span>' +
+                            ' <i class="layui-icon layui-icon-close"></i>' +
+                            ' </a>';
                     }
-                    $('#list-users').attr('ts-selected', userId);
-                    $('#list-users').val(userNameList);
-                    form.render("select");
+                    $("#userList").empty();
+                    $("#userList").append(userInfo);
+                    form.render('select');
                     layer.close(index);
                 }, function(){
 
@@ -136,42 +157,62 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         });
     }
 
-
-    //选择应到人员
-    tableSelect.render({
-        elem: '#list-users',	//定义输入框input对象 必填
-        checkedKey: 'user_id', //表格的唯一建值，非常重要，影响到选中状态 必填
-        searchKey: 'keyword',	//搜索输入框的name值 默认keyword
-        searchPlaceholder: '员工名字 / 部门',
-        table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
-            url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=0',
-            cols: [[
-                {type: "checkbox"},
-                {field: 'user_id', title: '员工工号'},
-                {field: 'user_name', title: '姓名'},
-                {field: 'department_name', title: '部门'},
-            ]],
-            limits: [10, 15, 20, 25, 50, 100],  //选择一次显示多少行
-            limit: 10,  //默认显示多少行数据
-        },
-        done: function (elem, data) {
-            var NEWJSON = [];                       //显示给用户看的员工名字
-            userIdList.splice(0,userIdList.length); //清空数组
-            layui.each(data.data, function (index, item) {
-                NEWJSON.push(item.user_name);
-                userIdList.push(item.user_id);
-            });
-            //判断应到列表中是否存在会议发起人ID，若没有则添加
-            if($.inArray(hostId , userIdList) === -1){
-                userIdList.push(hostId);
+    form.on('select(select-department)',function(data){
+        $("#select-user").empty();
+        $.ajax({
+            url: "/office_automation/public/index.php/index/user_c/getUserOfDepartment",
+            type:'get',
+            data:{ departmentId : data.value},
+            success: function(res){
+                console.log(res)
+                let userArr = res.data;
+                let $userList = "<option value='0'></option>";
+                for (let i = 0; i < userArr.length; i++){
+                    $userList += "<option value='" + userArr[i].user_id + "'>" + userArr[i].user_name + "</option>";
+                }
+                $("#select-user").append($userList);
+                //需要重新加载
+                form.render('select');
+            },
+            error: function(res){
             }
-            //判断应到列表中是否存在会议发起人姓名，若没有则添加
-            if($.inArray(hostName , NEWJSON) === -1){
-                NEWJSON.push(hostName);
-            }
-            elem.val(NEWJSON.join("，"))
-        }
+        });
+        return false;
     });
+
+    //选择用户
+    form.on('select(select-user)',function(data){
+        let userName = data.elem[data.elem.selectedIndex].text;
+        let userId = data.value;
+        let userInfo = ' <a href="javascript:;" class="test">' +
+                           ' <span lay-value="' + userId + '">' + userName + '('+ userId +')' +  '</span>' +
+                           ' <i class="layui-icon layui-icon-close"></i>' +
+                        ' </a>';
+        //判断应到列表中是否存在会议发起人，若没有则添加
+        if($.inArray(userId , userIdList) === -1){
+            userIdList.push(userId);
+            console.log(userIdList);
+            $("#userList").append(userInfo);
+        }
+        return false;
+    });
+    //在数组中删除某一个元素
+    var removeFromArray = function (arr, val) {
+        var index = $.inArray(val, arr);
+        if (index >= 0)
+            arr.splice(index, 1);
+        return arr;
+    };
+    //删除应到会人员
+    $(".multiSelect").on("click","i",function(){
+        var userId = $(this).prev('span').attr("lay-value");
+        if(userId === hostId){
+            return;
+        }
+        removeFromArray(userIdList,userId);
+        $(this).parent().remove();
+    });
+
 
     //日期
     laydate.render({
@@ -383,7 +424,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 }
             });
         });
-
         return false;
     });
 

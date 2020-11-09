@@ -31,9 +31,43 @@
         .not-input{
             color: #999999;
         }
+
         .disable-btm{
             opacity: 0.6;
             cursor: not-allowed;
+        }
+
+        #userList{
+            width: 800px;
+            height: 38px;
+            line-height: 1.3;
+            line-height: 38px\9;
+            border: solid 1px #e6e6e6;
+            background-color: #fff;
+            border-radius: 2px;
+        }
+
+        .multiSelect a {
+            padding: 2px 5px;
+            background: #908e8e;
+            border-radius: 2px;
+            color: #fff;
+            display: block;
+            line-height: 20px;
+            height: 20px;
+            margin: 7px 4px 3px 2px;
+            float: left;
+        }
+        .multiSelect i {
+            margin-left: 4px;
+        }
+        .multiSelect a:link {
+            color:#fff;
+        }
+
+        a:-webkit-any-link {
+            color: -webkit-link;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -115,9 +149,22 @@
 
         <div class="layui-form-item no-onclick">
             <label class="layui-form-label input-title">新增应到人员</label>
-            <div class="layui-input-block">
-                <input type="text" name="" readonly="readonly"  placeholder="--请选择新增应到员工--" autocomplete="off" class="layui-input" id="new-attend-users" value="" ts-selected="">
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                    <select id="select-department" lay-filter="select-department"></select>
+                </div>
+                <div class="layui-input-inline">
+                    <select id="select-user" lay-filter="select-user"></select>
+                </div>
+                <div class="layui-input-inline">
+                    <div id="userList" class="multiSelect">
+                        <!--<a href="javascript:;"><span lay-value="m1">movie1</span><i class="layui-icon layui-icon-close"></i></a>-->
+                    </div>
+                </div>
             </div>
+            <!--<div class="layui-input-block">-->
+                <!--<input type="text" name="" readonly="readonly"  placeholder="&#45;&#45;请选择新增应到员工&#45;&#45;" autocomplete="off" class="layui-input" id="new-attend-users" value="" ts-selected="">-->
+            <!--</div>-->
         </div>
 
         <div class="layui-form-item layui-form-text no-onclick">

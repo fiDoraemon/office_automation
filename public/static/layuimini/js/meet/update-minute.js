@@ -6,6 +6,9 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         , upload  = layui.upload
         , table   = layui.table
         , tableSelect = layui.tableSelect;
+
+//已经需要到会的人员名单
+    var needAttendArray = [];
 //标记用户是否有权限修改会议信息
     var modifyPermission = 1;  //1有权限，0没有
 //添加实际到会人员
@@ -92,9 +95,73 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
             for (var i = 0; i < departmentArray.length; i++){
                 departmentInfo += "<option value='" + departmentArray[i]["department_id"] + "'>" + departmentArray[i]["department_name"] + "</option>";
             }
+            $("#select-department").append(departmentInfo);
+            form.render();
         },
         error: function(res){
         }
+    });
+
+    /**
+     * 选择新应到会人员
+     */
+    form.on('select(select-department)',function(data){
+        $("#select-user").empty();
+        $.ajax({
+            url: "/office_automation/public/index.php/index/user_c/getUserOfDepartment",
+            type:'get',
+            data:{ departmentId : data.value},
+            success: function(res){
+                console.log(res)
+                let userArr = res.data;
+                let $userList = "<option value='0'></option>";
+                for (let i = 0; i < userArr.length; i++){
+                    $userList += "<option value='" + userArr[i].user_id + "'>" + userArr[i].user_name + "</option>";
+                }
+                $("#select-user").append($userList);
+                //需要重新加载
+                form.render('select');
+            },
+            error: function(res){
+            }
+        });
+        return false;
+    });
+
+    //选择用户
+    form.on('select(select-user)',function(data){
+        let userName = data.elem[data.elem.selectedIndex].text;
+        let userId = data.value;
+        if($.inArray(userId , newAttended) != -1){  //新增人员列表中已经有此人
+            return false;
+        }
+        if($.inArray(userId , needAttendArray) != -1){  //此人已经在需要到会名单中
+            layer.msg("改员工已经在到会名单中！");
+            return false;
+        }
+        let userInfo = ' <a href="javascript:;" class="test">' +
+            ' <span lay-value="' + userId + '">' + userName + '('+ userId +')' +  '</span>' +
+            ' <i class="layui-icon layui-icon-close"></i>' +
+            ' </a>';
+        newAttended.push(userId);
+        console.log(newAttended);
+        $("#userList").append(userInfo);
+        return false;
+    });
+
+    //在数组中删除某一个元素
+    var removeFromArray = function (arr, val) {
+        var index = $.inArray(val, arr);
+        if (index >= 0)
+            arr.splice(index, 1);
+        return arr;
+    };
+
+    //删除应到会人员
+    $(".multiSelect").on("click","i",function(){
+        var userId = $(this).prev('span').attr("lay-value");
+        removeFromArray(newAttended,userId);
+        $(this).parent().remove();
     });
 
     /**
@@ -126,16 +193,14 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
             },
             success: function (res) {
                 var data = res.data;
-                var attendArray         = data.minuteReallyAttends;        //应到会人员
+                var attendArray         = data.minuteReallyAttends;          //应到会人员
                 var attendedArray       = data.minuteAttendeds;              //临时保存的已到会人员
                 var missionArray        = data.minuteMission;                //临时保存的实际的任务
                 var minuteTempMission   = data.minuteTempMission;            //临时保存的会议任务
                 var newAttendArray      = data.minuteNewAttends;             //临时保存的新增应到会人员
-                var newMissionArray = "";
-                var newAttendId     = "";
-                var newAttendName   = "";
-                var attendusers     = "";
-                var attendedusers   = "";
+                var newMissionArray     = "";
+                var attendusers         = "";
+                var attendedusers       = "";
                 if(minuteTempMission.length > 0) {
                     newMissionArray = minuteTempMission[0].new_temp_list;   //临时保存的任务清单
                     var arr = newMissionArray.split(',');
@@ -143,15 +208,21 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                         newMission.push(val);
                     });
                 }
-                for(var i = 0; i < newAttendArray.length ;i++){
-                    if(i>0){
-                        newAttendId += ',';
-                        newAttendName += ',';
-                    }
-                    newAttended.push(newAttendArray[i].user.user_id);
-                    newAttendId += newAttendArray[i].user.user_id;
-                    newAttendName += newAttendArray[i].user.user_name;
+                //新增的应到会人员
+                newAttended = [];
+                let userInfo = "";
+                for (var i = 0; i < newAttendArray.length; i++){
+                    let userId = newAttendArray[i].user.user_id + "";
+                    let userName = newAttendArray[i].user.user_name + "";
+                    newAttended.push(userId);
+                    userInfo += ' <a href="javascript:;" class="test">' +
+                        ' <span lay-value="' + userId + '">' + userName + '('+ userId +')' +  '</span>' +
+                        ' <i class="layui-icon layui-icon-close"></i>' +
+                        ' </a>';
                 }
+                $("#userList").empty();
+                $("#userList").append(userInfo);
+                form.render('select');
                 //计算会议任务的完成情况
                 var $count = 0;
                 var $finish = 0;     //完成
@@ -160,12 +231,15 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 var $processing = 0; //处理中
                 var element = '';    //上传附件
                 for (var i = 0; i < attendArray.length; i++) {
+                    needAttendArray.push(attendArray[i].user_id + "");
                     attendusers += attendArray[i].user.user_name + ";";
                 }
                 for (var i = 0; i < attendedArray.length; i++) {
                     attended.push( attendedArray[i].user.user_id);
                     attendedusers += attendedArray[i].user.user_name + ";";
                 }
+                console.log("后台获取到的应到会人员");
+                console.log(needAttendArray);
                 var missiondata = table.cache["minute-table"];
                 $count = missionArray.length;
                 for (var i = 0; i < missionArray.length; i++) {
@@ -197,8 +271,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 $("#minute-context").val(data.record);
                 $("#add-mission").val(newMissionArray);
                 $('#add-mission').attr('ts-selected', newMissionArray);
-                $('#new-attend-users').attr('ts-selected', newAttendId);
-                $('#new-attend-users').val(newAttendName);
                 form.render("select");
                 //会议任务表
                 for(var i = 0; i < minuteTempMission.length; i++){
@@ -329,7 +401,9 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 var $suspend = 0;    //暂停
                 var $processing = 0; //处理中
                 var element = '';    //上传附件
+                needAttendArray = [];
                 for (var i = 0; i < attendArray.length; i++) {
+                    needAttendArray.push(attendArray[i].user.user_id + "");
                     attendusers += attendArray[i].user.user_name + ";";
                 }
                 for (var i = 0; i < attendedArray.length; i++) {
@@ -445,32 +519,32 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
     /**
      * 选择新添需要到会员工
      */
-    tableSelect.render({
-        elem: '#new-attend-users',
-        checkedKey: 'user_id',
-        searchKey: 'keyword',
-        searchPlaceholder: '员工名字 / 部门',
-        table: {
-            url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=2&minuteId='+minute_id,
-            cols: [[
-                {type : "checkbox"},
-                {field: 'user_id', title: '员工工号'},
-                {field: 'user_name', title: '姓名'},
-                {field: 'department_name', title: '部门'},
-            ]],
-            limits: [10, 15, 20, 25, 50, 100],  //选择一次显示多少行
-            limit: 10,  //默认显示多少行数据
-        },
-        done: function (elem, data) {
-            var NEWJSON = [];
-            newAttended.splice(0,newAttended.length); //清空数组
-            layui.each(data.data, function (index, item) {
-                NEWJSON.push(item.user_name);
-                newAttended.push(item.user_id);
-            })
-            elem.val(NEWJSON.join(","))
-        }
-    });
+    // tableSelect.render({
+    //     elem: '#new-attend-users',
+    //     checkedKey: 'user_id',
+    //     searchKey: 'keyword',
+    //     searchPlaceholder: '员工名字 / 部门',
+    //     table: {
+    //         url:'/office_automation/public/index.php/index/minute_c/getAllUsers?type=2&minuteId='+minute_id,
+    //         cols: [[
+    //             {type : "checkbox"},
+    //             {field: 'user_id', title: '员工工号'},
+    //             {field: 'user_name', title: '姓名'},
+    //             {field: 'department_name', title: '部门'},
+    //         ]],
+    //         limits: [10, 15, 20, 25, 50, 100],  //选择一次显示多少行
+    //         limit: 10,  //默认显示多少行数据
+    //     },
+    //     done: function (elem, data) {
+    //         var NEWJSON = [];
+    //         newAttended.splice(0,newAttended.length); //清空数组
+    //         layui.each(data.data, function (index, item) {
+    //             NEWJSON.push(item.user_name);
+    //             newAttended.push(item.user_id);
+    //         })
+    //         elem.val(NEWJSON.join(","))
+    //     }
+    // });
 
     /**
      * 选择基本任务清单
@@ -581,7 +655,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
      */
     table.render({
         elem: '#minute-table'
-        ,cols: [[ //标题栏
+        ,cols: [[       //标题栏
             {field: 'mission_id', title: 'ID', width: 200}
             ,{field: 'mission_title', title: '标题', width: 200}
             ,{field: 'assignee_name', title: '责任人', Width: 200}

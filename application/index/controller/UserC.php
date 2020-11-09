@@ -269,7 +269,7 @@ class UserC extends CommonController
      * 查询所有部门信息
      * @return array
      */
-    function getAllDepartment(){
+    public function getAllDepartment(){
         $department = new Department();
         try {
             $departmentList = $department -> field("department_id,department_name")
@@ -287,13 +287,13 @@ class UserC extends CommonController
      * @param $departmentId
      * @return array
      */
-    function getUserOfDepartment($departmentId){
-        $userList =  new User();
+    public function getUserOfDepartment($departmentId){
+        $user =  new User();
         try {
-            $userList -> where("department_id", $departmentId)
-                      -> where("user_status", 1)
-                      -> field("user_id,user_name")
-                      -> select();
+            $userList = $user -> where("department_id", $departmentId)
+                              -> where("user_status", 1)
+                              -> field("user_id,user_name")
+                              -> select();
             return Result::returnResult(Result::SUCCESS,$userList);
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
