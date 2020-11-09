@@ -231,7 +231,7 @@ class UserC extends CommonController
             }else{
                 $user -> where("department_id",$departmentId);
             }
-            $listUser = $user -> field("user_id,user_name,department_id")
+            $listUser = $user -> where("user_status", 1) -> field("user_id,user_name,department_id")
                 -> page($page,$limit)
                 -> select();
             foreach ($listUser as $u){
@@ -263,6 +263,43 @@ class UserC extends CommonController
             array_push($userInfo, $one);
         }
         return Result::returnResult(Result::SUCCESS, $userInfo);
+    }
+
+    /**
+     * 查询所有部门信息
+     * @return array
+     */
+    function getAllDepartment(){
+        $department = new Department();
+        try {
+            $departmentList = $department -> field("department_id,department_name")
+                                          -> select();
+            return Result::returnResult(Result::SUCCESS,$departmentList);
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+        return Result::returnResult(Result::ERROR,null);
+    }
+
+    /**
+     * 根据部门id查询用户
+     * @param $departmentId
+     * @return array
+     */
+    function getUserOfDepartment($departmentId){
+        $userList =  new User();
+        try {
+            $userList -> where("department_id", $departmentId)
+                      -> where("user_status", 1)
+                      -> field("user_id,user_name")
+                      -> select();
+            return Result::returnResult(Result::SUCCESS,$userList);
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+        return Result::returnResult(Result::ERROR,null);
     }
 
 }
