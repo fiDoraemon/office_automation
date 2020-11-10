@@ -16,6 +16,8 @@
             color: #009688;
             margin-left: 20px;
             width: 300px;
+            height: 38px;
+            line-height: 38px;
         }
         .layui-table-cell {
             height: 120px;
@@ -87,7 +89,7 @@
                             <div class="layui-inline" style="float: right">
                                 <div class="layui-input-inline">
                                     <!--<span id="iqc-name-tips"></span>-->
-                                    <input type="text" id="iqc-name-tips" placeholder="" disabled="disabled" class="layui-input">
+                                    <div id="iqc-name-tips"></div>
                                 </div>
                             </div>
                         </div>
@@ -196,7 +198,7 @@
         $("#material-code").bind("input propertychange", function() {
             var matCode = $("#material-code").val();
             if(matCode.length !== 13){
-                $("#iqc-name-tips").val("无此编码  -->");
+                $("#iqc-name-tips").html("无此编码&emsp;"+"<i class='layui-icon layui-icon-next'></i>");
                 return;
             }
             $.ajax({
@@ -207,9 +209,9 @@
                 },
                 success: function(res){
                     if(res.code === 0){
-                        $("#iqc-name-tips").val(res.data + "  -->");
+                        $("#iqc-name-tips").html(res.data +"&emsp;<i class='layui-icon layui-icon-next'></i>");
                     }else{
-                        $("#iqc-name-tips").val("无此编码  -->");
+                        $("#iqc-name-tips").html("无此编码&emsp;<i class='layui-icon layui-icon-next'></i>");
                     }
                 },
                 error: function(res){}
@@ -263,9 +265,9 @@
                 },
                 success: function(res){
                     if(res.code === 0){
-                        $("#iqc-name-tips").val("<--  " + res.data);
+                        $("#iqc-name-tips").html("<i class='layui-icon layui-icon-prev'></i>&emsp;" + res.data);
                     }else{
-                        $("#iqc-name-tips").val("");
+                        $("#iqc-name-tips").html("");
                     }
                 },
                 error: function(res){}

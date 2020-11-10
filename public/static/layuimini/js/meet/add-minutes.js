@@ -45,6 +45,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 ' <i class="layui-icon layui-icon-close"></i>' +
                 ' </a>';
             $("#userList").append(userInfo);
+            userIdList.push(hostId);
             //需要重新加载
             form.render('select');
         },
@@ -57,7 +58,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         type: "get",
         data:{},
         success: function(res){
-            console.log(res);
             let departmentArray = res.data;
             let departmentInfo = "";
             for (var i = 0; i < departmentArray.length; i++){
@@ -76,7 +76,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         type:'get',
         data: {},
         success: function(res){
-            console.log(res)
             var data = res.data;
             if(res.code === 0){
                 layer.confirm('是否读取临时保存的会议纪要？', {
@@ -164,7 +163,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             type:'get',
             data:{ departmentId : data.value},
             success: function(res){
-                console.log(res)
                 let userArr = res.data;
                 let $userList = "<option value='0'></option>";
                 for (let i = 0; i < userArr.length; i++){
@@ -191,7 +189,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         //判断应到列表中是否存在会议发起人，若没有则添加
         if($.inArray(userId , userIdList) === -1){
             userIdList.push(userId);
-            console.log(userIdList);
             $("#userList").append(userInfo);
         }
         return false;
