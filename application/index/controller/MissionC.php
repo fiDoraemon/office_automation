@@ -2,6 +2,7 @@
 
 namespace app\index\controller;
 
+use app\common\model\USUser;
 use app\common\util\ArrayAndStringUtil;
 use app\common\util\curlUtil;
 use app\common\util\dateUtil;
@@ -242,11 +243,11 @@ class MissionC extends Controller
      */
     public function save(Request $request)
     {
-        $userId = Session::get("info")["user_id"];
+        $sessionUserId = Session::get("info")["user_id"];
         $_POST['parent_mission_id'] = input('post.is-root')? -1 : input('post.parent_mission_id');
         // 插入任务信息
         $infoArray = array_merge($_POST, [
-            'reporter_id' => $userId,
+            'reporter_id' => $sessionUserId,
             'create_time' => date('Y-m-d H:i:s', time())
         ]);
         $mission = new Mission($infoArray);
@@ -257,7 +258,7 @@ class MissionC extends Controller
         $missionProcess = new MissionProcess();
         $missionProcess->data([
             'mission_id'  =>  $mission->mission_id,
-            'handler_id' =>  $userId,
+            'handler_id' =>  $sessionUserId,
             'process_note' => '初始处理任务信息',
             'post_assignee_id' => input('post.assignee_id'),
             'post_finish_date' => input('post.finish_date')
@@ -330,7 +331,7 @@ class MissionC extends Controller
         }
         $templet .= "\n" . '▪ 链接：' . $url;
         // 发送给处理人
-        if($userId != input('post.assignee_id') && $mission->assignee->dd_userid != '' && $mission->assignee->dd_open == 1) {
+        if($sessionUserId != input('post.assignee_id') && $mission->assignee->dd_userid != '' && $mission->assignee->dd_open == 1) {
             $data['userList'] = $mission->assignee->dd_userid;
             $message = '◉ 您有新的任务(#' . $mission->mission_id . ')待处理' . "\n" . $templet;
             $data['data']['content'] = $message;
@@ -379,13 +380,10 @@ class MissionC extends Controller
         $idArray = array();
         if($mission->missionInterests) {
             foreach ($mission->missionInterests as $missionInterest) {
-                array_push($nameArray, $missionInterest->user->user_name);
-                array_push($idArray, $missionInterest->user_id);
+                $missionInterest->user_name = $missionInterest->user->user_name;
+                unset($missionInterest->user);
             }
         }
-        $mission->interest_names = implode('，', $nameArray);
-        $mission->interest_ids = implode(',', $idArray);
-        unset($mission->missionInterests);          // 去除 任务-关注人 关联属性
 
         // 获取项目列表
         $projectList = ProjectService::getProjectList();
@@ -1007,6 +1005,7 @@ class MissionC extends Controller
                 $templet .= "\n" . '▪ 链接：' . $url;
                 $message = '◉ 您有新的任务(#' . $mission->mission_id . ')待处理' . "\n" . $templet;
 
+                $data['data']['content'] = $message;
                 curlUtil::post($postUrl, $data);
             }
         }
@@ -1136,6 +1135,7 @@ class MissionC extends Controller
      * @throws \think\exception\DbException
      */
     public function getLittleMission() {
+        header('Access-Control-Allow-Origin: *');           // 允许所有域名访问
         // 获取上一次保存的最后一个任务号
         $data = Data::get(['data_name' => 'little_mission']);
         $current_id = $data->data_value;
@@ -1162,5 +1162,7 @@ class MissionC extends Controller
                 $data->save();
             }
         }
+
+        return Result::returnResult(Result::SUCCESS);
     }
 }

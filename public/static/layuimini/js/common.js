@@ -43,6 +43,7 @@ function setCookie(cname,cvalue,exdays)
     var expires = "expires=" + d.toGMTString() + "; path=/office_automation/public/static/layuimini"
     document.cookie = cname + "=" + cvalue + "; " + expires;
 }
+
 //获取cookie
 function getCookie(cname)
 {
@@ -54,4 +55,13 @@ function getCookie(cname)
         if (c.indexOf(name)==0) return c.substring(name.length,c.length);
     }
     return "";
+}
+
+// 在数组中删除某一个元素
+function removeFromArray (arr, val) {
+    var index = arr.indexOf(val);
+    if (index >= 0)
+        arr.splice(index, 1);
+
+    return arr;
 }
