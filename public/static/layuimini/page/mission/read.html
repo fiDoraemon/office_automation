@@ -29,6 +29,38 @@
             margin: 40px 0;
         }
 
+        /* 关注人 */
+        #userList{
+            width: 800px;
+            height: 38px;
+            line-height: 1.3;
+            line-height: 38px\9;
+            border: solid 1px #e6e6e6;
+            background-color: #fff;
+            border-radius: 2px;
+        }
+        .multiSelect a {
+            padding: 2px 5px;
+            background: #908e8e;
+            border-radius: 2px;
+            color: #fff;
+            display: block;
+            line-height: 20px;
+            height: 20px;
+            margin: 7px 4px 3px 2px;
+            float: left;
+        }
+        .multiSelect i {
+            margin-left: 4px;
+        }
+        .multiSelect a:link {
+            color:#fff;
+        }
+        a:-webkit-any-link {
+            color: -webkit-link;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
@@ -95,9 +127,22 @@
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">邀请关注</label>
-            <div class="layui-input-block">
-                <input type="text" name="invite_follow" id="invite_follow" autocomplete="off" placeholder="请选择要邀请关注任务的人" class="layui-input" readonly>
+            <div class="layui-input-inline">
+                <select id="select-department" lay-filter="select-department">
+                    <option value="">请选择部门</option>
+                </select>
             </div>
+            <div class="layui-input-inline">
+                <select id="select-user" lay-filter="select-user">
+                    <option value="">请选择用户</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <div id="userList" class="multiSelect"></div>
+            </div>
+            <!--<div class="layui-input-block">-->
+                <!--<input type="text" name="invite_follow" id="invite_follow" autocomplete="off" placeholder="请选择要邀请关注任务的人" class="layui-input" readonly>-->
+            <!--</div>-->
         </div>
         <div class="layui-form-item">
             <label class="layui-form-label">任务标签</label>
@@ -241,6 +286,7 @@
             upload = layui.upload,
             tableSelect = layui.tableSelect;
 
+        var userIdList = [];            // 关注人列表
         //日期
         laydate.render({
             elem: '#start_date'
@@ -388,11 +434,23 @@
                     });
                     // 让下拉表格选中
                     $('#assignee_name').attr('ts-selected', missionDetail.assignee_id);
-                    $('#invite_follow').attr('ts-selected', missionDetail.interest_ids);
+                    // $('#invite_follow').attr('ts-selected', missionDetail.interest_ids);
                     $('#parent_mission_id').attr('ts-selected', missionDetail.parent_mission_id);
                     $('#minute_id').attr('ts-selected', missionDetail.minute_id);
 
                     form.render('select');          // 刷新select选择框渲染
+                    // 填充关注人
+                    var interests = missionDetail.missionInterests;
+                    element = '';
+                    for (i in interests) {
+                        userIdList.push(interests[i].user_id);
+                        element += ' <a href="javascript:;" class="test">' +
+                            ' <span lay-value="' + interests[i].user_id + '">' + interests[i].user_name + '('+ interests[i].user_id +')' +  '</span>' +
+                            ' <i class="layui-icon layui-icon-close"></i>' +
+                            ' </a>';
+                    }
+                    $("#userList").append(element);
+
                     // 填充任务处理信息表格
                     var processList = missionDetail.processList;
                     element = '';
@@ -523,26 +581,80 @@
         });
 
         // 关注人下拉表格
-        tableSelect.render({
-            elem: '#invite_follow',
-            checkedKey: 'user_id',
-            searchPlaceholder: '用户/部门关键词',
-            table: {
-                url: '/office_automation/public/index.php/index/user_c/getAllUsers'
-                ,cols: [[
-                    { type: 'checkbox' },
-                    { field: 'user_id', title: '工号' },
-                    { field: 'user_name', title: '姓名' },
-                    { field: 'department_name', title: '部门'}
-                ]]
-            },
-            done: function (elem, data) {
-                var NEWJSON = []
-                layui.each(data.data, function (index, item) {
-                    NEWJSON.push(item.user_name)
-                })
-                elem.val(NEWJSON.join("，"))
+        // tableSelect.render({
+        //     elem: '#invite_follow',
+        //     checkedKey: 'user_id',
+        //     searchPlaceholder: '用户/部门关键词',
+        //     table: {
+        //         url: '/office_automation/public/index.php/index/user_c/getAllUsers'
+        //         ,cols: [[
+        //             { type: 'checkbox' },
+        //             { field: 'user_id', title: '工号' },
+        //             { field: 'user_name', title: '姓名' },
+        //             { field: 'department_name', title: '部门'}
+        //         ]]
+        //     },
+        //     done: function (elem, data) {
+        //         var NEWJSON = []
+        //         layui.each(data.data, function (index, item) {
+        //             NEWJSON.push(item.user_name)
+        //         })
+        //         elem.val(NEWJSON.join("，"))
+        //     }
+        // });
+
+        // 填充部门下拉列表
+        $.get(
+            "/office_automation/public/index.php/index/user_c/getAllDepartment",
+            function(res){
+                let departmentArray = res.data;
+                let departmentInfo = "";
+                for (var i = 0; i < departmentArray.length; i++){
+                    departmentInfo += "<option value='" + departmentArray[i]["department_id"] + "'>" + departmentArray[i]["department_name"] + "</option>";
+                }
+                $("#select-department").append(departmentInfo);
+                form.render('select');
             }
+        );
+        // 选择部门
+        form.on('select(select-department)',function(data){
+            $("#select-user").empty();
+            $.get(
+                "/office_automation/public/index.php/index/user_c/getUserOfDepartment?departmentId=" + data.value,
+                function(res){
+                    let userArr = res.data;
+                    let $userList = "<option value=''>请选择用户</option>";
+                    for (let i = 0; i < userArr.length; i++){
+                        $userList += "<option value='" + userArr[i].user_id + "'>" + userArr[i].user_name + "</option>";
+                    }
+                    $("#select-user").append($userList);
+                    form.render('select');
+                }
+            );
+
+            return false;
+        });
+        // 选择用户
+        form.on('select(select-user)',function(data){
+            let userName = data.elem[data.elem.selectedIndex].text;
+            let userId = data.value;
+            let userInfo = ' <a href="javascript:;" class="test">' +
+                ' <span lay-value="' + userId + '">' + userName + '('+ userId +')' +  '</span>' +
+                ' <i class="layui-icon layui-icon-close"></i>' +
+                ' </a>';
+            // 判断用户列表中是否存在
+            if($.inArray(userId , userIdList) == -1){
+                userIdList.push(userId);
+                $("#userList").append(userInfo);
+            }
+
+            return false;
+        });
+        // 删除应到会人员
+        $(".multiSelect").on("click","i",function(){
+            var userId = $(this).prev('span').attr("lay-value");
+            removeFromArray(userIdList,userId);
+            $(this).parent().remove();
         });
 
         // 父任务号下拉表格
@@ -623,7 +735,7 @@
         form.on('submit(saveBtn)', function (data) {
             var result = data.field;
             result.assignee_id = $('#assignee_name').attr('ts-selected');
-            result.invite_follow = result.invite_follow? $('#invite_follow').attr('ts-selected') : '';
+            result.invite_follow = userIdList.join(',');
 
             // 去除多余数据
             delete result.reporter_id;
