@@ -8,7 +8,9 @@
 
 namespace app\index\controller;
 
+use app\common\model\USDepartment;
 use app\common\model\UserInfo;
+use app\common\model\USUser;
 use app\common\Result;
 use app\common\util\curlUtil;
 use app\common\util\EncryptionUtil;
@@ -230,9 +232,10 @@ class AdminC
             'create_time'    =>  date('Y-m-d H:i:s', time())
         ]);
         $result = $user->save();
+
         // 更新所有用户 userid
         $this->updateUserid();
-        // 关联添加旧 OA 用户
+        // 同步添加旧 OA 用户
         $department = Department::get($departmentId);
         $user = User::get(['user_id' => $userId]);
         $password = 'XAPUHUECKGGSEXISXIPS';
@@ -246,6 +249,16 @@ class AdminC
             'department' => $department->department_name
         ]);
         $userInfo->save();
+        // 同步添加阿里云数据库用户
+        $USDepartment = USDepartment::get(['department_name' => $department->department_name]);
+        $USUser = new USUser();
+        $USUser->user_id = $userId;
+        $USUser->user_name = $userName;
+        $USUser->department_id = $USDepartment->department_id;
+        $USUser->userid = $user->dd_userid;
+        $USUser->is_us = 0;             // 默认不能访问用服系统
+        $USUser->save();
+
         if($result > 0){
             return Result::returnResult(Result::SUCCESS);
         }
@@ -260,6 +273,20 @@ class AdminC
         $user = new User;
         $user -> where('user_id', $userId)
               -> update(['user_status' => 0]);
+
+        // 同步停用旧 OA 用户
+        $userInfo = UserInfo::get(['User_ID' => $userId]);
+        if($userInfo) {
+            $userInfo->obsolete = 1;
+            $userInfo->save();
+        }
+        // 同步停用阿里云数据库的用户
+        $USUser = USUser::get(['user_id' => $userId]);
+        if($USUser) {
+            $USUser->obsolete = 1;
+            $USUser->save();
+        }
+
         return Result::returnResult(Result::SUCCESS);
     }
 
@@ -287,6 +314,27 @@ class AdminC
                   'department_id' => $departmentId,
                   'phone'         => $phone,
                   'email'         => $email]);
+
+        // 同步修改旧 OA 用户
+        $department = Department::get($departmentId);
+        $userInfo = UserInfo::get(['User_ID' => $userId]);
+        if($userInfo) {
+            $userInfo->data([
+                'Name'       => $userName,
+                'email'      => $email,
+                'department' => $department->department_name
+            ]);
+            $userInfo->save();
+        }
+        // 同步添加阿里云数据库用户
+        $USDepartment = USDepartment::get(['department_name' => $department->department_name]);
+        $USUser = USUser::get(['user_id' => $userId]);
+        if($USUser) {
+            $USUser->user_name = $userName;
+            $USUser->department_id = $USDepartment->department_id;
+            $USUser->save();
+        }
+
         return Result::returnResult(Result::SUCCESS);
     }
 
