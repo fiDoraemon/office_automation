@@ -661,9 +661,11 @@ class MinuteC
             $minuteTemp -> record         = $minuteContext;
             $minuteTemp -> status         = 1;  //标记是修改会议页面临时保存的信息
             $minuteTemp -> save();
+            //插入前删除所有已经保存的临时到会人员信息
+            MinuteAttendTemp::destroy(['minute_id' => $minuteId]);
             if (is_array($attended)) {  //新增已到会人员
                 //插入前删除所有已经保存的临时到会人员信息
-                MinuteAttendTemp::destroy(['minute_id' => $minuteId, "status" => 1]);
+//                MinuteAttendTemp::destroy(['minute_id' => $minuteId, "status" => 1]);
                 foreach ($attended as $att) {
                     $attendTemp = new MinuteAttendTemp();
                     $attendTemp -> minute_id = $minuteId;
@@ -674,7 +676,7 @@ class MinuteC
             }
             if (is_array($newAttend)) {   //新增应到
                 //插入前删除所有已经保存的临时到会人员信息
-                MinuteAttendTemp::destroy(['minute_id' => $minuteId, "status" => 0]);
+//                MinuteAttendTemp::destroy(['minute_id' => $minuteId, "status" => 0]);
                 foreach ($newAttend as $att) {
                     $attendTemp = new MinuteAttendTemp();
                     $attendTemp -> minute_id = $minuteId;

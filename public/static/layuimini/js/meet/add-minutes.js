@@ -115,6 +115,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         }
     });
 
+    //临时保存会议
     function saveTemp(){
         //判断应到列表中是否存在会议发起人，若没有则添加
         if($.inArray(hostId , userIdList) === -1){
@@ -156,6 +157,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         });
     }
 
+    //选择部门
     form.on('select(select-department)',function(data){
         $("#select-user").empty();
         $.ajax({
@@ -191,8 +193,11 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             userIdList.push(userId);
             $("#userList").append(userInfo);
         }
+        var $element = $("#select-user .layui-form-selected dl");
+        $element.addClass("test")
         return false;
     });
+
     //在数组中删除某一个元素
     var removeFromArray = function (arr, val) {
         var index = $.inArray(val, arr);
@@ -200,6 +205,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             arr.splice(index, 1);
         return arr;
     };
+
     //删除应到会人员
     $(".multiSelect").on("click","i",function(){
         var userId = $(this).prev('span').attr("lay-value");
@@ -216,6 +222,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         elem: '#date'
         ,value: new Date()
     });
+
     //时间
     laydate.render({
         elem: '#time'
@@ -284,7 +291,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 tds.eq(3).html('');
                 delete this.files[index];            // 删除文件队列已经上传成功的文件
             } else {
-                console.log('上传失败：' + res.msg + `(${index})`);
                 this.error(index, upload);
             }
         }
@@ -292,7 +298,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             layer.closeAll('loading');
             layer.msg('上传完成！');
             $("#start_upload").attr("disabled", true);
-            console.log('上传完成！共上传' + obj.total + '个文件，成功文件数：' + obj.successful +'，失败文件数：' + obj.aborted);
         }
         ,error: function(index, upload){            // 分别为当前文件的索引、重新上传的方法
             var tr = fileListView.find('tr#upload-'+ index)
@@ -312,10 +317,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 return '请填写必要信息';
             }
         }
-        , pass: [
-            /^[\S]{6,12}$/
-            , '密码必须6到12位，且不能出现空格'
-        ]
         , content: function (value) {
             layedit.sync(editIndex);
         }
@@ -433,6 +434,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
     $("#temporarySave").on("click",function () {
         saveTemp();
     });
+
     //快捷键临时保存
     $(window).keydown(function (e) {
         if (e.keyCode === 83 && e.ctrlKey) {

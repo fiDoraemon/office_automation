@@ -112,7 +112,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
             type:'get',
             data:{ departmentId : data.value},
             success: function(res){
-                console.log(res)
                 let userArr = res.data;
                 let $userList = "<option value='0'></option>";
                 for (let i = 0; i < userArr.length; i++){
@@ -144,7 +143,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
             ' <i class="layui-icon layui-icon-close"></i>' +
             ' </a>';
         newAttended.push(userId);
-        console.log(newAttended);
         $("#userList").append(userInfo);
         return false;
     });
@@ -238,8 +236,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                     attended.push( attendedArray[i].user.user_id);
                     attendedusers += attendedArray[i].user.user_name + ";";
                 }
-                console.log("后台获取到的应到会人员");
-                console.log(needAttendArray);
                 var missiondata = table.cache["minute-table"];
                 $count = missionArray.length;
                 for (var i = 0; i < missionArray.length; i++) {
@@ -632,7 +628,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
                 tds.eq(4).html('');
                 delete this.files[index];            // 删除文件队列已经上传成功的文件
             } else {
-                console.log('上传失败：' + res.msg + `(${index})`);
                 this.error(index, upload);
             }
         }
@@ -640,7 +635,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
             layer.closeAll('loading');
             layer.msg('上传完成！');
             $("#start_upload").attr("disabled", true);
-            console.log('上传完成！共上传' + obj.total + '个文件，成功文件数：' + obj.successful +'，失败文件数：' + obj.aborted);
         }
         ,error: function(index, upload){            // 分别为当前文件的索引、重新上传的方法
             var tr = fileListView.find('tr#upload-'+ index)
