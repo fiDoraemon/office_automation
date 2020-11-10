@@ -629,6 +629,9 @@
         });
         // 选择用户
         form.on('select(select-user)',function(data){
+            if(data.value == '') {
+                return false;
+            }
             let userName = data.elem[data.elem.selectedIndex].text;
             let userId = data.value;
             let userInfo = ' <a href="javascript:;" class="test">' +
