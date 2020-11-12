@@ -90,6 +90,10 @@ class LoginC
      */
     public function loginOut(){
         Session::set('info',null);
+        // 同时注销旧系统 session
+        Session::set('MM_UserID', null);
+        Session::set('MM_Username',null);
+
         return Result::returnResult(Result::SUCCESS,null);
     }
 
@@ -165,7 +169,7 @@ class LoginC
             $userInfo -> token_time_out = $new_time_out;
             $res = $userInfo -> save();
             if ($res == 1) {
-                Session::set("info",$userInfo);
+                Session::set("info", $userInfo);
                 return true;                        //token验证成功，time_out刷新成功，可以获取接口信息
             }
         }
@@ -223,7 +227,11 @@ class LoginC
                     ->update(['token' => $token,'token_time_out' => $token_time_out]);
             }
             //保存信息到session中
-            Session::set('info',$user);
+            Session::set('info', $user);
+            // 同时保存旧系统的 session
+            Session::set('MM_UserID', $user['user_id']);
+            Session::set('MM_Username', $user['user_name']);
+
             return true;
         }
     }
@@ -258,5 +266,4 @@ class LoginC
         }
         return false;
     }
-
 }
