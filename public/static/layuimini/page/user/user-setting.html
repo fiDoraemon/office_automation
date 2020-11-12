@@ -86,7 +86,6 @@
         $.ajax({
             url: "/office_automation/public/index.php/index/minute_c/getAllDepartment",
             type:'get',
-            timeout: 2000,
             data: {
             },
             success: function(res){
@@ -149,7 +148,6 @@
                 $.ajax({
                     url: "/office_automation/public/index.php/index/user_c/updateUserInfo",
                     type:'post',
-                    timeout: 1000,//超时时间
                     data:{
                         userName    : userName,
                         departmentId: departmentId,

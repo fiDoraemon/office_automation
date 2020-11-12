@@ -10,6 +10,9 @@ namespace app\index\controller;
 
 
 use app\common\interceptor\CommonController;
+use app\common\model\USDepartment;
+use app\common\model\UserInfo;
+use app\common\model\USUser;
 use app\index\model\Department;
 use app\index\model\User;
 use app\common\Result;
@@ -101,11 +104,33 @@ class UserC extends CommonController
                 'dd_open'         => $ddOpen
             ]);
         $this -> updateInfo();//更新session中的用户信息
+
+        // 同步修改旧 OA 用户
+        $department = Department::get($departmentId);
+        $userInfo = UserInfo::get(['User_ID' => $userId]);
+        if($userInfo) {
+            $userInfo->data([
+                'Name'       => $userName,
+                'email'      => $userEmail,
+                'department' => $department->department_name,
+                'open' => $ddOpen
+            ]);
+            $userInfo->save();
+        }
+        // 同步修改阿里云数据库用户
+        $USDepartment = USDepartment::get(['department_name' => $department->department_name]);
+        $USUser = USUser::get(['user_id' => $userId]);
+        if($USUser) {
+            $USUser->user_name = $userName;
+            $USUser->department_id = $USDepartment->department_id;
+            $USUser->save();
+        }
+
         return Result::returnResult(Result::SUCCESS,null);
     }
 
     /**
-     * 添加用户
+     * 添加用户（废弃）
      */
     public function addUser(){
         $userId       = $_POST["userId"];
@@ -168,7 +193,7 @@ class UserC extends CommonController
     }
 
     /**
-     * 删除用户（修改用户的状态为0）
+     * 删除用户（修改用户的状态为0）（废弃）
      * @throws \think\exception\DbException
      */
     public function deleteUser(){
