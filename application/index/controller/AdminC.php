@@ -16,9 +16,12 @@ use app\common\util\curlUtil;
 use app\common\util\EncryptionUtil;
 use app\index\model\Department;
 use app\index\model\Minute;
+use app\index\model\TableField;
+use app\index\model\TableUser;
 use app\index\model\TableWork;
 use app\index\model\User;
 use app\index\model\UserRole;
+use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
 use think\exception\DbException;
@@ -368,7 +371,48 @@ class AdminC
      * 添加工作表
      */
     public function addWorkTable(){
-
+        Db::transaction(function () {
+            $tableName   = $_POST["tableName"];
+            $description = $_POST["description"];
+            $fieldList   = input('post.fieldList/a');
+            $userList    = input('post.userList/a');
+            $userId      = Session::get("info")["user_id"];
+            $table = new TableWork([
+                'table_name'   => $tableName,
+                'creator_id'  => $userId,
+                'create_time' => date('Y-m-d H:i:s', time()),
+                'description' => $description
+            ]);
+            $resCount = $table -> save();
+            if(is_array($fieldList)){
+                foreach ($fieldList as $field){
+                    $tableField = new TableField();
+                    $type = $field["fieldType"];
+                    if($type == "select"){
+                        $tableField -> type  = $field["fieldType"];
+                        $tableField -> name  = $field["fieldName"];
+                        $tableField -> value = $field["fieldValue"];
+                        $tableField -> table_id    = $table -> table_id;
+                    }else{
+                        $tableField -> type = $field["fieldType"];
+                        $tableField -> name = $field["fieldName"];
+                        $tableField -> table_id   = $table -> table_id;
+                    }
+                    $tableField -> save();
+                }
+            }
+            if(is_array($userList)){
+                foreach ($userList as $uId){
+                    $tableUser = new TableUser([
+                        'user_id'  => $uId,
+                        'table_id' => $table -> table_id
+                    ]);
+                    $tableUser -> save();
+                }
+            }
+            return Result::returnResult(Result::SUCCESS);
+        });
+        return Result::returnResult(Result::SUCCESS);
     }
 
     /**
@@ -376,6 +420,11 @@ class AdminC
      * @param int $page
      * @param int $limit
      * @param string $keyword
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     * @throws \think\Exception
      */
     public function getWorkTable($page = 1,$limit = 15,$keyword = ""){
         $table = new TableWork();

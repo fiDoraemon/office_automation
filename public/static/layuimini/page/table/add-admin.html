@@ -57,7 +57,8 @@
             margin-top: 8px;
         }
 
-        li{
+        ul li{
+            height:40px;
             margin-bottom: 10px;
         }
 
@@ -106,7 +107,9 @@
                                     <a class="layui-btn layui-btn-xs layui-btn-danger icon-btn delete" lay-event="delete"><i class="layui-icon layui-icon-subtraction"></i></a>
                                     <a class="layui-btn layui-btn-xs data-count-edit icon-btn add" lay-event="add"><i class="layui-icon layui-icon-addition"></i></a>
                                 </div>
-                            </li><br>
+                                <div class="layui-input-inline field-value">
+                                </div>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -190,8 +193,6 @@
                 type: 'get',
                 data: { departmentId: data.value },
                 success: function (res) {
-                    console.log("test")
-                    console.log(res)
                     let userArr = res.data;
                     let $userList = "<option value='0'></option>";
                     for (let i = 0; i < userArr.length; i++) {
@@ -224,12 +225,15 @@
             return false;
         });
 
+        var fieldValue = "<input type=\"text\" style=\"width:500px\" name=\"fieldValue\" lay-verify=\"required\"  placeholder=\"以中文逗号'，'隔开\" class=\"layui-input fieldValue\">";
         //选择字段类型监听
         form.on('select(select-field-type)',function(data){
             let fieldType = data.value;
             var thisDom = $(data.elem); //DOM对象转jq对象
             if(fieldType === "select"){
-                thisDom.parent().parent().append(fieldValue);
+                thisDom.parent().next().next().next().html(fieldValue);
+            }else{
+                thisDom.parent().next().next().next().html("");
             }
         });
 
@@ -293,12 +297,70 @@
             "                                    <a class=\"layui-btn layui-btn-xs layui-btn-danger icon-btn delete\" lay-event=\"delete\"><i class=\"layui-icon layui-icon-subtraction\"></i></a>\n" +
             "                                    <a class=\"layui-btn layui-btn-xs data-count-edit icon-btn add\" lay-event=\"add\"><i class=\"layui-icon layui-icon-addition\"></i></a>\n" +
             "                                </div>\n" +
+            "                                <div class=\"layui-input-inline field-value\">\n" +
+            "                                </div>\n" +
             "                            </li>";
 
-        var fieldValue = " <div class=\"layui-input-inline field-value\">\n" +
-            "    <input type=\"text\" style=\"width:500px\" name=\"fieldValue\" lay-verify=\"required\"  placeholder=\"以中文逗号'，'隔开\" class=\"layui-input fieldValue\">\n" +
-            "    </div>";
+        function getFieldList(){
+            var fieldInfos = [];
+            $('ul li').each(function(){
+                let fieldType    = $(this).find(".fieldType").val();
+                let fieldName    = $(this).find(".fieldName").val();
+                let fieldValue   = $(this).find(".fieldValue").val();
+                let field = "";
+                if(fieldType === "select"){
+                    field = {"fieldType":fieldType,"fieldName":fieldName,"fieldValue":fieldValue};
+                }else{
+                    field = {"fieldType":fieldType,"fieldName":fieldName};
+                }
+                fieldInfos.push(field);
+            });
+            return fieldInfos;
+        }
 
+        //监听提交
+        form.on('submit(save)', function (data) {
+            var result = data.field;
+            layer.confirm('确定生成工作表？', {icon: 3, title:'提示'}, function(index){
+                layer.close(index);
+                var loadingIndex = layer.load(2);
+                let fieldList = getFieldList();
+                $.ajax({
+                    url: "/office_automation/public/index.php/index/admin_c/addWorkTable",
+                    type:'post',
+                    data: {
+                        tableName     : result.tableName,
+                        description   : result.description,
+                        fieldList     : fieldList,
+                        userList      : userIdList
+                    },
+                    success: function(res){
+                        layer.close(loadingIndex);
+                        if(res.code === 0){
+                            console.log(res)
+                            var index = layer.alert("发起成功", {
+                                title: '提示'
+                            }, function () {
+                                layer.close(index);
+                                location.reload();
+                                miniTab.openNewTabByIframe({
+                                    href:"page/table/index-admin.html",
+                                    title:"工作表搜索",
+                                });
+                            });
+                        }else{
+                            var index = layer.alert("生成失败！", {
+                                title: '提示'
+                            });
+                        }
+                    },
+                    error: function(res){
+
+                    }
+                });
+            });
+            return false;
+        });
     });
 </script>
 </body>

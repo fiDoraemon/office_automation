@@ -468,19 +468,19 @@ class MinuteC
             $info = Session::get("info");
             $user_id = $info["user_id"];
             $minuteId = $_POST["minuteId"];
-            $attended = input('post.attendList/a');      //实际到会人员
-            $newAttend = input('post.newAttended/a');     //新增应到人员
-            $newMission = input('post.newMission/a');      //新增基本任务清单
-            $minuteResolution = $_POST["minuteResolution"];           //会议决议
-            $minuteContext = $_POST["minuteContext"];              //会议记录
-            $minuteMission = input('post.minuteMission/a');   //添加会议任务纪要
-            $uploadList = input('post.uploadList/a');      //上传的附件
+            $attended = input('post.attendList/a');          //实际到会人员
+            $newAttend = input('post.newAttended/a');        //新增应到人员
+            $newMission = input('post.newMission/a');        //新增基本任务清单
+            $minuteResolution = $_POST["minuteResolution"];       //会议决议
+            $minuteContext = $_POST["minuteContext"];             //会议记录
+            $minuteMission = input('post.minuteMission/a');  //添加会议任务纪要
+            $uploadList = input('post.uploadList/a');         //上传的附件
             $oldAttendList = MinuteAttend::where('minute_id',$minuteId)->column('user_id');
             //保存会议基本信息
             $minute = Minute::getByMinuteId($minuteId);
-            $minute->resolution = $minuteResolution;
-            $minute->record = $minuteContext;
-            $minute->save();
+            $minute -> resolution = $minuteResolution;
+            $minute -> record = $minuteContext;
+            $minute -> save();
             if (is_array($attended)) {
                 foreach ($attended as $att) {
                     $minuteAttend = new MinuteAttend();
@@ -492,16 +492,16 @@ class MinuteC
             if (is_array($newAttend)) {
                 foreach ($newAttend as $att) {
                     $minuteAttend = new MinuteAttend();
-                    $minuteAttend->minute_id = $minuteId;
-                    $minuteAttend->user_id = $att;
-                    $minuteAttend->save();
+                    $minuteAttend -> minute_id = $minuteId;
+                    $minuteAttend -> user_id = $att;
+                    $minuteAttend -> save();
                 }
             }
             if (is_array($newMission)) {
                 foreach ($newMission as $mis) {
                     $minuteMission = Mission::get($mis);
-                    $minuteMission->minute_id = $minuteId;
-                    $minuteMission->save();
+                    $minuteMission -> minute_id = $minuteId;
+                    $minuteMission -> save();
                 }
             }
             if (is_array($minuteMission)) {
@@ -538,9 +538,9 @@ class MinuteC
 //                                         -> field("user_id")
 //                                         -> select();
             //给新增应到会人员发送钉钉消息
-            $this->sendAttendMessage($minute, $newAttend);
+            $this -> sendAttendMessage($minute, $newAttend);
             //给原本应到会人员发送钉钉消息
-            $this->sendAttendUpdateMessage($minute, $oldAttendList);
+            $this -> sendAttendUpdateMessage($minute, $oldAttendList);
             return Result::returnResult(Result::SUCCESS, null);
         });
     }
