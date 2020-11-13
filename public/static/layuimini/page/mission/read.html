@@ -377,6 +377,7 @@
         });
 
         // 获取任务详情
+        var index = layer.load(2);
         $.get(
             "/office_automation/public/mission/" + getQueryVariable('id'),
             function (res) {
@@ -546,6 +547,7 @@
                         }
                     });
                 }
+                layer.close(index);
             }
         );
 

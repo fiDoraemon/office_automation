@@ -11,6 +11,7 @@ namespace app\index\service;
 use app\index\model\Cooperation;
 use app\index\model\Mission;
 use app\index\model\MissionInterest;
+use app\index\model\MissionProcess;
 use app\index\model\User;
 
 /**
@@ -31,6 +32,7 @@ class MissionService
     public function getMissionTree($id) {
         $rootMission = Mission::where('mission_id', $id)->field('mission_id,mission_title,assignee_id,status,finish_date,parent_mission_id')->find();
         $rootMission->parent_mission_id = -1;
+        $rootMission->haveAttachment = MissionService::haveAttachment($rootMission->mission_id)? 1 : 0;
 
         // 关联处理
         $rootMission->assignee_name = $rootMission->assignee->user_name;
@@ -64,6 +66,7 @@ class MissionService
         $childMissionList = $mission->where('parent_mission_id', $id)->field('mission_id,mission_title,assignee_id,status,finish_date,parent_mission_id')->select();
         if($childMissionList) {
             foreach ($childMissionList as $childMission) {
+                $childMission->haveAttachment = MissionService::haveAttachment($childMission->mission_id)? 1 : 0;
                 // 关联处理
                 $childMission->assignee_name = $childMission->assignee->user_name;
                 $childMission->status_name = $childMission->missionStatus->status_name;
@@ -111,5 +114,23 @@ class MissionService
         }
 
         return true;
+    }
+
+    /**
+     * 判断任务是否有附件
+     * @param $missionId
+     * @return bool
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public static function haveAttachment($missionId) {
+        $missionProcess = new MissionProcess();
+        $result = $missionProcess->alias('mp')->where('mission_id', $missionId)->join('oa_attachment a',"a.related_id = mp.process_id and a.attachment_type = 'mission'")->count();
+        if($result > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

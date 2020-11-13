@@ -10,6 +10,7 @@ use app\index\model\Project;
 use app\index\model\User;
 use app\common\Result;
 use app\index\model\UserRole;
+use app\index\service\MissionService;
 use app\index\service\UserService;
 use app\other\model\MissionInfo;
 use app\other\model\UserMission;
@@ -59,5 +60,9 @@ class Index extends Controller
         }
 
         return Result::returnResult(Result::SUCCESS, $userInfo);
+    }
+
+    public function test() {
+        $this->redirect('/us_service/public');
     }
 }

@@ -45,4 +45,7 @@ class DataEnum
             'content' => ''
         ]
     ];
+
+    // 工作表字段类型
+    public static $fieldTyoe = ['text', 'textarea', 'select', 'user', 'users', 'stop'];
 }
