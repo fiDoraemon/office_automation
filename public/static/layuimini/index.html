@@ -212,6 +212,16 @@
                         $.cookie('user_token',"");
                         setCookie("user_token","",0);
                         //$.cookie('user_token'); //推出登录要清除自动登录的cookie
+
+                        // 同时退出旧系统
+                        $.post(
+                            "/mission_system/mission_common.php",
+                            { funcname: 'logout' },
+                            function(res){
+                                console.log(res);
+                            }
+                        );
+
                         layer.msg('退出登录成功',{time: 500} , function () {
                             window.location = 'page/login.html';
                         });

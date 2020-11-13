@@ -228,9 +228,6 @@ class LoginC
             }
             //保存信息到session中
             Session::set('info', $user);
-            // 同时保存旧系统的 session
-            Session::set('MM_UserID', $user['user_id']);
-            Session::set('MM_Username', $user['user_name']);
 
             return true;
         }
