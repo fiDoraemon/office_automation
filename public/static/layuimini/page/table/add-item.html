@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>填写工作表</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <style>
+    </style>
+</head>
+<body>
+    <div class="layuimini-container">
+        <div class="layuimini-main">
+            <form class="layui-form layui-form-pane">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">工作表</label>
+                    <div class="layui-input-inline" style="width: 30%">
+                        <select name="table_id" id="work-table" lay-filter="work-table">
+                            <option value=""></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">标题</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="item_title" lay-verify="required" lay-reqtext="标题不能为空" autocomplete="off" placeholder="请输入标题" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">标签</label>
+                    <div class="layui-input-inline" style="width: 30%">
+                        <input type="text" name="label_list" id="label-list" class="layui-input" autocomplete="off" placeholder="请选择或输入任务标签">
+                    </div>
+                    <div class="layui-input-inline">
+                        <select name="label-serach" id="label-serach" lay-filter="label-serach" lay-search>
+                            <option value="">直接选择或搜索选择</option>
+                        </select>
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">标签与标签之间需用中文分号分隔(；)</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">字段1</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="field1" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">字段2</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="field1" class="layui-input">
+                    </div>
+                </div>
+                <div id="fields"></div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">字段3</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="field1" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">字段4</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="field1" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">字段5</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="field1" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">字段6</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="field1" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn layui-btn-normal return-btn" lay-submit lay-filter="saveBtn">提交</button>
+                        <button type="reset" id="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script src="../../js/common.js?v=1" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'laydate', 'upload', 'tableSelect', 'miniTab'], function () {
+        var $ = layui.$,
+            form = layui.form,
+            layer = layui.layer,
+            laydate = layui.laydate,
+            upload = layui.upload,
+            tableSelect = layui.tableSelect,
+            miniTab = layui.miniTab;
+
+        // 获取信息
+        var tableList;
+        $.get(
+            "/office_automation/public/table/item",
+            function (res) {
+                if(res.code == 0) {
+                    // 填充工作表下拉列表
+                    tableList = res.data.tableList;
+                    var element = '';
+                    for(i in tableList) {
+                        element += `<option value="${tableList[i].table_id}">${tableList[i].table_name}</option>`;
+                    }
+                    $('#work-table').append(element);
+                    // 填充标签选择搜索框
+                    var labelList = res.data.labelList;
+                    element = '';
+                    for(i in labelList) {
+                        element += `<option value="${labelList[i].label_id}">${labelList[i].label_name}</option>`;
+                    }
+                    $('#label-serach').append(element);
+                    form.render('select');
+                }
+            }
+        );
+
+        // 监听工作表下拉选择
+        var worktable;
+        form.on('select(work-table)', function(data){
+            if(data.value != worktable) {
+                for(i in tableList) {
+                    if(tableList[i].table_id == data.value) {
+                        var fields = tableList[i].fields;
+                        // 切换工作表字段
+                        $('#filds').empty();
+                        var element = '';
+                        for (j in fields) {
+                            // 判断字段类型
+                            if(fields[j].type == 'text') {
+                                var input = `<input type="text" name="filed${j}" class="layui-input">`;
+                            } else if(fields[j].type == 'textarea') {
+                                var input = `<textarea name="filed${j}" class="layui-textarea"></textarea>`;
+                            } else if(fields[j].type == 'select') {
+                                var values = fields[j].value.split(';');
+                                var input = `
+                                <select name="filed${j}">
+                                    <option value=""></option>
+                                `;
+                                for(k in values) {
+                                    input += `<option value="${values[k]}">${values[k]}</option>`;
+                                }
+                                input =+ `</select>`;
+                            } else {
+                                var input = `<input type="text" name="filed${j}" class="layui-input">`;
+                            }
+                            element += `
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">${fields[j].field_name}</label>
+                                <div class="layui-input-block">
+                                    ${input}
+                                </div>
+                            </div>
+                            `;
+                            $('#filds').append(element);
+                        }
+                        break;
+                    }
+                }
+                worktable = data.value;
+            }
+        });
+
+        // 监听标签选择搜索框
+        form.on('select(label-serach)', function(data){
+            var labelList = $('#label-list').val().split('；');
+            var label_name = $(data.elem).find("option[value='" + data.value + "']").text();
+
+            if(!labelList.includes(label_name)) {
+                if($('#label-list').val() == '') {
+                    $('#label-list').val(label_name);
+                } else {
+                    $('#label-list').val($('#label-list').val() + '；' + label_name);
+                }
+            }
+        });
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            var result = data.field;
+            console.log(result);
+            return false;
+            layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
+                layer.close(index);
+                var index = layer.load(2);
+                $.post(
+                    "/office_automation/public/item",
+                    result,
+                    function (res) {
+                        layer.close(index);
+                        if (res.code == 0) {
+                            layer.alert('提交成功！', {title: '提示'},
+                                function (index) {
+                                    layer.close(index);
+                                    $('#reset').click();
+                                    // 打开新的窗口
+                                    miniTab.openNewTabByIframe({
+                                        href: "page/table/item-index.html",
+                                        title: "工作表列表",
+                                    });
+                                }
+                            );
+                        } else {
+                            layer.msg('提交失败！');
+                        }
+                    }
+                );
+                layer.close(index);
+            });
+
+            return false;
+        });
+    });
+</script>
+</body>
+</html>
