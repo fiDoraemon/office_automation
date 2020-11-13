@@ -224,6 +224,26 @@
           "href": "page/meet/admin-minute.html",
           "icon": "fa fa-meetup",
           "target": "_self"
+        },
+        {
+          "title": "工作表管理",
+          "href": "",
+          "icon": "fa fa-meetup",
+          "target": "_self",
+          "child": [
+            {
+              "title": "工作表列表",
+              "href": "page/table/index-admin.html",
+              "icon": "fa fa-plus",
+              "target": "_self"
+            },
+            {
+              "title": "添加工作表",
+              "href": "page/table/add-admin.html",
+              "icon": "fa fa-list",
+              "target": "_self"
+            }
+          ]
         }
       ]
     }

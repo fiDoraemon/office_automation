@@ -16,11 +16,13 @@ use app\common\util\curlUtil;
 use app\common\util\EncryptionUtil;
 use app\index\model\Department;
 use app\index\model\Minute;
+use app\index\model\TableWork;
 use app\index\model\User;
 use app\index\model\UserRole;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
 use think\exception\DbException;
+use think\migration\db\Table;
 use think\Session;
 
 class AdminC
@@ -232,7 +234,6 @@ class AdminC
             'create_time'    =>  date('Y-m-d H:i:s', time())
         ]);
         $result = $user->save();
-
         // 更新所有用户 userid
         $this->updateUserid();
         // 同步添加旧 OA 用户
@@ -258,7 +259,6 @@ class AdminC
         $USUser->userid = $user->dd_userid;
         $USUser->is_us = 0;             // 默认不能访问用服系统
         $USUser->save();
-
         if($result > 0){
             return Result::returnResult(Result::SUCCESS);
         }
@@ -273,7 +273,6 @@ class AdminC
         $user = new User;
         $user -> where('user_id', $userId)
               -> update(['user_status' => 0]);
-
         // 同步停用旧 OA 用户
         $userInfo = UserInfo::get(['User_ID' => $userId]);
         if($userInfo) {
@@ -286,7 +285,6 @@ class AdminC
             $USUser->obsolete = 1;
             $USUser->save();
         }
-
         return Result::returnResult(Result::SUCCESS);
     }
 
@@ -334,12 +332,14 @@ class AdminC
             $USUser->department_id = $USDepartment->department_id;
             $USUser->save();
         }
-
         return Result::returnResult(Result::SUCCESS);
     }
 
     /**
      * 查看是否已经含有某一个用户
+     * @param $userId
+     * @return bool
+     * @throws DbException
      */
     private function checkHasUser($userId){
         $user = User::get(['user_id' => $userId]);
@@ -362,5 +362,45 @@ class AdminC
            return false;
         }
         return true;
+    }
+
+    /**
+     * 添加工作表
+     */
+    public function addWorkTable(){
+
+    }
+
+    /**
+     * 获取现在存在的工作表
+     * @param int $page
+     * @param int $limit
+     * @param string $keyword
+     */
+    public function getWorkTable($page = 1,$limit = 15,$keyword = ""){
+        $table = new TableWork();
+        if($keyword != ""){
+            $table -> where("table_name|description","like","%$keyword%");
+        }
+        $count = $table -> count();
+        if($keyword != ""){
+            $table -> where("table_name|description","like","%$keyword%");
+        }
+        $tableLisst = $table -> field("table_id,table_name,creator_id,status,create_time,description")
+                             -> page($page,$limit)
+                             -> order("table_id")
+                             -> select();
+        foreach ($tableLisst as $tab){
+            $tab -> creator_name = $tab -> creator -> user_name;
+            unset($tab -> creator);
+        }
+        return Result::returnResult(Result::SUCCESS, $tableLisst, $count);
+    }
+
+    /**
+     * 根据工作表id查询工作表详细信息
+     */
+    public function getWorkTableOfId(){
+
     }
 }

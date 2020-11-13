@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>添加工作表</title>
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <style type="text/css">
+        .input-title{
+            font-weight: bold;
+        }
+
+        .not-input{
+            color: #999999;
+        }
+
+        #table-name{
+            width: 400px;
+        }
+
+        #userList{
+            width: 800px;
+            height: 38px;
+            line-height: 1.3;
+            line-height: 38px\9;
+            border: none;
+            background-color: #fff;
+            border-radius: 2px;
+        }
+
+        .multiSelect a {
+            padding: 2px 5px;
+            background: #908e8e;
+            border-radius: 2px;
+            color: #fff;
+            display: block;
+            line-height: 20px;
+            height: 20px;
+            margin: 7px 4px 3px 2px;
+            float: left;
+        }
+
+        .multiSelect i {
+            margin-left: 4px;
+        }
+
+        .multiSelect a:link {
+            color:#fff;
+        }
+
+        a:-webkit-any-link {
+            color: -webkit-link;
+            cursor: pointer;
+        }
+
+        .icon-btn{
+            margin-top: 8px;
+        }
+
+        li{
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <form class="layui-form layuimini-form">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label required input-title">工作表名：</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="table-name" name="tableName" lay-verify="required" autocomplete="off" placeholder="请输入表名称" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label input-title">描述：</label>
+                <div class="layui-input-block">
+                    <textarea placeholder="请输入工作表描述" name="description" id="description" class="layui-textarea" rows="3"></textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item ">
+                <label class="layui-form-label required input-title">表字段：</label>
+                <div class="layui-inline">
+                    <div id="" >
+                        <ul id="field-List">
+                            <li>
+                                <div class="layui-input-inline">
+                                    <select name="fieldType" style="float: left;" class="fieldType" lay-filter="select-field-type" lay-verify="required">
+                                        <option value="">--字段类型--</option>
+                                        <option value="text" selected>单行文本</option>
+                                        <option value="textArea">多行文本</option>
+                                        <option value="select">自定义多选</option>
+                                        <option value="user">单选员工</option>
+                                        <option value="users">多选员工</option>
+                                        <option value="stop">是否启用</option>
+                                    </select>
+                                </div>
+                                <div class="layui-input-inline">
+                                    <input type="text" style="float: left;" name="fieldName" lay-verify="required"  placeholder="请输入字段名" class="layui-input fieldName">
+                                </div>
+                                <div class="layui-input-inline field-btn">
+                                    <a class="layui-btn layui-btn-xs layui-btn-danger icon-btn delete" lay-event="delete"><i class="layui-icon layui-icon-subtraction"></i></a>
+                                    <a class="layui-btn layui-btn-xs data-count-edit icon-btn add" lay-event="add"><i class="layui-icon layui-icon-addition"></i></a>
+                                </div>
+                            </li><br>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label input-title required">可见人：</label>
+                <div class="layui-inline">
+                    <div class="layui-input-inline">
+                        <select id="select-department" lay-filter="select-department">
+                            <option value="">--选择部门--</option>
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <select id="select-user" lay-filter="select-user">
+                            <option value="">--选择员工--</option>
+                        </select>
+                    </div>
+                    <div class="layui-input-inline">
+                        <div id="userList" class="multiSelect">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-container">
+                    <div class="layui-row layui-col-space10">
+                        <div class="layui-col-md4"></div>
+                        <div class="layui-col-md4">
+                            <button class="layui-btn" lay-submit id="save" lay-filter="save">生成工作表</button>
+                            <button type="reset" class="layui-btn layui-btn-primary" id="refresh">重置</button>
+                        </div>
+                        <div class="layui-col-md4"></div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script src="../../js/common.js" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
+        var   form = layui.form
+            , layer = layui.layer
+            , layedit = layui.layedit
+            , laydate = layui.laydate
+            , upload = layui.upload
+            , miniTab = layui.miniTab
+            , tableSelect = layui.tableSelect,
+            $ = layui.$;
+
+        var userIdList = []; //已经选择的应到会议员工id数组
+        var fieldCount = 1;  //当前已经有多少个字段
+
+        //获取所有部门信息
+        $.ajax({
+            url:"/office_automation/public/index.php/index/user_c/getAllDepartment",
+            type: "get",
+            data:{},
+            success: function(res){
+                let departmentArray = res.data;
+                let departmentInfo = "";
+                for (var i = 0; i < departmentArray.length; i++){
+                    departmentInfo += "<option value='" + departmentArray[i]["department_id"] + "'>" + departmentArray[i]["department_name"] + "</option>";
+                }
+                $("#select-department").append(departmentInfo);
+                form.render();
+            },
+            error: function(res){
+            }
+        });
+
+        //选择部门
+        form.on('select(select-department)', function (data) {
+            $("#select-user").empty();
+            $.ajax({
+                url: "/office_automation/public/index.php/index/user_c/getUserOfDepartment",
+                type: 'get',
+                data: { departmentId: data.value },
+                success: function (res) {
+                    console.log("test")
+                    console.log(res)
+                    let userArr = res.data;
+                    let $userList = "<option value='0'></option>";
+                    for (let i = 0; i < userArr.length; i++) {
+                        $userList += "<option value='" + userArr[i].user_id + "'>" + userArr[i].user_name + "</option>";
+                    }
+                    $("#select-user").append($userList);
+                    //需要重新加载
+                    form.render('select');
+                },
+                error: function (res) {
+                }
+            });
+            return false;
+        });
+
+        //选择用户
+        form.on('select(select-user)', function (data) {
+            let userName = data.elem[data.elem.selectedIndex].text;
+            let userId = data.value;
+            let userInfo = ' <a href="javascript:;" class="test">' +
+                ' <span lay-value="' + userId + '">' + userName + '(' + userId + ')' + '</span>' +
+                ' <i class="layui-icon layui-icon-close"></i>' +
+                ' </a>';
+            if ($.inArray(userId, userIdList) === -1) {
+                userIdList.push(userId);
+                $("#userList").append(userInfo);
+            }
+            var $element = $("#select-user .layui-form-selected dl");
+            $element.addClass("test")
+            return false;
+        });
+
+        //选择字段类型监听
+        form.on('select(select-field-type)',function(data){
+            let fieldType = data.value;
+            var thisDom = $(data.elem); //DOM对象转jq对象
+            if(fieldType === "select"){
+                thisDom.parent().parent().append(fieldValue);
+            }
+        });
+
+        //删除一行
+        $("ul").on("click","li .field-btn .delete",function(){
+            if(fieldCount < 2){
+                layer.msg("表中必须有字段！");
+            }else{
+                $(this).hide({
+                    duration: 300,
+                    complete: function() {
+                        fieldCount--;
+                        $(this).parent().parent().remove();
+                    }
+                })
+            }
+        });
+
+        //添加一行
+        $("ul").on("click","li .field-btn .add",function(){
+            if(fieldCount < 25){
+                fieldCount++;
+                $(this).parent().parent().after(newField);
+                form.render();
+            }else{
+                layer.msg("一个表最多只能25个字段！");
+            }
+        });
+
+        //在数组中删除某一个元素
+        var removeFromArray = function (arr, val) {
+            var index = $.inArray(val, arr);
+            if (index >= 0)
+                arr.splice(index, 1);
+            return arr;
+        };
+
+        //删除应到会人员
+        $(".multiSelect").on("click", "i", function () {
+            var userId = $(this).prev('span').attr("lay-value");
+            removeFromArray(userIdList, userId);
+            $(this).parent().remove();
+        });
+
+        var newField = " <li>\n" +
+            "                                <div class=\"layui-input-inline\">\n" +
+            "                                    <select name=\"fieldType\" style=\"float: left;\" class=\"fieldType\" lay-filter=\"select-field-type\" lay-verify=\"required\">\n" +
+            "                                        <option value=\"\">--字段类型--</option>\n" +
+            "                                        <option value=\"text\" selected>单行文本</option>\n" +
+            "                                        <option value=\"textArea\">多行文本</option>\n" +
+            "                                        <option value=\"select\">自定义多选</option>\n" +
+            "                                        <option value=\"user\">单选员工</option>\n" +
+            "                                        <option value=\"users\">多选员工</option>\n" +
+            "                                        <option value=\"stop\">是否启用</option>\n" +
+            "                                    </select>\n" +
+            "                                </div>\n" +
+            "                                <div class=\"layui-input-inline\">\n" +
+            "                                    <input type=\"text\" style=\"float: left;\" name=\"fieldName\" lay-verify=\"required\"  placeholder=\"请输入字段名\" class=\"layui-input fieldName\">\n" +
+            "                                </div>\n" +
+            "                                <div class=\"layui-input-inline field-btn\">\n" +
+            "                                    <a class=\"layui-btn layui-btn-xs layui-btn-danger icon-btn delete\" lay-event=\"delete\"><i class=\"layui-icon layui-icon-subtraction\"></i></a>\n" +
+            "                                    <a class=\"layui-btn layui-btn-xs data-count-edit icon-btn add\" lay-event=\"add\"><i class=\"layui-icon layui-icon-addition\"></i></a>\n" +
+            "                                </div>\n" +
+            "                            </li>";
+
+        var fieldValue = " <div class=\"layui-input-inline field-value\">\n" +
+            "    <input type=\"text\" style=\"width:500px\" name=\"fieldValue\" lay-verify=\"required\"  placeholder=\"以中文逗号'，'隔开\" class=\"layui-input fieldValue\">\n" +
+            "    </div>";
+
+    });
+</script>
+</body>
+</html>
