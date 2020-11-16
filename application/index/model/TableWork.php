@@ -20,4 +20,21 @@ class TableWork extends Model
     public function creator(){
         return $this -> hasOne('User',"user_id","creator_id")->field('user_name');
     }
+
+    /**
+     * 与表字段一对多对应
+     * @return \think\model\relation\HasMany
+     */
+    public function fields(){
+        return $this -> hasMany('TableField',"table_id","table_id")->field('field_id,name,type,value,sort,status')->order("sort");
+    }
+
+    /**
+     * 与可见人一对多对应
+     * @return \think\model\relation\HasMany
+     */
+    public function users(){
+        return $this -> hasMany('TableUser',"table_id","table_id")->field('user_id');
+    }
+
 }

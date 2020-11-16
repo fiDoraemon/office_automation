@@ -437,7 +437,7 @@ class AdminC
         }
         $tableLisst = $table -> field("table_id,table_name,creator_id,status,create_time,description")
                              -> page($page,$limit)
-                             -> order("table_id")
+                             -> order("table_id desc")
                              -> select();
         foreach ($tableLisst as $tab){
             $tab -> creator_name = $tab -> creator -> user_name;
@@ -449,7 +449,87 @@ class AdminC
     /**
      * 根据工作表id查询工作表详细信息
      */
-    public function getWorkTableOfId(){
-
+    public function getTableOfId(){
+        $tableId = $_GET["tableId"];
+        $table = new TableWork();
+        $tableInfo = $table -> where("table_id",$tableId)
+                            -> field("table_id,table_name,creator_id,create_time,description")
+                            -> find();
+        $tableInfo -> creator_name = $tableInfo -> creator -> user_name;
+        $tableInfo -> fieldList = $tableInfo -> fields;
+        $tableUsers = $tableInfo -> users;
+        foreach ($tableUsers as $u){
+            $u -> user_name = $u -> user -> user_name;
+            unset( $u -> user);
+        }
+        unset($tableInfo -> creator, $tableInfo -> fields);
+        return Result::returnResult(Result::SUCCESS, $tableInfo);
     }
+
+    /**
+     * 更新工作表
+     */
+    public function updateTable(){
+        Db::transaction(function () {
+            $tableId     = $_POST["tableId"];
+            $tableName   = $_POST["tableName"];
+            $description = $_POST["description"];
+            $newUserList = input('post.newUserList/a');
+            $delUserList = input('post.delUserList/a');
+            $fieldList   = input("post.fieldList/a");
+            $table = new TableWork();
+            $table -> where('table_id', $tableId)
+                   -> update(['table_name' => $tableName],['description' => $description]);
+            //添加新可见人员
+            $tableUser = new TableUser();
+            $newUser = [];
+            if(is_array($newUserList)){
+                foreach ($newUserList as $uId){
+                    $newUser[] =  ['table_id'=> $tableId,'user_id'=> $uId];
+                }
+                $tableUser -> saveAll($newUser);
+            }
+            //删除可见人员
+            if(is_array($delUserList)){
+                foreach ($delUserList as $uId){
+                    $tableUser = new TableUser();
+                    $tableUser -> where(["table_id" => $tableId, "user_id" => $uId]) -> delete();
+                }
+            }
+            //更改字段,添加字段
+            if(is_array($fieldList)){
+                foreach ($fieldList as $field){
+                    $id     = $field["id"];
+                    $type   = $field["fieldType"];
+                    $name   = $field["fieldName"];
+                    $sort   = $field["sort"];
+                    $tableField = new TableField();
+                    if($id != ""){   //旧字段
+                        $status = $field["status"];
+                        $newField = $tableField -> where("field_id", $id) -> find();
+                        $newField -> name   = $name;
+                        $newField -> status = $status;
+                        $newField -> sort   = $sort;
+                        if($type == "select"){
+                            $newField -> value = $field["fieldValue"];;
+                        }
+                        $newField -> save();
+                    }
+                    else{   //新字段
+                        $tableField -> type = $type;
+                        $tableField -> name = $name;
+                        if($type == "select"){
+                            $tableField -> value = $field["fieldValue"];;
+                        }
+                        $tableField -> table_id = $tableId;
+                        $tableField -> sort = $sort;
+                        $tableField -> save();
+                    }
+                }
+            };
+        });
+        return Result::returnResult(Result::SUCCESS);
+    }
+
+
 }
