@@ -77,6 +77,7 @@
 </div>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script src="../../js/common.js?v=1" charset="utf-8"></script>
 <script>
     layui.use(['form', 'table', 'miniTab'], function () {
         var $ = layui.jquery,
@@ -270,20 +271,6 @@
             });
         });
     });
-
-    function toMissionPage(missionId){
-        layui.use([], function () {
-            layer.open({
-                title: '任务详情',
-                type: 2,
-                content: 'read.html?id=' + missionId,
-                shade: 0.2,
-                maxmin:true,
-                shadeClose: true,
-                area: ['100%', '100%'],
-            });
-        });
-    }
 </script>
 
 </body>
