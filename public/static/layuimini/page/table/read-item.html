@@ -55,9 +55,9 @@
             <div class="layui-input-inline">
                 <input type="text" name="creator_id" class="layui-input" readonly>
             </div>
-            <label class="layui-form-label required">发起日期</label>
+            <label class="layui-form-label required">发起时间</label>
             <div class="layui-input-inline">
-                <input type="text" name="create_time" lay-verify="date" placeholder="请选择日期" autocomplete="off" class="layui-input">
+                <input type="text" name="create_time" lay-verify="date" autocomplete="off" class="layui-input" readonly>
             </div>
         </div>
         <div class="layui-form-item">
@@ -72,18 +72,8 @@
             </div>
             <div class="layui-form-mid layui-word-aux">标签与标签之间需用中文分号分隔(；)</div>
         </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">字段1</label>
-            <div class="layui-input-block">
-                <input type="text" name="field1" class="layui-input">
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">字段2</label>
-            <div class="layui-input-block">
-                <input type="text" name="field1" class="layui-input">
-            </div>
-        </div>
+        <!-- 字段 -->
+        <div id="fields"></div>
         <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
             <legend>处理</legend>
         </fieldset>
@@ -247,25 +237,87 @@
             }
         });
 
-        // 填充部门下拉列表
+        // 获取条目详情
+        var radioUserList = [];          // 单选用户字段列表
+        var checkUserList = [];          // 多选用户字段列表
         $.get(
-            "/office_automation/public/index.php/index/user_c/getAllDepartment",
+            "/office_automation/public/item/" + getQueryVariable('itemId'),
             function(res){
                 if(res.code == 0) {
-                    var processList = res.data.processList;
-                    table.render({
-                        elem: '#process-list'
-                        ,cols: [[
-                            {field:'id', width: '10%', title: '序号', align: "center", sort: true}
-                            ,{field:'handler_id', width: '15%', title: '处理人'}
-                            ,{field:'process_time', width: '15%', title: '处理时间'}
-                            ,{field:'process_note', width: '35%', title: '处理意见'}
-                            ,{field:'attachmen_list', width: '25%', title: '附件清单'}
-                        ]]
-                        ,data: [
-                            {id:1,handler_id:'郑灿拥',process_time:'2020-01-01',process_note:'还可以',attachmen_list:'123.doc'}
-                        ]
+                    // 填充条目详情表单
+                    var itemDetail = res.data.itemDetail;
+                    form.val("setValue", {
+                        "table_name": itemDetail.table_name,
+                        'item_title' : itemDetail.item_title,
+                        'creator' : itemDetail.creator,
+                        'create_time' : itemDetail.create_time,
+                        'label_list' : itemDetail.label_list
+
                     });
+                    // 填充条目字段
+                    var fields = itemDetail.fields;
+                    for (j in fields) {
+                        var attr = '';          // textarea 属性
+                        var dateList = [];          // 日期字段列表
+                        // 判断字段类型
+                        if(fields[j].type == 'textArea') {
+                            var input = `<div class="layui-input-block"><textarea name="field${fields[j].field_id}" class="layui-textarea"></textarea></div>`;
+                            attr = ' layui-form-text';
+                        } else if(fields[j].type == 'select') {
+                            var values = fields[j].value.split('；');
+                            var input = `
+                                <div class="layui-input-block">
+                                    <select name="field${fields[j].field_id}" lay-filter="field-select">
+                                        <option value=""></option>
+                                `;
+                            for(k in values) {
+                                input += `<option value="${values[k]}">${values[k]}</option>`;
+                            }
+                            input += `</select></div>`;
+                        } else if(fields[j].type == 'date') {
+                            var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" autocomplete="off" class="layui-input" readonly></div>`;
+                            dateList.push('field' + fields[j].field_id);
+                        } else if(fields[j].type == 'user') {
+                            var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly></div>`;
+                            radioUserList.push('field' + fields[j].field_id);
+                        } else if(fields[j].type == 'users') {
+                            var input = `
+                                <div class="layui-input-inline">
+                                    <select class="select-department" select-user="field${fields[j].field_id}" lay-filter="multipleSelect-department">
+                                        <option value="">请选择部门</option>
+                                    </select>
+                                </div>
+                                <div class="layui-input-inline">
+                                    <select name="field${fields[j].field_id}" id="field${fields[j].field_id}" lay-filter="multipleSelect-user">
+                                        <option value="">请选择用户</option>
+                                    </select>
+                                </div>
+                                <div id="field${fields[j].field_id}-userList" class="multipleSelect"></div>
+                                `;
+                            checkUserList.push('field' + fields[j].field_id);
+                        } else {
+                            var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" class="layui-input"></div>`;
+                        }
+                        element += `
+                            <div class="layui-form-item${attr}">
+                                <label class="layui-form-label">${fields[j].name}</label>
+                                ${input}
+                            </div>
+                            `;
+                    }
+                    // 填充处理意见表
+                    // var processList = res.data.processList;
+                    // table.render({
+                    //     elem: '#process-list'
+                    //     ,cols: [[
+                    //         {field:'id', width: '10%', title: '序号', align: "center", sort: true}
+                    //         ,{field:'handler_id', width: '15%', title: '处理人'}
+                    //         ,{field:'process_time', width: '15%', title: '处理时间'}
+                    //         ,{field:'process_note', width: '35%', title: '处理意见'}
+                    //         ,{field:'attachmen_list', width: '25%', title: '附件清单'}
+                    //     ]]
+                    //     ,data: processList
+                    // });
                 }
             }
         );
@@ -291,7 +343,7 @@
                 layer.close(index);
                 var index = layer.load(2);
                 $.ajax({
-                    url: "/office_automation/public/item/" + result.mission_id,
+                    url: "/office_automation/public/item/" + result.item_id,
                     type: 'put',
                     data: result,
                     success: function(res){

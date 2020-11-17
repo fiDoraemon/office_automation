@@ -15,63 +15,58 @@
     </style>
 </head>
 <body>
-<div class="layuimini-container">
-    <div class="layuimini-main">
+    <div class="layuimini-container">
+        <div class="layuimini-main">
 
-        <fieldset class="table-search-fieldset">
-            <legend>操作</legend>
-            <div style="margin: 10px 10px 10px 10px">
-                <form class="layui-form layui-form-pane" action="">
-                    <div class="layui-form-item">
-                        <div class="layui-inline">
-                            <label class="layui-form-label">标题</label>
-                            <div class="layui-input-inline">
-                                <input type="text" name="keyword" class="layui-input" placeholder="请输入关键词">
+            <fieldset class="table-search-fieldset">
+                <legend>操作</legend>
+                <div style="margin: 10px 10px 10px 10px">
+                    <form class="layui-form layui-form-pane" action="">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">工作表</label>
+                                <div class="layui-input-inline">
+                                    <select name="table_id" id="work-table" lay-filter="work-table">
+                                        <option value=""></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">标题</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="keyword" class="layui-input" placeholder="请输入关键词">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">标签</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="label" class="layui-input" placeholder="请输入标签">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
                             </div>
                         </div>
-                        <div class="layui-inline">
-                            <label class="layui-form-label">工作表</label>
-                            <div class="layui-input-inline">
-                                <select name="table_id" lay-filter="work-table">
-                                    <option value=""></option>
-                                    <option value="0">写作</option>
-                                    <option value="1">阅读</option>
-                                    <option value="2">游戏</option>
-                                    <option value="3">音乐</option>
-                                    <option value="4">旅行</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="layui-inline">
-                            <label class="layui-form-label">标签</label>
-                            <div class="layui-input-inline">
-                                <input type="text" name="label" class="layui-input" placeholder="请输入任务标签">
-                            </div>
-                        </div>
-                        <div class="layui-inline">
-                            <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </fieldset>
+                    </form>
+                </div>
+            </fieldset>
 
-        <script type="text/html" id="toolbar">
-            <div class="layui-btn-container">
-                <button class="layui-btn layui-btn-primary layui-btn-sm" lay-event="add">填写</button>
-                <!--<button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>-->
-            </div>
-        </script>
+            <script type="text/html" id="toolbar">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-primary layui-btn-sm" lay-event="add">填写</button>
+                    <!--<button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>-->
+                </div>
+            </script>
 
-        <table class="layui-hide" id="tableList" lay-filter="tableList"></table>
+            <table class="layui-hide" id="tableItemList" lay-filter="tableItemList"></table>
 
-        <script type="text/html" id="tableListBar">
-            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="read">详情</a>
-            <!--<a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="stop">暂停</a>-->
-        </script>
+            <script type="text/html" id="tableItemListBar">
+                <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="read">详情</a>
+                <!--<a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="stop">暂停</a>-->
+            </script>
 
+        </div>
     </div>
-</div>
 <script src="../../lib/layui-v2.5.5/layui.all.js" charset="utf-8"></script>
 <script src="../../js/common.js" charset="utf-8"></script>
 <script>
@@ -83,76 +78,84 @@
         // 获取信息
         var tableList;
         $.get(
-            "/office_automation/public/project",
+            "/office_automation/public/index/table_item_c/getTableList",
             function (res, status) {
                 if(res.code == 0) {
-                    tableList = res.data.tableList;
+                    // 填充工作表下拉列表
+                    tableList = res.data;
+                    var element = '';
+                    for(i in tableList) {
+                        element += `<option value="${tableList[i].table_id}">${tableList[i].table_name}</option>`;
+                    }
+                    $('#work-table').append(element);
+                    form.render('select');
                 }
             }
         );
 
-        table.render({
-            elem: '#tableList',
-            // url: '/office_automation/public/table/item',
-            toolbar: '#toolbar',
-            defaultToolbar: ['filter', 'exports', 'print'],
-            cols: [[
-                {type: "checkbox", width: '3%'},
-                {field: 'item_id', width: '5%', title: 'ID', align: "center", sort: true},
-                {field: 'item_title', width: '15%', title: '标题',
-                    templet: function(d){
-                        return `<a class="url" lay-event="read">${d.item_title}</a>`;
-                    }
-                },
-                {field: 'creator_id', width: '8%', title: '发起人', align: "center"},
-                {field: 'field1', width: '10%', title: '字段1', align: "center"},
-                {field: 'field2', width: '10%', title: '字段2', align: "center"},
-                {field: 'field3', width: '10%', title: '字段3', align: "center"},
-                {field: 'labelList', width: '14%', title: '标签', align: "center"},
-                {field: 'create_time', width: '10%', title: '创建时间', align: "center"},
-                {field: 'update_time', width: '10%', title: '更新时间', sort: true, align: "center"},
-                {title: '操作', width: '5%', toolbar: '#tableListBar', align: "center"}
-            ]],
-            id: 'tableList',
-            autoSort: false,            // TODO?
-            initSort: {field:'item_id', type:'desc'},
-            limits: [10, 15, 20, 25, 50, 100],
-            limit: 10,
-            page: true,
-            skin: 'line',
-            data: [{
-                "item_id": "10"
-                ,"item_title": "故障记录表"
-                ,"creator_id": "郑灿拥"
-                ,"field1": "男"
-                ,"field2": "浙江"
-                ,"field3": "人生恰似一场修行"
-                ,"field4": "116"
-                ,"field5": "192.168.0.8"
-                ,"labelList": "任务;人物"
-                ,"create_time": "2016-10-14"
-                ,"update_time": "2016-10-14"
-            }],
-            done: function(res, curr, count){
-                // 解决刚进来时如果无数据不显示“无数据”问题
-                if($('.layui-table-body table tbody').children().length == 0 && $('.layui-table-body').children().length == 1) {
-                    $('.layui-table-body').append(`<div class="layui-none">无数据</div>`);
-                }
-            }
-        });
-
         // 监听工作表下拉选择
         var worktable;
         form.on('select(work-table)', function(data){
+            if(data.value == '') {
+                return false;
+            }
             if(data.value != worktable) {
-                table.reload('tableList', {
-                    page: {
-                        curr: 1
-                    },
-                    where: {
-                        table_id: data.value
+                var fields;
+                for(i in tableList) {
+                    if(tableList[i].table_id == data.value) {
+                        fields = tableList[i].fields;
                     }
-                }, 'data');
+                }
+                // 渲染工作表条目列表
+                table.render({
+                    elem: '#tableItemList',
+                    url: '/office_automation/public/item?tableId=' + data.value,
+                    toolbar: '#toolbar',
+                    defaultToolbar: ['filter', 'exports', 'print'],
+                    cols: [[
+                        {type: "checkbox", width: '3%'},
+                        {field: 'item_id', width: '5%', title: 'ID', align: "center", sort: true},
+                        {field: 'item_title', width: '10%', title: '标题',
+                            templet: function(d){
+                                return `<a class="url" lay-event="read">${d.item_title}</a>`;
+                            }
+                        },
+                        {field: 'creator_id', width: '8%', title: '发起人', align: "center"},
+                        {field: 'field1', width: '10%', title: fields[0].name, align: "center",
+                            templet: function(d){
+                                return d.partFields[0].field_value;
+                            }
+                        },
+                        {field: 'field2', width: '10%', title: fields[1].name, align: "center",
+                            templet: function(d){
+                                return d.partFields[1].field_value;
+                            }
+                        },
+                        {field: 'field3', width: '10%', title: fields[2].name, align: "center",
+                            templet: function(d){
+                                return d.partFields[2].field_value;
+                            }
+                        },
+                        {field: 'labelList', width: '14%', title: '标签', align: "center"},
+                        {field: 'create_time', width: '10%', title: '创建时间', align: "center"},
+                        {field: 'update_time', width: '10%', title: '更新时间', sort: true, align: "center"},
+                        {title: '操作', width: '10%', toolbar: '#tableItemListBar', align: "center"}
+                    ]],
+                    id: 'tableItemList',
+                    autoSort: false,
+                    initSort: {field:'item_id', type:'desc'},
+                    limits: [10, 15, 20, 25, 50, 100],
+                    limit: 10,
+                    page: true,
+                    skin: 'line',
+                    done: function(res, curr, count){
+                        // 解决刚进来时如果无数据不显示“无数据”问题
+                        if($('.layui-table-body table tbody').children().length == 0 && $('.layui-table-body').children().length == 1) {
+                            $('.layui-table-body').append(`<div class="layui-none">无数据</div>`);
+                        }
+                    }
+                });
+                worktable = data.value;
             }
         });
 
@@ -161,13 +164,12 @@
             var result = data.field;
 
             //执行搜索重载
-            table.reload('tableList', {
+            table.reload('tableItemList', {
                 page: {
                     curr: 1
                 },
                 where: {
                     keyword: result.keyword,
-                    table_id: result.project_id,
                     label: result.label
                 }
             }, 'data');
@@ -178,7 +180,7 @@
         /**
          * toolbar监听事件
          */
-        table.on('toolbar(tableList)', function (obj) {
+        table.on('toolbar(tableItemList)', function (obj) {
             if (obj.event === 'add') {  // 监听添加操作
                 var index = layer.open({
                     title: '填写工作表',
@@ -200,7 +202,7 @@
         });
 
         // 监听操作按钮
-        table.on('tool(tableList)', function (obj) {
+        table.on('tool(tableItemList)', function (obj) {
             var data = obj.data;
 
             if (obj.event === 'read') {
