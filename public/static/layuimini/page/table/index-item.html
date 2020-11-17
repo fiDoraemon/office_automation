@@ -21,7 +21,7 @@
             <fieldset class="table-search-fieldset">
                 <legend>操作</legend>
                 <div style="margin: 10px 10px 10px 10px">
-                    <form class="layui-form layui-form-pane" action="">
+                    <form class="layui-form layui-form-pane" lay-filter="setValue">
                         <div class="layui-form-item">
                             <div class="layui-inline">
                                 <label class="layui-form-label">工作表</label>
@@ -75,8 +75,68 @@
             form = layui.form,
             table = layui.table;
 
+        // 渲染表格
+        function renderTable(value) {
+            var fields;
+            for(i in tableList) {
+                if(tableList[i].table_id == value) {
+                    fields = tableList[i].fields;
+                }
+            }
+            // 渲染工作表条目列表
+            table.render({
+                elem: '#tableItemList',
+                url: '/office_automation/public/item?tableId=' + value,
+                toolbar: '#toolbar',
+                defaultToolbar: ['filter', 'exports', 'print'],
+                cols: [[
+                    {type: "checkbox", width: '3%'},
+                    {field: 'item_id', width: '5%', title: 'ID', align: "center", sort: true},
+                    {field: 'item_title', width: '10%', title: '标题',
+                        templet: function(d){
+                            return `<a class="url" lay-event="read">${d.item_title}</a>`;
+                        }
+                    },
+                    {field: 'creator_id', width: '8%', title: '发起人', align: "center"},
+                    {field: 'field1', width: '10%', title: fields[0].name, align: "center",
+                        templet: function(d){
+                            return d.partFields[0].field_value;
+                        }
+                    },
+                    {field: 'field2', width: '10%', title: fields[1].name, align: "center",
+                        templet: function(d){
+                            return d.partFields[1].field_value;
+                        }
+                    },
+                    {field: 'field3', width: '10%', title: fields[2].name, align: "center",
+                        templet: function(d){
+                            return d.partFields[2].field_value;
+                        }
+                    },
+                    {field: 'labelList', width: '14%', title: '标签', align: "center"},
+                    {field: 'create_time', width: '10%', title: '创建时间', align: "center"},
+                    {field: 'update_time', width: '10%', title: '更新时间', sort: true, align: "center"},
+                    {title: '操作', width: '10%', toolbar: '#tableItemListBar', align: "center"}
+                ]],
+                id: 'tableItemList',
+                autoSort: false,
+                initSort: {field:'item_id', type:'desc'},
+                limits: [10, 15, 20, 25, 50, 100],
+                limit: 10,
+                page: true,
+                skin: 'line',
+                done: function(res, curr, count){
+                    // 解决刚进来时如果无数据不显示“无数据”问题
+                    if($('.layui-table-body table tbody').children().length == 0 && $('.layui-table-body').children().length == 1) {
+                        $('.layui-table-body').append(`<div class="layui-none">无数据</div>`);
+                    }
+                }
+            });
+        }
+
         // 获取信息
         var tableList;
+        var index = layer.load(2);
         $.get(
             "/office_automation/public/index/table_item_c/getTableList",
             function (res, status) {
@@ -89,7 +149,15 @@
                     }
                     $('#work-table').append(element);
                     form.render('select');
+                    // 如果有工作表
+                    if(tableList.length > 0) {
+                        form.val("setValue", {
+                            "table_id": tableList[0].table_id,
+                        });
+                        renderTable(tableList[0].table_id);
+                    }
                 }
+                layer.close(index);
             }
         );
 
@@ -100,61 +168,7 @@
                 return false;
             }
             if(data.value != worktable) {
-                var fields;
-                for(i in tableList) {
-                    if(tableList[i].table_id == data.value) {
-                        fields = tableList[i].fields;
-                    }
-                }
-                // 渲染工作表条目列表
-                table.render({
-                    elem: '#tableItemList',
-                    url: '/office_automation/public/item?tableId=' + data.value,
-                    toolbar: '#toolbar',
-                    defaultToolbar: ['filter', 'exports', 'print'],
-                    cols: [[
-                        {type: "checkbox", width: '3%'},
-                        {field: 'item_id', width: '5%', title: 'ID', align: "center", sort: true},
-                        {field: 'item_title', width: '10%', title: '标题',
-                            templet: function(d){
-                                return `<a class="url" lay-event="read">${d.item_title}</a>`;
-                            }
-                        },
-                        {field: 'creator_id', width: '8%', title: '发起人', align: "center"},
-                        {field: 'field1', width: '10%', title: fields[0].name, align: "center",
-                            templet: function(d){
-                                return d.partFields[0].field_value;
-                            }
-                        },
-                        {field: 'field2', width: '10%', title: fields[1].name, align: "center",
-                            templet: function(d){
-                                return d.partFields[1].field_value;
-                            }
-                        },
-                        {field: 'field3', width: '10%', title: fields[2].name, align: "center",
-                            templet: function(d){
-                                return d.partFields[2].field_value;
-                            }
-                        },
-                        {field: 'labelList', width: '14%', title: '标签', align: "center"},
-                        {field: 'create_time', width: '10%', title: '创建时间', align: "center"},
-                        {field: 'update_time', width: '10%', title: '更新时间', sort: true, align: "center"},
-                        {title: '操作', width: '10%', toolbar: '#tableItemListBar', align: "center"}
-                    ]],
-                    id: 'tableItemList',
-                    autoSort: false,
-                    initSort: {field:'item_id', type:'desc'},
-                    limits: [10, 15, 20, 25, 50, 100],
-                    limit: 10,
-                    page: true,
-                    skin: 'line',
-                    done: function(res, curr, count){
-                        // 解决刚进来时如果无数据不显示“无数据”问题
-                        if($('.layui-table-body table tbody').children().length == 0 && $('.layui-table-body').children().length == 1) {
-                            $('.layui-table-body').append(`<div class="layui-none">无数据</div>`);
-                        }
-                    }
-                });
+                renderTable(data.value);
                 worktable = data.value;
             }
         });
@@ -162,6 +176,10 @@
         // 监听搜索操作
         form.on('submit(data-search-btn)', function (data) {
             var result = data.field;
+            if(result.table_id == '') {
+                layer.msg('请先选择工作表！', {icon: 5});
+                return false;
+            }
 
             //执行搜索重载
             table.reload('tableItemList', {
@@ -209,7 +227,7 @@
                 var index = layer.open({
                     title: '条目详情',
                     type: 2,
-                    content: '../table/read-item.html?id=' + data.item_id,
+                    content: '../table/read-item.html?itemId=' + data.item_id,
                     shade: 0.2,
                     maxmin:true,
                     shadeClose: true,

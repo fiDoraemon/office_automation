@@ -25,6 +25,6 @@ class TableItem extends Model
     // 关联条目处理（一对多）
     public function processList()
     {
-        return $this->hasMany('TableItemProcess','item_id','item_id')->alias('tip')->join('oa_user u', 'tip.handler_id = u.user_id')->field('user_name as handler,process_note,process_time');
+        return $this->hasMany('TableItemProcess','item_id','item_id')->alias('tip')->join('oa_user u', 'tip.handler_id = u.user_id')->field('process_id,user_name as handler,process_note,process_time');
     }
 }

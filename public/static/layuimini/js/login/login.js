@@ -15,7 +15,6 @@ $.ajax({
             $.ajax({
                 url: "/office_automation/public/index.php/index/login_c/tokenLogin",
                 type:'post',
-                timeout: 1000,//超时时间
                 data: {
                     userToken : token
                 },
