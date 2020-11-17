@@ -155,7 +155,18 @@ class TableItemC extends Controller
      */
     public function read($id)
     {
-        //
+        $tableItem = TableItem::get($id);
+        $tableItem->creator_name = UserService::userIdToName($tableItem->creator_id, 1);          // 关联发起人
+        $tableItem->table_name = $tableItem->table->table_name;         // 关联工作表
+        $tableItem->fields;         // 获取工作表字段
+        $tableItem->label_list = implode('；', TableWorkService::getItemLabelList($id));         // 获取条目标签列表
+        // 获取条目处理列表
+        foreach ($tableItem->processList as $process) {
+            $tableItem->attachmen_list = '';
+        }
+        unset($tableItem->item_id, $tableItem->creator_id, $tableItem->table_id, $tableItem->table);
+
+        return Result::returnResult(Result::SUCCESS, $tableItem);
     }
 
     /**
