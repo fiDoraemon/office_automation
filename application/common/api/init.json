@@ -120,6 +120,20 @@
           ]
         },
         {
+          "title": "工作表",
+          "href": "",
+          "icon": "fa fa-cubes",
+          "target": "_self",
+          "child": [
+            {
+              "title": "工作表列表",
+              "href": "page/table/index-item.html",
+              "icon": "fa fa-search",
+              "target": "_self"
+            }
+          ]
+        },
+        {
           "title": "ERP",
           "href": "",
           "icon": "fa fa-superpowers",
