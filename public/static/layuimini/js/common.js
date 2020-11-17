@@ -163,3 +163,18 @@ function userSelectTable(tableSelect, element) {
         }
     });
 }
+
+// 打开任务弹窗
+function toMissionPage(missionId){
+    layui.use([], function () {
+        layer.open({
+            title: '任务详情',
+            type: 2,
+            content: 'read.html?id=' + missionId,
+            shade: 0.2,
+            maxmin:true,
+            shadeClose: true,
+            area: ['100%', '100%'],
+        });
+    });
+}
