@@ -1,0 +1,60 @@
+/* 上传附件 */
+.layui-upload-drag {
+    margin-top: 10px;
+    padding-bottom: 0;
+}
+
+.upload-btn {
+    margin-top: 20px;
+}
+
+.tip {
+    width: 85%;
+    color: #999;
+    font-size: 10px;
+    padding-top: 10px;
+}
+
+.input-title{
+    font-weight: bold;
+}
+
+.not-input{
+    color: #999999;
+}
+
+#userList{
+    width: 800px;
+    height: 38px;
+    line-height: 1.3;
+    line-height: 38px\9;
+    border: solid 1px #e6e6e6;
+    background-color: #fff;
+    border-radius: 2px;
+}
+
+.multiSelect a {
+    padding: 2px 5px;
+    background: #908e8e;
+    border-radius: 2px;
+    color: #fff;
+    display: block;
+    line-height: 20px;
+    height: 20px;
+    margin: 7px 4px 3px 2px;
+    float: left;
+}
+.multiSelect i {
+    margin-left: 4px;
+}
+.multiSelect a:link {
+    color:#fff;
+}
+
+a:-webkit-any-link {
+    color: -webkit-link;
+    cursor: pointer;
+}
+.test{
+    display: block;
+}

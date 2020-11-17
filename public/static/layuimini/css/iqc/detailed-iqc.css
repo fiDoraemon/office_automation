@@ -1,0 +1,13 @@
+.layui-form-item .layui-input-company {
+    width: auto;padding-right: 10px;line-height: 38px;
+}
+.input-title{
+    font-weight: bold;
+}
+.not-input{
+    color: #999999;
+}
+
+#material-name{
+    width: 300px;
+}
