@@ -53,7 +53,7 @@
         <div class="layui-form-item">
             <label class="layui-form-label required">发起人</label>
             <div class="layui-input-inline">
-                <input type="text" name="creator_id" class="layui-input" readonly>
+                <input type="text" name="creator" class="layui-input" readonly>
             </div>
             <label class="layui-form-label required">发起时间</label>
             <div class="layui-input-inline">
@@ -245,17 +245,18 @@
             function(res){
                 if(res.code == 0) {
                     // 填充条目详情表单
-                    var itemDetail = res.data.itemDetail;
+                    var itemDetail = res.data;
                     form.val("setValue", {
                         "table_name": itemDetail.table_name,
                         'item_title' : itemDetail.item_title,
-                        'creator' : itemDetail.creator,
+                        'creator' : itemDetail.creator_name,
                         'create_time' : itemDetail.create_time,
                         'label_list' : itemDetail.label_list
 
                     });
                     // 填充条目字段
                     var fields = itemDetail.fields;
+                    var element = '';
                     for (j in fields) {
                         var attr = '';          // textarea 属性
                         var dateList = [];          // 日期字段列表
@@ -299,25 +300,44 @@
                             var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" class="layui-input"></div>`;
                         }
                         element += `
-                            <div class="layui-form-item${attr}">
-                                <label class="layui-form-label">${fields[j].name}</label>
-                                ${input}
-                            </div>
-                            `;
+                        <div class="layui-form-item${attr}">
+                            <label class="layui-form-label">${fields[j].name}</label>
+                            ${input}
+                        </div>
+                        `;
+                    }
+                    $('#fields').append(element);
+                    // 渲染表单
+                    form.render('select');          // 下拉选择
+                    for(i in dateList) {            // 日期
+                        laydate.render({
+                            elem: '#' + dateList[i]
+                        });
+                    }
+                    for(i in radioUserList) {           // 单选用户
+                        userSelectTable(tableSelect, '#' + radioUserList[i]);
+                    }
+                    userIdsList = [];            // 多选用户列表数组
+                    if(checkUserList.length > 0) {          // 多选用户
+                        departmentSelect($, form);
+                        // 定义多个多选用户全局变量
+                        for(i in checkUserList) {
+                            userIdsList[checkUserList[i]] = [];
+                        }
                     }
                     // 填充处理意见表
-                    // var processList = res.data.processList;
-                    // table.render({
-                    //     elem: '#process-list'
-                    //     ,cols: [[
-                    //         {field:'id', width: '10%', title: '序号', align: "center", sort: true}
-                    //         ,{field:'handler_id', width: '15%', title: '处理人'}
-                    //         ,{field:'process_time', width: '15%', title: '处理时间'}
-                    //         ,{field:'process_note', width: '35%', title: '处理意见'}
-                    //         ,{field:'attachmen_list', width: '25%', title: '附件清单'}
-                    //     ]]
-                    //     ,data: processList
-                    // });
+                    var processList = itemDetail.processList;
+                    table.render({
+                        elem: '#process-list'
+                        ,cols: [[
+                            {field:'id', width: '10%', title: '序号', align: "center", sort: true}
+                            ,{field:'handler', width: '15%', title: '处理人'}
+                            ,{field:'process_time', width: '15%', title: '处理时间'}
+                            ,{field:'process_note', width: '35%', title: '处理意见'}
+                            ,{field:'attachmen_list', width: '25%', title: '附件清单'}
+                        ]]
+                        ,data: processList
+                    });
                 }
             }
         );
