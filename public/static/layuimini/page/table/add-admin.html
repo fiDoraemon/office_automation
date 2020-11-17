@@ -5,6 +5,7 @@
     <title>添加工作表</title>
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
+    <link rel="stylesheet" href="../../lib/font-awesome-4.7.0/css/font-awesome.min.css" media="all">
     <style type="text/css">
         .input-title{
             font-weight: bold;
@@ -62,6 +63,13 @@
             margin-bottom: 10px;
         }
 
+        .down,.up{
+            color: #6E6E6E ;
+        }
+
+        /*上下移动行*/
+        .sortablelist{position:relative;}
+        .sortableitem{position:relative;}
     </style>
 </head>
 <body>
@@ -87,8 +95,8 @@
                 <label class="layui-form-label required input-title">表字段：</label>
                 <div class="layui-inline">
                     <div id="" >
-                        <ul id="field-List">
-                            <li>
+                        <ul id="field-List" class="sortablelist">
+                            <li class="sortableitem">
                                 <div class="layui-input-inline">
                                     <select name="fieldType" style="float: left;" class="fieldType" lay-filter="select-field-type" lay-verify="required">
                                         <option value="text" selected>单行文本</option>
@@ -103,6 +111,8 @@
                                     <input type="text" style="float: left;" name="fieldName" lay-verify="required"  placeholder="请输入字段名" class="layui-input fieldName">
                                 </div>
                                 <div class="layui-input-inline field-btn">
+                                    <a class="layui-btn-xs data-count-edit icon-btn down movedown" lay-event="down"><i class="fa fa-arrow-down" aria-hidden="true"></i></a>
+                                    <a class="layui-btn-xs data-count-edit icon-btn up moveup" lay-event="up"><i class="fa fa-arrow-up" aria-hidden="true"></i></a>
                                     <a class="layui-btn layui-btn-xs layui-btn-danger icon-btn delete" lay-event="delete"><i class="layui-icon layui-icon-subtraction"></i></a>
                                     <a class="layui-btn layui-btn-xs data-count-edit icon-btn add" lay-event="add"><i class="layui-icon layui-icon-addition"></i></a>
                                 </div>
@@ -150,18 +160,18 @@
     </div>
 </div>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script src="../../js/common.js" charset="utf-8"></script>
+<script src="../../js/jquery.clickSort.js" charset="utf-8"></script>
 <script>
     layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
-        var   form = layui.form
-            , layer = layui.layer
-            , layedit = layui.layedit
-            , laydate = layui.laydate
-            , upload = layui.upload
+        var   form    = layui.form
+            , layer   = layui.layer
             , miniTab = layui.miniTab
-            , tableSelect = layui.tableSelect,
-            $ = layui.$;
+            , $       = layui.$;
+
+        $('.sortablelist').clickSort();  //使用移动动画
 
         var userIdList = []; //已经选择的应到会议员工id数组
         var fieldCount = 1;  //当前已经有多少个字段
@@ -277,7 +287,7 @@
             $(this).parent().remove();
         });
 
-        var newField = " <li>\n" +
+        var newField = " <li class=\"sortableitem\">\n" +
             "                                <div class=\"layui-input-inline\">\n" +
             "                                    <select name=\"fieldType\" style=\"float: left;\" class=\"fieldType\" lay-filter=\"select-field-type\" lay-verify=\"required\">\n" +
             "                                        <option value=\"\">--字段类型--</option>\n" +
@@ -293,6 +303,8 @@
             "                                    <input type=\"text\" style=\"float: left;\" name=\"fieldName\" lay-verify=\"required\"  placeholder=\"请输入字段名\" class=\"layui-input fieldName\">\n" +
             "                                </div>\n" +
             "                                <div class=\"layui-input-inline field-btn\">\n" +
+            "                                    <a class=\"layui-btn-xs data-count-edit icon-btn down movedown\" lay-event=\"down\"><i class=\"fa fa-arrow-down\" aria-hidden=\"true\"></i></a>\n" +
+            "                                    <a class=\"layui-btn-xs data-count-edit icon-btn up moveup\" lay-event=\"up\"><i class=\"fa fa-arrow-up\" aria-hidden=\"true\"></i></a>\n" +
             "                                    <a class=\"layui-btn layui-btn-xs layui-btn-danger icon-btn delete\" lay-event=\"delete\"><i class=\"layui-icon layui-icon-subtraction\"></i></a>\n" +
             "                                    <a class=\"layui-btn layui-btn-xs data-count-edit icon-btn add\" lay-event=\"add\"><i class=\"layui-icon layui-icon-addition\"></i></a>\n" +
             "                                </div>\n" +

@@ -70,11 +70,12 @@
         #newUserList{
             width: 500px;
         }
+
         .down,.up{
             color: #6E6E6E ;
         }
 
-        /*.sortableitem span{display:inline-block;width:100px;}*/
+        /*上下移动行*/
         .sortablelist{position:relative;}
         .sortableitem{position:relative;}
     </style>
@@ -318,16 +319,6 @@
             }else{
                 layer.msg("一个表最多只能25个字段！");
             }
-        });
-
-        //下移一行
-        $("ul").on("click","li .field-btn .down",function(){
-            console.log("down")
-        });
-
-        //上移一行
-        $("ul").on("click","li .field-btn .up",function(){
-            console.log("up")
         });
 
         //在数组中删除某一个元素
