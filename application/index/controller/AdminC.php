@@ -453,7 +453,7 @@ class AdminC
         $tableId = $_GET["tableId"];
         $table = new TableWork();
         $tableInfo = $table -> where("table_id",$tableId)
-                            -> field("table_id,table_name,creator_id,create_time,description")
+                            -> field("table_id,table_name,creator_id,create_time,status,description")
                             -> find();
         $tableInfo -> creator_name = $tableInfo -> creator -> user_name;
         $tableInfo -> fieldList = $tableInfo -> fields;
@@ -473,19 +473,22 @@ class AdminC
         Db::transaction(function () {
             $tableId     = $_POST["tableId"];
             $tableName   = $_POST["tableName"];
+            $tableStatus = $_POST["status"];
             $description = $_POST["description"];
             $newUserList = input('post.newUserList/a');
             $delUserList = input('post.delUserList/a');
             $fieldList   = input("post.fieldList/a");
             $table = new TableWork();
             $table -> where('table_id', $tableId)
-                   -> update(['table_name' => $tableName],['description' => $description]);
+                   -> update( ['table_name'  => $tableName,
+                               'status'      => $tableStatus,
+                               'description' => $description] );
             //添加新可见人员
             $tableUser = new TableUser();
             $newUser = [];
             if(is_array($newUserList)){
                 foreach ($newUserList as $uId){
-                    $newUser[] =  ['table_id'=> $tableId,'user_id'=> $uId];
+                    $newUser[] =  ['table_id' => $tableId, 'user_id' => $uId];
                 }
                 $tableUser -> saveAll($newUser);
             }
