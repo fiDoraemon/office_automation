@@ -5,6 +5,7 @@
     <title>修改工作表</title>
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
+    <link rel="stylesheet" href="../../lib/font-awesome-4.7.0/css/font-awesome.min.css" media="all">
     <style type="text/css">
         .input-title{
             font-weight: bold;
@@ -69,6 +70,13 @@
         #newUserList{
             width: 500px;
         }
+        .down,.up{
+            color: #6E6E6E ;
+        }
+
+        /*.sortableitem span{display:inline-block;width:100px;}*/
+        .sortablelist{position:relative;}
+        .sortableitem{position:relative;}
     </style>
 </head>
 <body>
@@ -105,31 +113,7 @@
                 <label class="layui-form-label required input-title">表字段：</label>
                 <div class="layui-inline">
                     <div id="" >
-                        <ul id="field-List">
-                            <!--<li>-->
-                                <!--<div class="layui-input-inline">-->
-                                    <!--<select name="fieldType" style="float: left;" class="fieldType" lay-filter="select-field-type" lay-verify="required">-->
-                                        <!--<option value="">&#45;&#45;字段类型&#45;&#45;</option>-->
-                                        <!--<option value="text" selected>单行文本</option>-->
-                                        <!--<option value="textArea">多行文本</option>-->
-                                        <!--<option value="select">自定义多选</option>-->
-                                        <!--<option value="user">单选员工</option>-->
-                                        <!--<option value="users">多选员工</option>-->
-                                        <!--<option value="time">时间</option>-->
-                                    <!--</select>-->
-                                <!--</div>-->
-                                <!--<div class="layui-input-inline">-->
-                                    <!--<input type="text" style="float: left;" name="fieldName" lay-verify="required"  placeholder="请输入字段名" class="layui-input fieldName">-->
-                                <!--</div>-->
-                                <!--<div class="layui-input-inline field-btn">-->
-                                    <!--&lt;!&ndash;<a class="layui-btn layui-btn-xs layui-btn-danger icon-btn delete" lay-event="delete"><i class="layui-icon layui-icon-subtraction"></i></a>&ndash;&gt;-->
-                                    <!--<a class="layui-btn layui-btn-xs data-count-edit icon-btn add" lay-event="add"><i class="layui-icon layui-icon-addition"></i></a>-->
-                                    <!--<input type="checkbox" class="stop" name="switch" lay-skin="switch">-->
-                                <!--</div>-->
-                                <!--<div class="layui-input-inline field-value">-->
-                                <!--</div>-->
-                            <!--</li>-->
-                        </ul>
+                        <ul id="field-List" class="sortablelist"></ul>
                     </div>
                 </div>
             </div>
@@ -187,18 +171,18 @@
     </div>
 </div>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script src="../../js/common.js" charset="utf-8"></script>
+<script src="../../js/jquery.clickSort.js" charset="utf-8"></script>
 <script>
     layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
-        var   form = layui.form
-            , layer = layui.layer
-            , layedit = layui.layedit
-            , laydate = layui.laydate
-            , upload = layui.upload
+        var   form    = layui.form
+            , layer   = layui.layer
             , miniTab = layui.miniTab
-            , tableSelect = layui.tableSelect,
-            $ = layui.$;
+            , $       = layui.$;
+
+        $('.sortablelist').clickSort();
 
         var userIdList  = [];   //已经选过的员工
         var fieldCount  = 0;    //当前已经有多少个字段
@@ -269,7 +253,6 @@
                         $userList += "<option value='" + userArr[i].user_id + "'>" + userArr[i].user_name + "</option>";
                     }
                     $("#select-user").append($userList);
-                    //需要重新加载
                     form.render('select');
                 },
                 error: function (res) {
@@ -337,6 +320,16 @@
             }
         });
 
+        //下移一行
+        $("ul").on("click","li .field-btn .down",function(){
+            console.log("down")
+        });
+
+        //上移一行
+        $("ul").on("click","li .field-btn .up",function(){
+            console.log("up")
+        });
+
         //在数组中删除某一个元素
         var removeFromArray = function (arr, val) {
             var index = $.inArray(val, arr);
@@ -370,14 +363,14 @@
                 let name   = fieldList[i].name;
                 let value  = fieldList[i].value;
                 let status = fieldList[i].status;
-                let fieldInfo = "<li lay-value=\"" + id + "\"><div class=\"layui-input-inline\">";
+                let fieldInfo = "<li class=\"sortableitem\" lay-value=\"" + id + "\"><div class=\"layui-input-inline\">";
                 fieldInfo += " <select name=\"fieldType\" style=\"float: left;\" class=\"fieldType\" lay-filter=\"select-field-type\" lay-verify=\"required\">";
                 switch(type){
                     case "text":
                         fieldInfo += " <option value=\"text\" selected>单行文本</option>";
                         break;
                     case "textArea":
-                        fieldInfo += " <option value=\"textArea\" selected>多行文本</option>";
+                        fieldInfo += " <option value=\"textarea\" selected>多行文本</option>";
                         break;
                     case "select":
                         fieldInfo += " <option value=\"select\" selected>自定义多选</option>";
@@ -389,7 +382,7 @@
                         fieldInfo += " <option value=\"users\" selected>多选员工</option>";
                         break;
                     case "time":
-                        fieldInfo += "  <option value=\"time\" selected>时间</option>";
+                        fieldInfo += "  <option value=\"date\" selected>日期</option>";
                         break;
                 }
                 fieldInfo += "</select></div>";
@@ -397,6 +390,8 @@
                     "               <input type=\"text\" style=\"float: left;\" name=\"fieldName\" lay-verify=\"required\"  value= \"" + name + "\" class=\"layui-input fieldName\">\n" +
                     "           </div>";
                 fieldInfo += "<div class=\"layui-input-inline field-btn\">\n" +
+                    "             <a class=\"layui-btn-xs data-count-edit icon-btn down movedown\" lay-event=\"down\"><i class=\"fa fa-arrow-down\" aria-hidden=\"true\"></i></a>\n" +
+                    "             <a class=\"layui-btn-xs data-count-edit icon-btn up moveup\" lay-event=\"up\"><i class=\"fa fa-arrow-up\" aria-hidden=\"true\"></i></a>\n" +
                     "             <a class=\"layui-btn layui-btn-xs data-count-edit icon-btn add\" lay-event=\"add\"><i class=\"layui-icon layui-icon-addition\"></i></a>\n"
                 if(status  === 1){
                     fieldInfo += "<input  type=\"checkbox\" lay-filter=\"switch\" name=\"isOpen\" checked lay-skin=\"switch\" lay-text=\"启用|禁用\" class=\"status\">\n" +
@@ -427,22 +422,23 @@
             }
         }
 
-        var newField = " <li class=\"new-field\" lay-value=\"\">\n" +
+        var newField = " <li class=\"new-field sortableitem\" lay-value=\"\">\n" +
             "                                <div class=\"layui-input-inline\">\n" +
             "                                    <select name=\"fieldType\" style=\"float: left;\" class=\"fieldType\" lay-filter=\"select-field-type\" lay-verify=\"required\">\n" +
-            "                                        <option value=\"\">--字段类型--</option>\n" +
             "                                        <option value=\"text\" selected>单行文本</option>\n" +
-            "                                        <option value=\"textArea\">多行文本</option>\n" +
+            "                                        <option value=\"textarea\">多行文本</option>\n" +
             "                                        <option value=\"select\">自定义多选</option>\n" +
             "                                        <option value=\"user\">单选员工</option>\n" +
             "                                        <option value=\"users\">多选员工</option>\n" +
-            "                                        <option value=\"time\">时间</option>\n" +
+            "                                        <option value=\"date\">日期</option>\n" +
             "                                    </select>\n" +
             "                                </div>\n" +
             "                                <div class=\"layui-input-inline\">\n" +
             "                                    <input type=\"text\" style=\"float: left;\" name=\"fieldName\" lay-verify=\"required\"  placeholder=\"请输入字段名\" class=\"layui-input fieldName\">\n" +
             "                                </div>\n" +
             "                                <div class=\"layui-input-inline field-btn\">\n" +
+            "                                    <a class=\"layui-btn-xs data-count-edit icon-btn down movedown\" lay-event=\"down\"><i class=\"fa fa-arrow-down\" aria-hidden=\"true\"></i></a>\n" +
+            "                                    <a class=\"layui-btn-xs data-count-edit icon-btn up moveup\" lay-event=\"up\"><i class=\"fa fa-arrow-up\" aria-hidden=\"true\"></i></a>\n" +
             "                                    <a class=\"layui-btn layui-btn-xs data-count-edit icon-btn add\" lay-event=\"add\"><i class=\"layui-icon layui-icon-addition\"></i></a>\n" +
             "                                    <a class=\"layui-btn layui-btn-xs layui-btn-danger icon-btn delete\" lay-event=\"delete\"><i class=\"layui-icon layui-icon-subtraction\"></i></a>\n" +
             "                                </div>\n" +
@@ -515,6 +511,10 @@
                 });
             });
             return false;
+        });
+
+        $("#refresh").on("click",function(){
+            location.reload();
         });
     });
 </script>
