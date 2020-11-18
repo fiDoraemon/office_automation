@@ -16,6 +16,7 @@ use app\common\util\curlUtil;
 use app\common\util\EncryptionUtil;
 use app\index\model\Department;
 use app\index\model\Minute;
+use app\index\model\Project;
 use app\index\model\TableField;
 use app\index\model\TableUser;
 use app\index\model\TableWork;
@@ -535,4 +536,83 @@ class AdminC
     }
 
 
+    /**
+     * 获取所有项目信息
+     * @return array
+     */
+    public function getAllProject(){
+        $project = new Project();
+        try {
+            $projectList = $project -> where('project_id', '>', 0)
+                                    -> field("project_id,project_code,project_name,description,doc_stage")
+                                    -> select();
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+        return Result::returnResult(Result::SUCCESS, $projectList);
+    }
+
+    /**
+     * 保存新项目信息
+     */
+    public function saveProject(){
+        $projectCode = $_POST["project_code"];
+        $projectName = $_POST["project_name"];
+        $description = $_POST["description"];
+        $stage       = $_POST["stage"];
+        $project = new Project();
+        $project->data([
+            'project_code' => $projectCode,
+            'project_name' => $projectName,
+            'description'  => $description,
+            'doc_stage'    => $stage,
+            'create_time'  =>  date('Y-m-d H:i:s', time())
+        ]);
+        $resultCount = $project -> save();
+        if($resultCount > 0){
+            return Result::returnResult(Result::SUCCESS);
+        }
+        return Result::returnResult(Result::ERROR);
+    }
+
+    /**
+     * 获取项目详细信息
+     * @return array
+     */
+    public function getProjectOfId(){
+        $projectId = $_GET["projectId"];
+        $project = new Project();
+        try {
+            $projectInfo = $project -> where('project_id', $projectId)
+                                    -> field("project_id,project_code,project_name,description,doc_stage")
+                                    -> find();
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+        return Result::returnResult(Result::SUCCESS, $projectInfo);
+    }
+
+    /**
+     * 保存新项目信息
+     */
+    public function updateProject(){
+        $projectId   = $_POST["project_id"];
+        $projectCode = $_POST["project_code"];
+        $projectName = $_POST["project_name"];
+        $description = $_POST["description"];
+        $stage       = $_POST["stage"];
+        $project = new Project;
+        $resultCount = $project ->save([
+            'project_code' => $projectCode,
+            'project_name' => $projectName,
+            'description'  => $description,
+            'doc_stage'    => $stage,
+        ],['project_id' => $projectId]);
+        if($resultCount > 0){
+            return Result::returnResult(Result::SUCCESS);
+        }
+        return Result::returnResult(Result::ERROR);
+    }
 }
