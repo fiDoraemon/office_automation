@@ -10,28 +10,6 @@ class TableItem extends Model
     public function table(){
         return $this->hasOne('TableWork',"table_id","table_id")->field('table_name');
     }
-    // 关联全部字段（一对多）
-    public function fields()
-    {
-        return $this->hasMany('TableField', 'table_id', 'table_id')
-            ->where('status', 1)
-            ->order('sort')
-            ->alias('tf')
-            ->join('oa_table_field_value tfv', 'tfv.field_id = tf.field_id and tfv.item_id = item_id', 'LEFT')
-            ->field('tf.field_id,name,type,value,field_value');
-    }
-
-    // 关联部分字段（一对多）
-    public function partFields()
-    {
-        return $this->hasMany('TableField', 'table_id', 'table_id')
-            ->where('status', 1)
-            ->order('sort')
-            ->limit(3)
-            ->alias('tf')
-            ->join('oa_table_field_value tfv', 'tfv.field_id = tf.field_id and tfv.item_id = item_id', 'LEFT')
-            ->field('tf.field_id,name,type,value,field_value');
-    }
 
     // 关联条目处理（一对多）
     public function processList()
