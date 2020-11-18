@@ -14,10 +14,10 @@ use app\index\model\TableWork;
 
 class TableWorkService
 {
-    // 获取工作表列表
-    public static function getTableList() {
+    // 获取可见的工作表列表
+    public static function getTableList($sessionUserId) {
         $tableWork = new TableWork();
-        $tableList = $tableWork->field('table_id,table_name')->where('status', 1)->select();
+        $tableList = $tableWork->where('status', 1)->alias('tw')->join('oa_table_user tu', "tu.table_id = tw.table_id and tu.user_id = $sessionUserId")->field('tw.table_id,table_name')->select();
         foreach ($tableList as $table) {
             $table->fields;
         }

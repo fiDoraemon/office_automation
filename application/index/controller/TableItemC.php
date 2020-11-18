@@ -3,6 +3,7 @@
 namespace app\index\controller;
 
 use app\common\Result;
+use app\index\common\DataEnum;
 use app\index\model\Attachment;
 use app\index\model\Label;
 use app\index\model\TableField;
@@ -56,6 +57,14 @@ class TableItemC extends Controller
             foreach ($tableItem->partFields as $field) {
                 if($field->type == 'user') {
                     $field->field_value = UserService::userIdToName($field->field_value, 1);
+                } else if($field->type == 'users') {
+                    $fieldValue = [];
+                    $tableFieldUser = new TableFieldUser();
+                    $userList = $tableFieldUser->where('field_id', $field->field_id)->where('item_id', $tableItem->item_id)->alias('tfu')->join('oa_user u', 'u.user_id = tfu.user_id')->field('tfu.user_id,user_name')->select();
+                    foreach ($userList as $user) {
+                        array_push($fieldValue, $user->user_name);
+                    }
+                    $field->field_value = implode('；', $fieldValue);
                 }
             }
         }
@@ -65,7 +74,8 @@ class TableItemC extends Controller
 
     // 获取工作表列表
     public function getTableList() {
-        $tableList = TableWorkService::getTableList();
+        $sessionUserId = Session::get("info")["user_id"];
+        $tableList = TableWorkService::getTableList($sessionUserId);
 
         return Result::returnResult(Result::SUCCESS, $tableList);
     }
@@ -77,7 +87,8 @@ class TableItemC extends Controller
      */
     public function create()
     {
-        $tableList = TableWorkService::getTableList();          // 获取工作表列表
+        $sessionUserId = Session::get("info")["user_id"];
+        $tableList = TableWorkService::getTableList($sessionUserId);          // 获取工作表列表
         $labelList = LabelService::getLabelList();
         $data = [
             'tableList' => $tableList,
@@ -108,12 +119,7 @@ class TableItemC extends Controller
         // 增加条目字段对应值
         foreach ($fields as $key => $value) {
             if(substr($key,0, 5) == 'field') {
-                $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表\
-                $tableFiledValue = new TableFieldValue();
-                $tableFiledValue->item_id = $tableItem->item_id;
-                $tableFiledValue->field_id = substr($key,5);
-                $tableFiledValue->field_value = $value;
-                $tableFiledValue->save();
+                $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
                 if(in_array($key, $checkUserList)) {
                     $userList = explode(';', $fields[$key]);
                     foreach ($userList as $user) {
@@ -123,6 +129,12 @@ class TableItemC extends Controller
                         $tableFieldUser->item_id = $tableItem->item_id;
                         $tableFieldUser->save();
                     }
+                } else {
+                    $tableFiledValue = new TableFieldValue();
+                    $tableFiledValue->item_id = $tableItem->item_id;
+                    $tableFiledValue->field_id = substr($key,5);
+                    $tableFiledValue->field_value = $value;
+                    $tableFiledValue->save();
                 }
             }
         }
@@ -159,9 +171,9 @@ class TableItemC extends Controller
         $tableItem->table_name = $tableItem->table->table_name;         // 关联工作表
         // 获取工作表字段
         foreach ($tableItem->fields as $field) {
-            if($field->type == 'user') {
+            if($field->type == 'user') {            // 单选用户
                 $field->field_value2 = UserService::userIdToName($field->field_value, 1);
-            } else if($field->type == 'users') {
+            } else if($field->type == 'users') {            // 多选用户
                 // 获取多选用户列表
                 $tableFieldUser = new TableFieldUser();
                 $userList = $tableFieldUser->where('field_id', $field->field_id)->where('item_id', $tableItem->item_id)->alias('tfu')->join('oa_user u', 'u.user_id = tfu.user_id')->field('tfu.user_id,user_name')->select();
@@ -171,7 +183,10 @@ class TableItemC extends Controller
         $tableItem->label_list = implode('；', TableWorkService::getItemLabelList($id));         // 获取条目标签列表
         // 获取条目处理列表
         foreach ($tableItem->processList as $process) {
-            $process->attachments;            // 获取条目附件列表
+            // 获取条目附件列表
+            foreach ($process->attachments as $attachment) {
+                $attachment->save_path = DataEnum::uploadDir . $attachment->save_path;
+            }
         }
         unset($tableItem->item_id, $tableItem->creator_id, $tableItem->table_id, $tableItem->table);
         $labelList = LabelService::getLabelList();          // 获取标签列表

@@ -13,13 +13,24 @@ class TableItem extends Model
     // 关联全部字段（一对多）
     public function fields()
     {
-        return $this->hasMany('TableFieldValue','item_id','item_id')->where('status', 1)->alias('tfv')->join('oa_table_field tf', 'tfv.field_id = tf.field_id')->field('tf.field_id,name,type,value,field_value');
+        return $this->hasMany('TableField', 'table_id', 'table_id')
+            ->where('status', 1)
+            ->order('sort')
+            ->alias('tf')
+            ->join('oa_table_field_value tfv', 'tfv.field_id = tf.field_id and tfv.item_id = item_id', 'LEFT')
+            ->field('tf.field_id,name,type,value,field_value');
     }
 
     // 关联部分字段（一对多）
     public function partFields()
     {
-        return $this->hasMany('TableFieldValue','item_id','item_id')->where('status', 1)->limit(3)->alias('tfv')->join('oa_table_field tf', 'tfv.field_id = tf.field_id')->field('tf.field_id,name,type,value,field_value');
+        return $this->hasMany('TableField', 'table_id', 'table_id')
+            ->where('status', 1)
+            ->order('sort')
+            ->limit(3)
+            ->alias('tf')
+            ->join('oa_table_field_value tfv', 'tfv.field_id = tf.field_id and tfv.item_id = item_id', 'LEFT')
+            ->field('tf.field_id,name,type,value,field_value');
     }
 
     // 关联条目处理（一对多）

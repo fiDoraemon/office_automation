@@ -75,6 +75,7 @@
             form = layui.form,
             table = layui.table;
 
+        var worktable;
         // 渲染表格
         function renderTable(value) {
             var fields;
@@ -155,6 +156,7 @@
                             "table_id": tableList[0].table_id,
                         });
                         renderTable(tableList[0].table_id);
+                        worktable = tableList[0].table_id;
                     }
                 }
                 layer.close(index);
@@ -162,7 +164,6 @@
         );
 
         // 监听工作表下拉选择
-        var worktable;
         form.on('select(work-table)', function(data){
             if(data.value == '') {
                 return false;
