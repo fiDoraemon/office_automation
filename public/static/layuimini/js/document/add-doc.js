@@ -42,11 +42,34 @@ layui.use(['form','miniTab','upload'], function () {
             data:{ projectId : data.value},
             success: function(res){
                 var projectStages = res;
-                var $projectStages = "";
+                var $projectStages = "<option value=\"\">--请选择--</option>";
                 for (var i = 0; i < projectStages.length; i++){
                     $projectStages += "<option value='" + projectStages[i] + "'>" + projectStages[i] + "</option>";
                 }
                 $("#stageSelect").append($projectStages);
+                //需要重新加载
+                form.render('select');
+            },
+            error: function(res){
+            }
+        });
+        return false;
+    });
+
+    //监听选择所属项目前缀下拉选择
+    form.on('select(selectStagePre)',function(data){
+        $("#stageFix").empty();
+        $.ajax({
+            url: "/office_automation/public/index.php/index/document_c/getProjectStageFix",
+            type:'get',
+            data:{ stagePre : data.value},
+            success: function(res){
+                console.log("res",res);
+                var $projectStages = "<option value=\"0\">--请选择--</option>";
+                for (var i = 0; i < res.length; i++){
+                    $projectStages += "<option value='" + res[i] + "'>" + res[i] + "</option>";
+                }
+                $("#stageFix").append($projectStages);
                 //需要重新加载
                 form.render('select');
             },
@@ -144,12 +167,17 @@ layui.use(['form','miniTab','upload'], function () {
         layer.confirm('确定发起评审？', {icon: 3, title:'提示'}, function(index){
             layer.close(index);
             var loadingIndex = layer.load(2);
+            let stageFix = result.project_stage_fix;
+            let stage = result.project_stage;
+            if(stageFix !== "0"){
+                stage += ("-" + stageFix);
+            }
             $.ajax({
                 url: "/office_automation/public/index.php/index/document_c/saveRequest",
                 type:'post',
                 data: {
                     projectCode    : result.project_code,
-                    projectStage   : result.project_stage,
+                    projectStage   : stage,
                     approver       : result.approver,
                     remark         : result.remark,
                     uploadList     : uploadList

@@ -17,6 +17,7 @@ use app\index\model\DocCodeCount;
 use app\index\model\DocFile;
 use app\index\model\DocRequest;
 use app\index\model\Project;
+use app\index\model\ProjectStageInfo;
 use app\index\model\User;
 use app\index\model\UserRole;
 use think\Db;
@@ -557,9 +558,19 @@ class DocumentC
      * @return array
      */
     public function getProjectStage($projectId){
-        $listStage = Project::where('project_id',$projectId)->value('doc_stage');
+        $listStage = Project::where('project_id',$projectId) -> value('doc_stage');
         $label_array = explode(";",$listStage);
         return $label_array;
+    }
+
+    /**
+     * 根据项目阶段前缀获取项目阶段后缀
+     * @param $stagePre  项目阶段前缀
+     * @return mixed
+     */
+    public function getProjectStageFix($stagePre){
+        $listStageFix = ProjectStageInfo::where('project_stage_pre',$stagePre) -> column('project_stage_fix');
+        return $listStageFix;
     }
 
     /**
@@ -612,8 +623,9 @@ class DocumentC
      * @throws ModelNotFoundException
      */
     private function getDocCode($projectCode,$projectStage){
+        $stagePre = explode("-",$projectStage);
         $docCodeCount = new DocCodeCount();
-        $stageCount = $docCodeCount -> where(["project_code" => $projectCode,"stage" => $projectStage])
+        $stageCount = $docCodeCount -> where(["project_code" => $projectCode,"stage" => $stagePre[0]])
                                     -> find();
         $count = $stageCount -> count;
         $count++;
