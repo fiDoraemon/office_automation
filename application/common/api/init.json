@@ -238,6 +238,12 @@
               "target": "_self"
             }
           ]
+        },
+        {
+          "title": "项目管理",
+          "href": "page/project/index-project.html",
+          "icon": "fa fa-meetup",
+          "target": "_self"
         }
       ]
     }

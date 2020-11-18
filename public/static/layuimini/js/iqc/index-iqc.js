@@ -52,7 +52,7 @@ layui.use(['form', 'table'], function () {
             },
         ]],
         page: false,
-        skin: 'line'
+        // skin: 'line'
     });
 
     /**

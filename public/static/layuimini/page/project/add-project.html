@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <form class="layui-form layuimini-form">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label input-title required">项目代号</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="" lay-verify="required" name="project_code"  onkeyup="this.value=this.value.replace(/[, ]/g,'')" autocomplete="off" class="layui-input">
+                </div>
+                <label class="layui-form-label input-title required">项目名称</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="" lay-verify="required" name="project_name" autocomplete="off"  onkeyup="this.value=this.value.replace(/[, ]/g,'')" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label input-title">描述</label>
+                <div class="layui-input-block">
+                    <input type="text" id=""  name="description"  onkeyup="this.value=this.value.replace(/[, ]/g,'')" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label input-title required">包含字段</label>
+                <div class="layui-input-block">
+                    <input type="text" id="" lay-verify="required" name="stage" autocomplete="off" placeholder="" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-container">
+                    <div class="layui-row layui-col-space10">
+                        <div class="layui-col-md4"></div>
+                        <div class="layui-col-md4">
+                            <button class="layui-btn" lay-submit id="save" lay-filter="save">添加</button>
+                            <button type="reset" class="layui-btn layui-btn-primary" id="refresh">重置</button>
+                        </div>
+                        <div class="layui-col-md4"></div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/project/add-project.js" charset="utf-8"></script>
+</body>
+</html>
