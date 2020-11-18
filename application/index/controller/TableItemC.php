@@ -33,6 +33,7 @@ class TableItemC extends Controller
             return Result::returnResult(Result::SUCCESS, [], 0);
         }
         $tableItem = new TableItem();
+        $tableItem->alias('ti');
         $keyword = input('get.keyword');
         $label = input('get.label');
         if($keyword) {
@@ -41,18 +42,15 @@ class TableItemC extends Controller
         if($label) {
             $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
         }
-        $count = $tableItem->where('table_id', $tableId)->count();
+        $count = $tableItem->where('table_id', $tableId)->group("ti.item_id")->count();
+        $tableItem->alias('ti');
         if($keyword) {
             $tableItem->where('item_title', 'like', "%$keyword%");
         }
         if($label) {
-            $label = new Label();
-            $label->alias('l')->where('label_name', 'like', "%$label%")
-                ->join('oa_label l', "l.label_id = til.label_id");
-            $tableItem->alias('ti')->join('oa_table_item_label til', 'ti.item_id = til.item_id')
-                ->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
+            $tableItem->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
         }
-        $tableItemList = $tableItem->distinct(true)->where('table_id', $tableId)->group("item_id")->page("$page, $limit")->select();
+        $tableItemList = $tableItem->where('table_id', $tableId)->group("ti.item_id")->page("$page, $limit")->select();
         
         foreach ($tableItemList as $tableItem) {
             // 获取标签列表

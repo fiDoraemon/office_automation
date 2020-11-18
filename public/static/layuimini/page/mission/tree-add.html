@@ -25,6 +25,8 @@
         <label class="layui-form-label">继承关注人</label>
         <div class="layui-input-inline">
             <input type="checkbox" name="extend-interest" lay-skin="switch" lay-text="是|否" checked="">
+        </div>
+        <div class="layui-input-inline">
             <span id="interest-users"></span>
         </div>
     </div>
@@ -37,50 +39,50 @@
         </div>
     </div>
     <div id="new">
-    <div class="layui-form-item">
-        <label class="layui-form-label required">任务标题</label>
-        <div class="layui-input-block">
-            <input type="text" name="mission_title" autocomplete="off" placeholder="请输入任务标题" class="layui-input">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">任务标题</label>
+            <div class="layui-input-block">
+                <input type="text" name="mission_title" autocomplete="off" placeholder="请输入任务标题" class="layui-input">
+            </div>
         </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label required">处理人</label>
-        <div class="layui-input-inline">
-            <input type="text" name="assignee_name" id="assignee_name" autocomplete="off" placeholder="请选择处理人" class="layui-input" readonly>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">处理人</label>
+            <div class="layui-input-inline">
+                <input type="text" name="assignee_name" id="assignee_name" autocomplete="off" placeholder="请选择处理人" class="layui-input" readonly>
+            </div>
         </div>
-    </div>
-    <div class="layui-form-item">
-        <label class="layui-form-label required">开始日期</label>
-        <div class="layui-input-inline">
-            <input type="text" name="start_date" placeholder="请选择日期" autocomplete="off" class="layui-input date">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">开始日期</label>
+            <div class="layui-input-inline">
+                <input type="text" name="start_date" placeholder="请选择日期" autocomplete="off" class="layui-input date">
+            </div>
+            <label class="layui-form-label required">截止日期</label>
+            <div class="layui-input-inline">
+                <input type="text" name="finish_date" placeholder="请选择日期" autocomplete="off" class="layui-input date">
+            </div>
         </div>
-        <label class="layui-form-label required">截止日期</label>
-        <div class="layui-input-inline">
-            <input type="text" name="finish_date" placeholder="请选择日期" autocomplete="off" class="layui-input date">
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">任务描述</label>
+            <div class="layui-input-block">
+                <textarea name="description" class="layui-textarea" placeholder="请输入任务描述"></textarea>
+            </div>
         </div>
-    </div>
-    <div class="layui-form-item layui-form-text">
-        <label class="layui-form-label">任务描述</label>
-        <div class="layui-input-block">
-            <textarea name="description" class="layui-textarea" placeholder="请输入任务描述"></textarea>
-        </div>
-    </div>
     </div>
     <div id="minute">
-    <div class="layui-form-item">
-        <label class="layui-form-label">会议号</label>
-        <div class="layui-input-inline">
-            <input type="text" name="minute_id" id="minute_id" autocomplete="off" placeholder="请选择会议号" class="layui-input" readonly>
+        <div class="layui-form-item">
+            <label class="layui-form-label">会议号</label>
+            <div class="layui-input-inline">
+                <input type="text" name="minute_id" id="minute_id" autocomplete="off" placeholder="请选择会议号" class="layui-input" readonly>
+            </div>
         </div>
-    </div>
     </div>
     <div id="exist">
-    <div class="layui-form-item">
-        <label class="layui-form-label">任务号</label>
-        <div class="layui-input-inline">
-            <input type="text" name="mission_id" id="mission_id" autocomplete="off" placeholder="请选择任务号" class="layui-input" readonly>
+        <div class="layui-form-item">
+            <label class="layui-form-label">任务号</label>
+            <div class="layui-input-inline">
+                <input type="text" name="mission_id" id="mission_id" autocomplete="off" placeholder="请选择任务号" class="layui-input" readonly>
+            </div>
         </div>
-    </div>
     </div>
     <div class="layui-form-item">
         <div class="layui-input-block">
