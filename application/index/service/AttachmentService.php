@@ -21,8 +21,8 @@ class AttachmentService
     public static function fileUpload($file) {
 
         $fileInfo = $file->getInfo();
-        // 验证并移动文件（最大 20 MB）
-        $info = $file->validate(['size' => 20971520])->move(ROOT_PATH . 'public' . DS . 'upload');
+        // 验证并移动文件（最大 50 MB）
+        $info = $file->validate(['size' => 52428800])->move(ROOT_PATH . 'public' . DS . 'upload');
 
         if ($info) {
             // 插入附件信息

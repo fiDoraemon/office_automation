@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <style>
-        /* 关注人 */
+        /* 多选 */
         .layui-form-item .multipleSelect a {
             padding: 2px 5px;
             background: #908e8e;
@@ -88,8 +88,90 @@
             tableSelect = layui.tableSelect,
             miniTab = layui.miniTab;
 
+        // 渲染表单
+        function renderTable(value) {
+            var fields;
+            for(i in tableList) {
+                if (tableList[i].table_id == value) {
+                    fields = tableList[i].fields;
+                }
+            }
+            // 切换工作表字段
+            $('#fields').empty();
+            var element = '';
+            for (j in fields) {
+                var attr = '';          // textarea 属性
+                var dateList = [];          // 日期字段列表
+                // 判断字段类型
+                if(fields[j].type == 'textArea') {
+                    var input = `<div class="layui-input-block"><textarea name="field${fields[j].field_id}" class="layui-textarea"></textarea></div>`;
+                    attr = ' layui-form-text';
+                } else if(fields[j].type == 'select') {
+                    var values = fields[j].value.split('；');
+                    var input = `
+                        <div class="layui-input-block">
+                            <select name="field${fields[j].field_id}" lay-filter="field-select">
+                                <option value=""></option>
+                        `;
+                    for(k in values) {
+                        input += `<option value="${values[k]}">${values[k]}</option>`;
+                    }
+                    input += `</select></div>`;
+                } else if(fields[j].type == 'date') {
+                    var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" autocomplete="off" class="layui-input" readonly></div>`;
+                    dateList.push('field' + fields[j].field_id);
+                } else if(fields[j].type == 'user') {
+                    var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly></div>`;
+                    radioUserList.push('field' + fields[j].field_id);
+                } else if(fields[j].type == 'users') {
+                    var input = `
+                        <div class="layui-input-inline">
+                            <select class="select-department" select-user="field${fields[j].field_id}" lay-filter="multipleSelect-department">
+                                <option value="">请选择部门</option>
+                            </select>
+                        </div>
+                        <div class="layui-input-inline">
+                            <select name="field${fields[j].field_id}" id="field${fields[j].field_id}" lay-filter="multipleSelect-user">
+                                <option value="">请选择用户</option>
+                            </select>
+                        </div>
+                        <div id="field${fields[j].field_id}-userList" class="multipleSelect"></div>
+                        `;
+                    checkUserList.push('field' + fields[j].field_id);
+                } else {
+                    var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" class="layui-input"></div>`;
+                }
+                element += `
+                    <div class="layui-form-item${attr}">
+                        <label class="layui-form-label">${fields[j].name}</label>
+                        ${input}
+                    </div>
+                    `;
+            }
+            $('#fields').append(element);
+            // 渲染表单
+            form.render('select', 'add-item');          // 下拉选择
+            for(i in dateList) {            // 日期
+                laydate.render({
+                    elem: '#' + dateList[i]
+                });
+            }
+            for(i in radioUserList) {           // 单选用户
+                userSelectTable(tableSelect, '#' + radioUserList[i]);
+            }
+            userIdsList = [];            // 多选用户列表数组
+            if(checkUserList.length > 0) {          // 多选用户
+                departmentSelect($, form);
+                // 定义多个多选用户全局变量
+                for(i in checkUserList) {
+                    userIdsList[checkUserList[i]] = [];
+                }
+            }
+        }
+
         // 获取信息
         var tableList;
+        var index = layer.load(2);
         $.get(
             "/office_automation/public/item/create",
             function (res) {
@@ -109,6 +191,13 @@
                     }
                     $('#label-serach').append(element);
                     form.render('select');
+                    if(tableList.length > 0) {
+                        form.val("add-item", {
+                            "table_id": tableList[0].table_id,
+                        });
+                        renderTable(tableList[0].table_id);
+                    }
+                    layer.close(index);
                 }
             }
         );
@@ -119,83 +208,9 @@
         var checkUserList = [];          // 多选用户字段列表
         form.on('select(work-table)', function(data){
             if(data.value != worktable) {
-                for(i in tableList) {
-                    if(tableList[i].table_id == data.value) {
-                        var fields = tableList[i].fields;
-                        // 切换工作表字段
-                        $('#fields').empty();
-                        var element = '';
-                        for (j in fields) {
-                            var attr = '';          // textarea 属性
-                            var dateList = [];          // 日期字段列表
-                            // 判断字段类型
-                            if(fields[j].type == 'textArea') {
-                                var input = `<div class="layui-input-block"><textarea name="field${fields[j].field_id}" class="layui-textarea"></textarea></div>`;
-                                attr = ' layui-form-text';
-                            } else if(fields[j].type == 'select') {
-                                var values = fields[j].value.split('；');
-                                var input = `
-                                <div class="layui-input-block">
-                                    <select name="field${fields[j].field_id}" lay-filter="field-select">
-                                        <option value=""></option>
-                                `;
-                                for(k in values) {
-                                    input += `<option value="${values[k]}">${values[k]}</option>`;
-                                }
-                                input += `</select></div>`;
-                            } else if(fields[j].type == 'date') {
-                                var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" autocomplete="off" class="layui-input" readonly></div>`;
-                                dateList.push('field' + fields[j].field_id);
-                            } else if(fields[j].type == 'user') {
-                                var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly></div>`;
-                                radioUserList.push('field' + fields[j].field_id);
-                            } else if(fields[j].type == 'users') {
-                                var input = `
-                                <div class="layui-input-inline">
-                                    <select class="select-department" select-user="field${fields[j].field_id}" lay-filter="multipleSelect-department">
-                                        <option value="">请选择部门</option>
-                                    </select>
-                                </div>
-                                <div class="layui-input-inline">
-                                    <select name="field${fields[j].field_id}" id="field${fields[j].field_id}" lay-filter="multipleSelect-user">
-                                        <option value="">请选择用户</option>
-                                    </select>
-                                </div>
-                                <div id="field${fields[j].field_id}-userList" class="multipleSelect"></div>
-                                `;
-                                checkUserList.push('field' + fields[j].field_id);
-                            } else {
-                                var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" class="layui-input"></div>`;
-                            }
-                            element += `
-                            <div class="layui-form-item${attr}">
-                                <label class="layui-form-label">${fields[j].name}</label>
-                                ${input}
-                            </div>
-                            `;
-                        }
-                        $('#fields').append(element);
-                        // 渲染表单
-                        form.render('select', 'add-item');          // 下拉选择
-                        for(i in dateList) {            // 日期
-                            laydate.render({
-                                elem: '#' + dateList[i]
-                            });
-                        }
-                        for(i in radioUserList) {           // 单选用户
-                            userSelectTable(tableSelect, '#' + radioUserList[i]);
-                        }
-                        userIdsList = [];            // 多选用户列表数组
-                        if(checkUserList.length > 0) {          // 多选用户
-                            departmentSelect($, form);
-                            // 定义多个多选用户全局变量
-                            for(i in checkUserList) {
-                                userIdsList[checkUserList[i]] = [];
-                            }
-                        }
-                        break;
-                    }
-                }
+                var index = layer.load(2);
+                renderTable(data.value);
+                layer.close(index);
                 worktable = data.value;
             }
         });
@@ -230,9 +245,10 @@
             if(checkUserList.length > 0) {
                 result.checkUserList = checkUserList.join(';');
                 for (i in checkUserList) {
-                    result[checkUserList[i]] = userIdsList[checkUserList[i] + 'UserIdList'].join(';');
+                    result[checkUserList[i]] = userIdsList[checkUserList[i]].join(';');
                 }
             }
+            console.log(result);
             layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
                 layer.close(index);
                 var index = layer.load(2);
