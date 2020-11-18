@@ -953,8 +953,8 @@ class MissionC extends Controller
     {
         $mission = Mission::get($id);
         $type = input('post.type');
+        $missionId = input('post.mission_id');
         $sessionUserId = Session::get("info")["user_id"];
-
         // 位置
         if(input('post.position') == 'sibling') {
             $id = $mission->parent_mission_id;
@@ -972,7 +972,7 @@ class MissionC extends Controller
             $mission->allowField(true)->save();
             $this->recordMissionView($mission->mission_id);         // 加进任务浏览记录
         } else if($type == 'exist') {           // 已存在任务
-            $existMission = Mission::get(input('post.mission_id'));
+            $existMission = Mission::get($missionId);
             if($existMission->parent_mission_id != 0) {
                 return Result::returnResult(Result::PARENT_EXIST);
             }
@@ -993,7 +993,33 @@ class MissionC extends Controller
                 'parent_mission_id' => $id
             ]);
         }
-
+        // 继承关注人
+//        if($type == 'new' || $type == 'minute') {
+//            $interestList = MissionService::getInterestList($id);
+//            foreach ($interestList as $interest) {
+//                $missionInterest = new MissionInterest();
+//                $missionInterest->mission_id = $mission->mission_id;
+//                $missionInterest->user_id = $interest->user_id;
+//                $missionInterest->save();
+//            }
+//        } else {
+//            $interestList = MissionService::getInterestList($id);
+//            $existInterestList = MissionService::getInterestList($missionId);
+//            foreach ($interestList as $interest) {
+//                $result = true;
+//                foreach ($existInterestList as $existInterest) {
+//                    if($existInterest->user_id == $interest->user_id) {
+//                        $result = false;
+//                    }
+//                }
+//                if($result) {
+//                    $missionInterest = new MissionInterest();
+//                    $missionInterest->mission_id = $missionId;
+//                    $missionInterest->user_id = $interest->user_id;
+//                    $missionInterest->save();
+//                }
+//            }
+//        }
         // 发送钉钉消息
         $data = DataEnum::$msgData;
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
@@ -1037,6 +1063,8 @@ class MissionC extends Controller
                         $missionInterest->mission_id = $mission->mission_id;
                         $missionInterest->user_id = $userId;
                         $missionInterest->save();
+
+                        // 发送钉钉通知 TODO
                     }
                 } else {
                     if ($missionInterest) {
@@ -1050,7 +1078,7 @@ class MissionC extends Controller
     }
 
     /**
-     * 获取任务关注人列表
+     * 获取父任务详情
      * @param $id
      * @return array
      * @throws \think\exception\DbException

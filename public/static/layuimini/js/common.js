@@ -26,7 +26,7 @@ layui.use(['form'], function () {
     });
     // 选择用户
     form.on('select(multipleSelect-user)',function(data){
-        var userSelect = $(data.elem).attr('name');
+        var userSelect = $(data.elem).attr('id');
         if(data.value == '') {
             return false;
         }
@@ -34,7 +34,7 @@ layui.use(['form'], function () {
         var userId = data.value;
         var element = `
         <a href="javascript:;">
-            <span lay-value="${userId} ">${userName}</span>
+            <span lay-value="${userId}">${userName}</span>
             <i class="layui-icon layui-icon-close"></i>
         </a>
         `;
@@ -116,51 +116,61 @@ function getCookie(cname)
 // 在数组中删除某一个元素
 function removeFromArray (arr, val) {
     var index = arr.indexOf(val);
-    if (index >= 0)
+    if (index >= 0) {
         arr.splice(index, 1);
+    }
 
     return arr;
 }
 
 // 填充部门下拉列表
-function departmentSelect($, form) {
-    $.get(
-        "/office_automation/public/index.php/index/user_c/getAllDepartment",
-        function(res){
-            var departmentList = res.data;
-            var element = '';
-            for (i in departmentList){
-                element += `<option value="${departmentList[i].department_id}">${departmentList[i].department_name}</option>`;
+function departmentSelect() {
+    layui.use(['form'], function () {
+        var $ = layui.$,
+            form = layui.form;
+
+        $.get(
+            "/office_automation/public/index.php/index/user_c/getAllDepartment",
+            function (res) {
+                var departmentList = res.data;
+                var element = '';
+                for (i in departmentList) {
+                    element += `<option value="${departmentList[i].department_id}">${departmentList[i].department_name}</option>`;
+                }
+                $(".select-department").append(element);
+                form.render('select');
             }
-            $(".select-department").append(element);
-            form.render('select');
-        }
-    );
+        );
+    });
 }
 
 // 处理人下拉表格
 function userSelectTable(tableSelect, element) {
-    tableSelect.render({            // 处理人下拉表格
-        elem: element,
-        checkedKey: 'user_id',
-        searchPlaceholder: '用户/部门关键词',
-        table: {
-            url: '/office_automation/public/index.php/index/user_c/getAllUsers'
-            ,cols: [[
-                { type: 'radio' },
-                { field: 'user_id', title: '工号' },
-                { field: 'user_name', title: '姓名' },
-                { field: 'department_name', title: '部门'}
-            ]]
-        },
-        done: function (elem, data) {
-            var result = data.data;
-            if(result.length != 0) {
-                elem.val(result[0].user_name);
-            } else {
-                elem.val('');
+    layui.use(['tableSelect'], function () {
+        var tableSelect = layui.tableSelect;
+
+        tableSelect.render({
+            elem: element,
+            checkedKey: 'user_id',
+            searchPlaceholder: '用户/部门关键词',
+            table: {
+                url: '/office_automation/public/index.php/index/user_c/getAllUsers'
+                ,cols: [[
+                    { type: 'radio' },
+                    { field: 'user_id', title: '工号' },
+                    { field: 'user_name', title: '姓名' },
+                    { field: 'department_name', title: '部门'}
+                ]]
+            },
+            done: function (elem, data) {
+                var result = data.data;
+                if(result.length != 0) {
+                    elem.val(result[0].user_name);
+                } else {
+                    elem.val('');
+                }
             }
-        }
+        });
     });
 }
 

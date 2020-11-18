@@ -8,29 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
+    <link rel="stylesheet" href="../../css/common.css">
     <style>
-        /* 多选 */
-        .layui-form-item .multipleSelect a {
-            padding: 2px 5px;
-            background: #908e8e;
-            border-radius: 2px;
-            color: #fff;
-            display: block;
-            line-height: 20px;
-            height: 20px;
-            margin: 7px 4px 3px 2px;
-            float: left;
-        }
-        .layui-form-item .multipleSelect i {
-            margin-left: 4px;
-        }
-        .layui-form-item .multipleSelect a:link {
-            color:#fff;
-        }
-        .layui-form-item a:-webkit-any-link {
-            color: -webkit-link;
-            cursor: pointer;
-        }
+
     </style>
 </head>
 <body>
@@ -156,7 +136,6 @@
                     elem: '#' + dateList[i]
                 });
             }
-            console.log(dateList);
             for(i in radioUserList) {           // 单选用户
                 userSelectTable(tableSelect, '#' + radioUserList[i]);
             }
