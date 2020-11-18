@@ -113,7 +113,7 @@ class DocumentC
             $docReq -> where("project_id", $projectCode);
         }
         if($projectStage != ""){
-            $docReq -> where("stage", $projectStage);
+            $docReq -> where("stage","like" , "$projectStage%");
         }
         if($author != ""){
             $docReq-> where("author_id", $author);
