@@ -10,8 +10,14 @@
     <link rel="stylesheet" href="../../css/public.css" media="all">
 
     <style>
-
-
+        /* 链接 */
+        .url {
+            color: #1E9FFF;
+        }
+        .url:hover {
+            color: #0567b0;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -75,6 +81,7 @@
             form = layui.form,
             table = layui.table;
 
+        var worktable;
         // 渲染表格
         function renderTable(value) {
             var fields;
@@ -100,17 +107,17 @@
                     {field: 'creator_id', width: '8%', title: '发起人', align: "center"},
                     {field: 'field1', width: '10%', title: fields[0].name, align: "center",
                         templet: function(d){
-                            return d.partFields[0].field_value;
+                            return d.fields[0].field_value;
                         }
                     },
                     {field: 'field2', width: '10%', title: fields[1].name, align: "center",
                         templet: function(d){
-                            return d.partFields[1].field_value;
+                            return d.fields[1].field_value;
                         }
                     },
                     {field: 'field3', width: '10%', title: fields[2].name, align: "center",
                         templet: function(d){
-                            return d.partFields[2].field_value;
+                            return d.fields[2].field_value;
                         }
                     },
                     {field: 'labelList', width: '14%', title: '标签', align: "center"},
@@ -155,6 +162,7 @@
                             "table_id": tableList[0].table_id,
                         });
                         renderTable(tableList[0].table_id);
+                        worktable = tableList[0].table_id;
                     }
                 }
                 layer.close(index);
@@ -162,7 +170,6 @@
         );
 
         // 监听工作表下拉选择
-        var worktable;
         form.on('select(work-table)', function(data){
             if(data.value == '') {
                 return false;

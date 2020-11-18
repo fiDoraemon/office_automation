@@ -122,13 +122,13 @@
         {
           "title": "工作表",
           "href": "",
-          "icon": "fa fa-cubes",
+          "icon": "fa fa-table",
           "target": "_self",
           "child": [
             {
-              "title": "工作表列表",
+              "title": "我的工作表",
               "href": "page/table/index-item.html",
-              "icon": "fa fa-search",
+              "icon": "fa fa-tasks",
               "target": "_self"
             }
           ]
@@ -222,19 +222,19 @@
         {
           "title": "工作表管理",
           "href": "",
-          "icon": "fa fa-meetup",
+          "icon": "fa fa-table",
           "target": "_self",
           "child": [
             {
               "title": "工作表列表",
               "href": "page/table/index-admin.html",
-              "icon": "fa fa-plus",
+              "icon": "fa fa-list",
               "target": "_self"
             },
             {
               "title": "添加工作表",
               "href": "page/table/add-admin.html",
-              "icon": "fa fa-list",
+              "icon": "fa fa-plus",
               "target": "_self"
             }
           ]

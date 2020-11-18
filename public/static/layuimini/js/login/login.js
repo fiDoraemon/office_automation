@@ -5,7 +5,6 @@ var token = getCookie('user_token');
 $.ajax({
     url: "/office_automation/public/index.php/index/login_c/checkLogin",
     type:'get',
-    timeout: 1000,//超时时间
     data: {
     },
     success: function(res){

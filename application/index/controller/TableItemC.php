@@ -3,6 +3,7 @@
 namespace app\index\controller;
 
 use app\common\Result;
+use app\index\common\DataEnum;
 use app\index\model\Attachment;
 use app\index\model\Label;
 use app\index\model\TableField;
@@ -38,26 +39,26 @@ class TableItemC extends Controller
             $tableItem->where('item_title', 'like', "%$keyword%");
         }
         if($label) {
-            $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->limit(1)->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
+            $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
         }
         $count = $tableItem->where('table_id', $tableId)->count();
         if($keyword) {
             $tableItem->where('item_title', 'like', "%$keyword%");
         }
         if($label) {
-            $tableItem->alias('ti')->join('oa_table_item_label til', 'ti.item_id = til.item_id')->limit(1)->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
+            $label = new Label();
+            $label->alias('l')->where('label_name', 'like', "%$label%")
+                ->join('oa_label l', "l.label_id = til.label_id");
+            $tableItem->alias('ti')->join('oa_table_item_label til', 'ti.item_id = til.item_id')
+                ->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
         }
-        $tableItemList = $tableItem->where('table_id', $tableId)->page("$page, $limit")->select();
-
+        $tableItemList = $tableItem->distinct(true)->where('table_id', $tableId)->group("item_id")->page("$page, $limit")->select();
+        
         foreach ($tableItemList as $tableItem) {
             // 获取标签列表
             $tableItem->labelList = implode('；', TableWorkService::getItemLabelList($tableItem->item_id));
             // 获取条目字段列表
-            foreach ($tableItem->partFields as $field) {
-                if($field->type == 'user') {
-                    $field->field_value = UserService::userIdToName($field->field_value, 1);
-                }
-            }
+            $tableItem->fields = TableWorkService::getPartItemFieldList($tableItem);
         }
 
         return Result::returnResult(Result::SUCCESS, $tableItemList, $count);
@@ -65,7 +66,8 @@ class TableItemC extends Controller
 
     // 获取工作表列表
     public function getTableList() {
-        $tableList = TableWorkService::getTableList();
+        $sessionUserId = Session::get("info")["user_id"];
+        $tableList = TableWorkService::getTableList($sessionUserId);
 
         return Result::returnResult(Result::SUCCESS, $tableList);
     }
@@ -77,7 +79,8 @@ class TableItemC extends Controller
      */
     public function create()
     {
-        $tableList = TableWorkService::getTableList();          // 获取工作表列表
+        $sessionUserId = Session::get("info")["user_id"];
+        $tableList = TableWorkService::getTableList($sessionUserId);          // 获取工作表列表
         $labelList = LabelService::getLabelList();
         $data = [
             'tableList' => $tableList,
@@ -108,12 +111,7 @@ class TableItemC extends Controller
         // 增加条目字段对应值
         foreach ($fields as $key => $value) {
             if(substr($key,0, 5) == 'field') {
-                $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表\
-                $tableFiledValue = new TableFieldValue();
-                $tableFiledValue->item_id = $tableItem->item_id;
-                $tableFiledValue->field_id = substr($key,5);
-                $tableFiledValue->field_value = $value;
-                $tableFiledValue->save();
+                $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
                 if(in_array($key, $checkUserList)) {
                     $userList = explode(';', $fields[$key]);
                     foreach ($userList as $user) {
@@ -123,6 +121,12 @@ class TableItemC extends Controller
                         $tableFieldUser->item_id = $tableItem->item_id;
                         $tableFieldUser->save();
                     }
+                } else {
+                    $tableFiledValue = new TableFieldValue();
+                    $tableFiledValue->item_id = $tableItem->item_id;
+                    $tableFiledValue->field_id = substr($key,5);
+                    $tableFiledValue->field_value = $value;
+                    $tableFiledValue->save();
                 }
             }
         }
@@ -158,20 +162,14 @@ class TableItemC extends Controller
         $tableItem->creator_name = UserService::userIdToName($tableItem->creator_id, 1);          // 关联发起人
         $tableItem->table_name = $tableItem->table->table_name;         // 关联工作表
         // 获取工作表字段
-        foreach ($tableItem->fields as $field) {
-            if($field->type == 'user') {
-                $field->field_value2 = UserService::userIdToName($field->field_value, 1);
-            } else if($field->type == 'users') {
-                // 获取多选用户列表
-                $tableFieldUser = new TableFieldUser();
-                $userList = $tableFieldUser->where('field_id', $field->field_id)->where('item_id', $tableItem->item_id)->alias('tfu')->join('oa_user u', 'u.user_id = tfu.user_id')->field('tfu.user_id,user_name')->select();
-                $field->users = $userList;
-            }
-        }
+        $tableItem->fields = TableWorkService::getItemFieldList($tableItem);
         $tableItem->label_list = implode('；', TableWorkService::getItemLabelList($id));         // 获取条目标签列表
         // 获取条目处理列表
         foreach ($tableItem->processList as $process) {
-            $process->attachments;            // 获取条目附件列表
+            // 获取条目附件列表
+            foreach ($process->attachments as $attachment) {
+                $attachment->save_path = DataEnum::uploadDir . $attachment->save_path;
+            }
         }
         unset($tableItem->item_id, $tableItem->creator_id, $tableItem->table_id, $tableItem->table);
         $labelList = LabelService::getLabelList();          // 获取标签列表

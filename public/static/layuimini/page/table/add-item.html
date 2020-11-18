@@ -101,9 +101,8 @@
             var element = '';
             for (j in fields) {
                 var attr = '';          // textarea 属性
-                var dateList = [];          // 日期字段列表
                 // 判断字段类型
-                if(fields[j].type == 'textArea') {
+                if(fields[j].type == 'textarea') {
                     var input = `<div class="layui-input-block"><textarea name="field${fields[j].field_id}" class="layui-textarea"></textarea></div>`;
                     attr = ' layui-form-text';
                 } else if(fields[j].type == 'select') {
@@ -120,6 +119,7 @@
                 } else if(fields[j].type == 'date') {
                     var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" autocomplete="off" class="layui-input" readonly></div>`;
                     dateList.push('field' + fields[j].field_id);
+                    console.log(dateList);
                 } else if(fields[j].type == 'user') {
                     var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly></div>`;
                     radioUserList.push('field' + fields[j].field_id);
@@ -156,6 +156,7 @@
                     elem: '#' + dateList[i]
                 });
             }
+            console.log(dateList);
             for(i in radioUserList) {           // 单选用户
                 userSelectTable(tableSelect, '#' + radioUserList[i]);
             }
@@ -204,6 +205,7 @@
 
         // 监听工作表下拉选择
         var worktable;
+        var dateList = [];          // 日期字段列表
         var radioUserList = [];          // 单选用户字段列表
         var checkUserList = [];          // 多选用户字段列表
         form.on('select(work-table)', function(data){
