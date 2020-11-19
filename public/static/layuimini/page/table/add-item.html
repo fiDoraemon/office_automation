@@ -20,9 +20,7 @@
                 <div class="layui-form-item">
                     <label class="layui-form-label">工作表</label>
                     <div class="layui-input-inline" style="width: 30%">
-                        <select name="table_id" id="work-table" lay-filter="work-table" lay-verify="required" lay-reqtext="请选择工作表">
-                            <option value=""></option>
-                        </select>
+                        <input type="text" id="table-name" autocomplete="off" class="layui-input" readonly>
                     </div>
                 </div>
                 <div class="layui-form-item">
@@ -68,43 +66,50 @@
             tableSelect = layui.tableSelect,
             miniTab = layui.miniTab;
 
-        // 渲染表单
-        function renderTable(value) {
-            var fields;
-            for(i in tableList) {
-                if (tableList[i].table_id == value) {
-                    fields = tableList[i].fields;
-                }
-            }
-            // 切换工作表字段
-            $('#fields').empty();
-            var element = '';
-            for (j in fields) {
-                var attr = '';          // textarea 属性
-                // 判断字段类型
-                if(fields[j].type == 'textarea') {
-                    var input = `<div class="layui-input-block"><textarea name="field${fields[j].field_id}" class="layui-textarea"></textarea></div>`;
-                    attr = ' layui-form-text';
-                } else if(fields[j].type == 'select') {
-                    var values = fields[j].value.split('；');
-                    var input = `
+        // 获取信息
+        var index = layer.load(2);
+        $.get(
+            "/office_automation/public/item/create?tableId=" + getQueryVariable('tableId'),
+            function (res) {
+                if(res.code == 0) {
+                    var tableName = res.data.tableName;
+                    $('#table-name').val(tableName);
+                    // 填充标签选择搜索框
+                    var labelList = res.data.labelList;
+                    var element = '';
+                    for(i in labelList) {
+                        element += `<option value="${labelList[i].label_id}">${labelList[i].label_name}</option>`;
+                    }
+                    $('#label-serach').append(element);
+                    form.render('select');
+                    // 填充工作表字段
+                    var fields = res.data.fields;
+                    element = '';
+                    for (j in fields) {
+                        var attr = '';          // textarea 属性
+                        // 判断字段类型
+                        if(fields[j].type == 'textarea') {
+                            var input = `<div class="layui-input-block"><textarea name="field${fields[j].field_id}" class="layui-textarea"></textarea></div>`;
+                            attr = ' layui-form-text';
+                        } else if(fields[j].type == 'select') {
+                            var values = fields[j].value.split('；');
+                            var input = `
                         <div class="layui-input-block">
                             <select name="field${fields[j].field_id}" lay-filter="field-select">
                                 <option value=""></option>
                         `;
-                    for(k in values) {
-                        input += `<option value="${values[k]}">${values[k]}</option>`;
-                    }
-                    input += `</select></div>`;
-                } else if(fields[j].type == 'date') {
-                    var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" autocomplete="off" class="layui-input" readonly></div>`;
-                    dateList.push('field' + fields[j].field_id);
-                    console.log(dateList);
-                } else if(fields[j].type == 'user') {
-                    var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly></div>`;
-                    radioUserList.push('field' + fields[j].field_id);
-                } else if(fields[j].type == 'users') {
-                    var input = `
+                            for(k in values) {
+                                input += `<option value="${values[k]}">${values[k]}</option>`;
+                            }
+                            input += `</select></div>`;
+                        } else if(fields[j].type == 'date') {
+                            var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" autocomplete="off" class="layui-input" readonly></div>`;
+                            dateList.push('field' + fields[j].field_id);
+                        } else if(fields[j].type == 'user') {
+                            var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly></div>`;
+                            radioUserList.push('field' + fields[j].field_id);
+                        } else if(fields[j].type == 'users') {
+                            var input = `
                         <div class="layui-input-inline">
                             <select class="select-department" select-user="field${fields[j].field_id}" lay-filter="multipleSelect-department">
                                 <option value="">请选择部门</option>
@@ -117,84 +122,46 @@
                         </div>
                         <div id="field${fields[j].field_id}-userList" class="multipleSelect"></div>
                         `;
-                    checkUserList.push('field' + fields[j].field_id);
-                } else {
-                    var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" class="layui-input"></div>`;
-                }
-                element += `
-                    <div class="layui-form-item${attr}">
-                        <label class="layui-form-label">${fields[j].name}</label>
-                        ${input}
-                    </div>
-                    `;
-            }
-            $('#fields').append(element);
-            // 渲染表单
-            form.render('select', 'add-item');          // 下拉选择
-            for(i in dateList) {            // 日期
-                laydate.render({
-                    elem: '#' + dateList[i]
-                });
-            }
-            for(i in radioUserList) {           // 单选用户
-                userSelectTable(tableSelect, '#' + radioUserList[i]);
-            }
-            userIdsList = [];            // 多选用户列表数组
-            if(checkUserList.length > 0) {          // 多选用户
-                departmentSelect($, form);
-                // 定义多个多选用户全局变量
-                for(i in checkUserList) {
-                    userIdsList[checkUserList[i]] = [];
-                }
-            }
-        }
-
-        // 获取信息
-        var tableList;
-        var index = layer.load(2);
-        $.get(
-            "/office_automation/public/item/create",
-            function (res) {
-                if(res.code == 0) {
-                    // 填充工作表下拉列表
-                    tableList = res.data.tableList;
-                    var element = '';
-                    for(i in tableList) {
-                        element += `<option value="${tableList[i].table_id}">${tableList[i].table_name}</option>`;
+                            checkUserList.push('field' + fields[j].field_id);
+                        } else {
+                            var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" class="layui-input"></div>`;
+                        }
+                        element += `
+                        <div class="layui-form-item${attr}">
+                            <label class="layui-form-label">${fields[j].name}</label>
+                            ${input}
+                        </div>
+                        `;
                     }
-                    $('#work-table').append(element);
-                    // 填充标签选择搜索框
-                    var labelList = res.data.labelList;
-                    element = '';
-                    for(i in labelList) {
-                        element += `<option value="${labelList[i].label_id}">${labelList[i].label_name}</option>`;
-                    }
-                    $('#label-serach').append(element);
-                    form.render('select');
-                    if(tableList.length > 0) {
-                        form.val("add-item", {
-                            "table_id": tableList[0].table_id,
+                    $('#fields').append(element);
+                    // 渲染表单
+                    form.render('select', 'add-item');          // 下拉选择
+                    for(i in dateList) {            // 日期
+                        laydate.render({
+                            elem: '#' + dateList[i]
                         });
-                        renderTable(tableList[0].table_id);
                     }
+                    for(i in radioUserList) {           // 单选用户
+                        userSelectTable(tableSelect, '#' + radioUserList[i]);
+                    }
+                    userIdsList = [];            // 多选用户列表数组
+                    if(checkUserList.length > 0) {          // 多选用户
+                        departmentSelect($, form);
+                        // 定义多个多选用户全局变量
+                        for(i in checkUserList) {
+                            userIdsList[checkUserList[i]] = [];
+                        }
+                    }
+
                     layer.close(index);
                 }
             }
         );
 
         // 监听工作表下拉选择
-        var worktable;
         var dateList = [];          // 日期字段列表
         var radioUserList = [];          // 单选用户字段列表
         var checkUserList = [];          // 多选用户字段列表
-        form.on('select(work-table)', function(data){
-            if(data.value != worktable) {
-                var index = layer.load(2);
-                renderTable(data.value);
-                layer.close(index);
-                worktable = data.value;
-            }
-        });
 
         // 监听标签选择搜索框
         form.on('select(label-serach)', function(data){
@@ -213,6 +180,7 @@
         //监听提交
         form.on('submit(saveBtn)', function (data) {
             var result = data.field;
+            result.table_id = getQueryVariable('tableId');
             if(result.label_list.includes(';')) {
                 layer.msg('标签列表需用中文分号；分隔', {icon: 5});
                 return false;
@@ -229,7 +197,6 @@
                     result[checkUserList[i]] = userIdsList[checkUserList[i]].join(';');
                 }
             }
-            console.log(result);
             layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
                 layer.close(index);
                 var index = layer.load(2);

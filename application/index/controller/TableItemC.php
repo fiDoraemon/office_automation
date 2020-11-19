@@ -75,13 +75,14 @@ class TableItemC extends Controller
      *
      * @return \think\Response
      */
-    public function create()
+    public function create($tableId)
     {
         $sessionUserId = Session::get("info")["user_id"];
-        $tableList = TableWorkService::getTableList($sessionUserId);          // 获取工作表列表
+        $tableWork = TableWork::get($tableId);
         $labelList = LabelService::getLabelList();
         $data = [
-            'tableList' => $tableList,
+            'tableName' => $tableWork->table_name,
+            'fields' => $tableWork->fields,
             'labelList' => $labelList
         ];
 

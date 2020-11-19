@@ -28,6 +28,13 @@ class TableWorkService
         return $tableList;
     }
 
+    // 获取工作表的字段列表
+    public static function getTableFields($tableId) {
+        $tableWork = TableWork::get($tableId);
+
+        return $tableWork->fields;
+    }
+
     // 获取工作表条目标签列表
     public static function getItemLabelList($itemId) {
         $tableItemLabel = new TableItemLabel();
