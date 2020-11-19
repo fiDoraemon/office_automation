@@ -511,16 +511,11 @@
                         content: res.msg,
                         icon: 5,
                         anim: 6,
-                        closeBtn: 2,
                         yes: function(index, layero){
-                            layer.close(index);
-
-                            var index = parent.layer.getFrameIndex(window.name);
-                            parent.layer.close(index);
+                            return false;
                         },
                         cancel: function(index, layero){
-                            var index = parent.layer.getFrameIndex(window.name);
-                            parent.layer.close(index);
+                            return false;
                         }
                     });
                 }
