@@ -137,15 +137,15 @@ class TableItemC extends Controller
         if($fields['label_list']) {
             $labelList = explode('；', input('label_list'));
             foreach ($labelList as $label) {
-                $label = Label::get(['label_name' => $label]);
-                if(!$label) {
-                    $label = new Label();
-                    $label->label_name = $label;
-                    $label->save();
+                $labelModel = Label::get(['label_name' => $label]);
+                if(!$labelModel) {
+                    $labelModel = new Label();
+                    $labelModel->label_name = $label;
+                    $labelModel->save();
                 }
                 $tableItemLabel = new TableItemLabel();
                 $tableItemLabel->item_id = $tableItem->item_id;
-                $tableItemLabel->label_id = $label->label_id;
+                $tableItemLabel->label_id = $labelModel->label_id;
                 $tableItemLabel->save();
             }
         }
@@ -249,17 +249,17 @@ class TableItemC extends Controller
         if($fields['label_list']) {
             $labelList = explode('；', $fields['label_list']);
             foreach ($labelList as $label) {
-                $label = Label::get(['label_name' => $label]);
-                if(!$label) {
-                    $label = new Label();
-                    $label->label_name = $label;
-                    $label->save();
+                $labelModel = Label::get(['label_name' => $label]);
+                if(!$labelModel) {
+                    $labelModel = new Label();
+                    $labelModel->label_name = $label;
+                    $labelModel->save();
                 }
-                $tableItemLabel = TableItemLabel::get(['item_id' => $tableItem->item_id, 'label_id' => $label->label_id]);
+                $tableItemLabel = TableItemLabel::get(['item_id' => $tableItem->item_id, 'label_id' => $labelModel->label_id]);
                 if(!$tableItemLabel) {
                     $tableItemLabel = new TableItemLabel();
                     $tableItemLabel->item_id = $tableItem->item_id;
-                    $tableItemLabel->label_id = $label->label_id;
+                    $tableItemLabel->label_id = $labelModel->label_id;
                     $tableItemLabel->save();
                 }
             }
