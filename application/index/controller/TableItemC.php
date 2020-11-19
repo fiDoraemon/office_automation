@@ -110,7 +110,11 @@ class TableItemC extends Controller
         // 增加条目字段对应值
         foreach ($fields as $key => $value) {
             if(substr($key,0, 5) == 'field') {
-                $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
+                if(isset($fields['checkUserList'])) {
+                    $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
+                } else {
+                    $checkUserList = [];
+                }
                 if(in_array($key, $checkUserList)) {
                     $userList = explode(';', $fields[$key]);
                     foreach ($userList as $user) {

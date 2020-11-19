@@ -303,7 +303,7 @@
                             var input = `<div class="layui-input-block"><textarea name="field${fields[j].field_id}" class="layui-textarea"></textarea></div>`;
                             attr = ' layui-form-text';
                         } else if(fields[j].type == 'select') {
-                            var values = fields[j].value.split('；');
+                            var values = fields[j].value.split('，');
                             var input = `
                                 <div class="layui-input-block">
                                     <select name="field${fields[j].field_id}" lay-filter="field-select">
