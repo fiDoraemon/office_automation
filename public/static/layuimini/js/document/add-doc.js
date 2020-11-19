@@ -86,13 +86,12 @@ layui.use(['form','miniTab','upload'], function () {
         ,url: '/office_automation/public/attachment'
         ,auto: false
         ,multiple: true
-        ,number: 3              // 同时可上传的文件数量
-        ,size: 20480            // 单位 KB，最大 20MB
+        ,size: 51200            // 单位 KB，最大 50MB
         ,accept: 'file'
         ,bindAction: '#start_upload'
         ,choose: function(obj){
-            if($('#fileList').children().length > 2) {
-                return layer.msg('最多上传三个附件！');
+            if($('#fileList').children().length > 9) {
+                return layer.msg('最多上传十个附件！');
             }
             var files = this.files = obj.pushFile();         // 将每次选择的文件追加到文件队列
             $("#start_upload").removeAttr("disabled");

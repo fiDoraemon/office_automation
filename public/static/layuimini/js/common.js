@@ -188,10 +188,3 @@ function toMissionPage(missionId){
         });
     });
 }
-
-// 点击主页的刷新按钮
-function clickFreshBut() {
-    var $ = layui.$;
-
-    $('.layui-layout-right a:first-child').click();
-}

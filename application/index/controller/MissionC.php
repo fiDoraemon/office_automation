@@ -721,7 +721,7 @@ class MissionC extends Controller
             $label = input('get.label');
             $mission->alias('m')->join('oa_mission_label ml',"m.mission_id = ml.mission_id")->join('oa_label l',"l.label_id = ml.label_id and label_name like '%$label%'");
         }
-        $count = $mission->where('parent_mission_id', -1)->alias('m')->join('oa_mission_interest mi',"mi.user_id= '$sessionUserId' and m.mission_id = mi.mission_id")->count();
+        $count = $mission->where('parent_mission_id', -1)->alias('m')->join('oa_mission_interest mi',"mi.user_id= '$sessionUserId' and m.mission_id = mi.mission_id")->group('m.mission_id')->count();
         // 如果传入关键词、项目代号、标签、根任务 TODO
         if(input('get.project_id') != '') {            // 关联项目
             $mission->where('project_id',input('get.project_id'));
@@ -736,7 +736,7 @@ class MissionC extends Controller
         } else {
             $mission->order('mission_id desc');
         }
-        $missions = $mission->alias('m')->join('oa_mission_interest mi',"mi.user_id= '$sessionUserId' and m.mission_id = mi.mission_id")->field('m.mission_id,mission_title,assignee_id,status,project_id,label')->page("$page, $limit")->select();
+        $missions = $mission->alias('m')->join('oa_mission_interest mi',"mi.user_id= '$sessionUserId' and m.mission_id = mi.mission_id")->group('m.mission_id')->page("$page, $limit")->field('m.mission_id,mission_title,assignee_id,status,project_id,label')->select();
 
         // 处理结果集
         foreach ($missions as $one) {
@@ -994,32 +994,32 @@ class MissionC extends Controller
             ]);
         }
         // 继承关注人
-//        if($type == 'new' || $type == 'minute') {
-//            $interestList = MissionService::getInterestList($id);
-//            foreach ($interestList as $interest) {
-//                $missionInterest = new MissionInterest();
-//                $missionInterest->mission_id = $mission->mission_id;
-//                $missionInterest->user_id = $interest->user_id;
-//                $missionInterest->save();
-//            }
-//        } else {
-//            $interestList = MissionService::getInterestList($id);
-//            $existInterestList = MissionService::getInterestList($missionId);
-//            foreach ($interestList as $interest) {
-//                $result = true;
-//                foreach ($existInterestList as $existInterest) {
-//                    if($existInterest->user_id == $interest->user_id) {
-//                        $result = false;
-//                    }
-//                }
-//                if($result) {
-//                    $missionInterest = new MissionInterest();
-//                    $missionInterest->mission_id = $missionId;
-//                    $missionInterest->user_id = $interest->user_id;
-//                    $missionInterest->save();
-//                }
-//            }
-//        }
+        if($type == 'new' || $type == 'minute') {
+            $interestList = MissionService::getInterestList($id);
+            foreach ($interestList as $interest) {
+                $missionInterest = new MissionInterest();
+                $missionInterest->mission_id = $mission->mission_id;
+                $missionInterest->user_id = $interest->user_id;
+                $missionInterest->save();
+            }
+        } else {
+            $interestList = MissionService::getInterestList($id);           // 继承的关注人列表
+            $existInterestList = MissionService::getInterestList($missionId);           // 已关注人列表
+            foreach ($interestList as $interest) {
+                $result = true;
+                foreach ($existInterestList as $existInterest) {
+                    if($existInterest->user_id == $interest->user_id) {
+                        $result = false;
+                    }
+                }
+                if($result) {
+                    $missionInterest = new MissionInterest();
+                    $missionInterest->mission_id = $missionId;
+                    $missionInterest->user_id = $interest->user_id;
+                    $missionInterest->save();
+                }
+            }
+        }
         // 发送钉钉消息
         $data = DataEnum::$msgData;
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
@@ -1078,28 +1078,41 @@ class MissionC extends Controller
     }
 
     /**
-     * 获取父任务详情
+     * 获取任务树任务详情
      * @param $id
      * @return array
      * @throws \think\exception\DbException
      */
-    public function getParentDetail($id) {
+    public function getMissionDetail($id) {
 
         $mission = Mission::get($id);
-        $nameArray = array();
-
+        $userList = [];
         if($mission->missionInterests) {
             foreach ($mission->missionInterests as $missionInterest) {
-                array_push($nameArray, $missionInterest->user->user_name);
+                array_push($userList, $missionInterest->user->user_name);
             }
         }
-        $interestNames = implode('，', $nameArray);
         $data = [
-            'interestList' => $interestNames,
-            'parent_mission_id' => $mission->parent_mission_id
+            'interestList' => implode('，', $userList),
+            'parentMissiond' => $mission->parent_mission_id
         ];
 
         return Result::returnResult(Result::SUCCESS, $data);
+    }
+
+    // 获取任务的根任务
+    public function getRootMissionId($missionId)
+    {
+        while (true) {
+            $mission = Mission::get($missionId);
+            if($mission->parent_mission_id == -1) {
+                return Result::returnResult(Result::SUCCESS, $mission->mission_id);
+            } else if($mission->parent_mission_id == 0){
+                return Result::returnResult(Result::HAVE_NO_ROOT);;
+            } else {
+                $missionId = $mission->parent_mission_id;
+            }
+        }
     }
 
     /**

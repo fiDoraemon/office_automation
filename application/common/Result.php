@@ -39,6 +39,7 @@ class Result
     const EXIST_USER                    = 31;
     const OBJECT_NOT_EXIST              = 32;
     const PIC_UPLOAD_FAIL               = 33;
+    const HAVE_NO_ROOT                  = 34;
 
     // 对应结果
     public static $resultMsg = [
@@ -74,7 +75,8 @@ class Result
         self::LACK_REQUIRED_PARAM       => '缺少必需参数',
         self::EXIST_USER                => '该用户已经存在',
         self::OBJECT_NOT_EXIST          => '对象不存在',
-        self::PIC_UPLOAD_FAIL           => '图片上传失败'
+        self::PIC_UPLOAD_FAIL           => '图片上传失败',
+        self::HAVE_NO_ROOT              => '没有根任务'
     ];
 
     // 返回结果

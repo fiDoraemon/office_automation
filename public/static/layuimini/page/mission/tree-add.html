@@ -9,6 +9,11 @@
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <style>
+        /* 关注人列表 */
+        .layui-input-inline .interestList {
+            padding: 10px;
+            color: #777;
+        }
     </style>
 </head>
 <body>
@@ -23,11 +28,11 @@
     </div>
     <div class="layui-form-item">
         <label class="layui-form-label">继承关注人</label>
-        <div class="layui-input-inline">
+        <div class="layui-input-inline" style="width: 5%">
             <input type="checkbox" name="extend-interest" lay-skin="switch" lay-text="是|否" checked="">
         </div>
-        <div class="layui-input-inline">
-            <span id="interest-users"></span>
+        <div class="layui-input-inline" style="width: 50%">
+            <div class="interestList"></div>
         </div>
     </div>
     <div class="layui-form-item">
@@ -87,7 +92,7 @@
     <div class="layui-form-item">
         <div class="layui-input-block">
             <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">提交</button>
-            <button class="layui-btn layui-btn-normal" id="cancel">取消</button>
+            <button class="layui-btn" id="cancel">取消</button>
         </div>
     </div>
 </div>
@@ -103,9 +108,11 @@
             tableSelect = layui.tableSelect;
 
         //日期
+        var date = new Date().toLocaleDateString().replace(/\//g, '-');
         lay('.date').each(function(){
             laydate.render({
-                elem: this
+                elem: this,
+                value: date
             });
         });
 
@@ -201,13 +208,15 @@
             }
         });
 
-        // 获取父任务详情（关注人列表和是否父任务）
+        // 获取任务详情（关注人列表和是否父任务）
         $.get(
-            "/office_automation/public/index/mission_c/getParentDetail?id=" + getQueryVariable('id'),
+            "/office_automation/public/index/mission_c/getMissionDetail?id=" + getQueryVariable('id'),
             function (res) {
                 if(res.code == 0) {
-                    $('#interest-users').text(res.data.interestList);
-                    if(res.data.parent_mission_id == -1) {
+                    var interestList = res.data.interestList;
+                    $('.interestList').text(interestList);
+                    var parentMissionId = res.data.parentMissionId;
+                    if(parentMissionId == -1) {
                         $('#sibling').attr('disabled', true);
                     }
                 }

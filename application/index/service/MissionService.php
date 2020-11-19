@@ -137,7 +137,7 @@ class MissionService
     // 获取任务关注人列表
     public static function getInterestList($missionId) {
         $missionInterest = new MissionInterest();
-        $interestList = $missionInterest->where('mission-id', $missionId)->select();
+        $interestList = $missionInterest->where('mission_id', $missionId)->select();
 
         return $interestList;
     }

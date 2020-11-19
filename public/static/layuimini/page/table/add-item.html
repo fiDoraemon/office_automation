@@ -92,12 +92,12 @@
                             var input = `<div class="layui-input-block"><textarea name="field${fields[j].field_id}" class="layui-textarea"></textarea></div>`;
                             attr = ' layui-form-text';
                         } else if(fields[j].type == 'select') {
-                            var values = fields[j].value.split('；');
+                            var values = fields[j].value.split('，');
                             var input = `
-                        <div class="layui-input-block">
-                            <select name="field${fields[j].field_id}" lay-filter="field-select">
-                                <option value=""></option>
-                        `;
+                            <div class="layui-input-block">
+                                <select name="field${fields[j].field_id}" lay-filter="field-select">
+                                    <option value=""></option>
+                            `;
                             for(k in values) {
                                 input += `<option value="${values[k]}">${values[k]}</option>`;
                             }
@@ -209,12 +209,10 @@
                             layer.alert('提交成功！', {title: '提示'},
                                 function (index) {
                                     layer.close(index);
-                                    location.reload();
-                                    // 打开新的窗口
-                                    miniTab.openNewTabByIframe({
-                                        href: "page/table/item-index.html",
-                                        title: "工作表列表",
-                                    });
+                                    // 刷新父页面再关闭自身
+                                    parent.location.reload();
+                                    var index = parent.layer.getFrameIndex(window.name);
+                                    parent.layer.close(index);
                                 }
                             );
                         } else {

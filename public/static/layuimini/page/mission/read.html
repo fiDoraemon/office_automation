@@ -25,10 +25,6 @@
             font-size: 10px;
             padding-top: 10px;
         }
-        /* 返回按钮 */
-        .return-btn {
-            margin: 40px 0;
-        }
 
     </style>
 </head>
@@ -203,8 +199,9 @@
         </div>
         <div class="layui-form-item">
             <div class="layui-input-block">
-                <button class="layui-btn layui-btn-normal return-btn" lay-submit lay-filter="saveBtn">提交</button>
-                <a class="layui-btn layui-btn-normal" id="mission-tree">显示任务树</a>
+                <button class="layui-btn layui-btn-normal return-btn" lay-submit lay-filter="saveBtn" style="margin: 40px 0;">提交</button>
+                <button class="layui-btn" id="child-tree">子任务树</button>
+                <button class="layui-btn layui-btn-primary" id="root-tree">根任务树</button>
             </div>
         </div>
     </div>
@@ -269,7 +266,7 @@
             ,url: '/office_automation/public/attachment'
             ,auto: false
             ,multiple: true
-            ,size: 51200            // 单位 KB，最大 20MB
+            ,size: 51200            // 单位 KB，最大 50MB
             ,accept: 'file'
             ,bindAction: '#start_upload'
             ,choose: function(obj){
@@ -689,16 +686,30 @@
             return false;
         });
 
-        // 打开任务树
-        $('#mission-tree').click(function () {
+        // 打开子任务树
+        $('#child-tree').click(function () {
             window.location.href = 'tree-view.html?id=' + $('#mission_id').val();
+        });
+        // 打开根任务树
+        $('#root-tree').click(function () {
+            // 获取任务的根任务
+            $.get(
+                "/office_automation/public/index/mission_c/getRootMissionId?missionId=" + getQueryVariable('id'),
+                function(res){
+                    if(res.code == 0) {
+                        window.location.href = 'tree-view.html?id=' + res.data;
+                    } else {
+                        layer.msg(res.msg, {icon: 5});
+                    }
+                }
+            );
         });
 
         // 加进任务浏览记录
         $.get(
             "/office_automation/public/index/mission_c/recordMissionView?missionId=" + getQueryVariable('id'),
             function(res){
-                if(res.data) {
+                if(res.code == 0) {
                     console.log('提示：已加入浏览任务列表');
                 }
             }

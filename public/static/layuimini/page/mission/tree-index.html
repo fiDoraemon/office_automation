@@ -11,6 +11,14 @@
 
     <style>
 
+        /* 链接 */
+        .url {
+            color: #1E9FFF;
+        }
+        .url:hover {
+            color: #0567b0;
+            cursor: pointer;
+        }
         /* 时间戳列表 */
         .record-list li {
             text-align: center;
@@ -93,7 +101,11 @@
             cols: [[
                 {type: "checkbox", width: '5%'},
                 {field: 'mission_id', width: '5%', title: 'ID', sort: true},
-                {field: 'mission_title', width: '25%', title: '任务标题'},
+                {field: 'mission_title', width: '25%', title: '任务标题',
+                    templet: function(d){
+                        return `<a class="url" lay-event="read">${d.mission_title}</a>`;
+                    }
+                },
                 {field: 'assignee_name', width: '10%', title: '处理人', align: "center"},
                 {field: 'status', width: '10%', title: '任务状态', align: "center"},
                 {field: 'project_id', width: '10%', title: '项目代号', sort: true, align: "center"},
@@ -146,29 +158,25 @@
                     title: '任务树视图',
                     type: 2,
                     content: '../../page/mission/tree-view.html?id=' + data.mission_id,
-                    btn: ['返回'],
                     shade: 0.2,
                     maxmin:true,
                     shadeClose: true,
-                    area: ['100%', '100%'],
-                    yes: function(index, layero){
-                        var iframeWin = window[layero.find('iframe')[0]['name']];           //得到iframe页的窗口对象
-                        var array = iframeWin['location'].pathname.split('/');              // 分隔当前窗口的 url 为数组
-
-                        if(array[array.length - 1] == 'tree-view.html') {
-                            layer.close(index);
-                        } else {
-                            window.history.go(-1);
-                        }
-                    }
+                    area: ['100%', '100%']
+                    // yes: function(index, layero){
+                    //     var iframeWin = window[layero.find('iframe')[0]['name']];           //得到iframe页的窗口对象
+                    //     var array = iframeWin['location'].pathname.split('/');              // 分隔当前窗口的 url 为数组
+                    //
+                    //     if(array[array.length - 1] == 'tree-view.html') {
+                    //         layer.close(index);
+                    //     } else {
+                    //         window.history.go(-1);
+                    //     }
+                    // }
                 });
 
                 return false;
-            // } else if (obj.event === 'relateChild') {
-            //     layer.confirm('真的删除行么', function (index) {
-            //         obj.del();
-            //         layer.close(index);
-            //     });
+            } else if (obj.event === 'read') {
+                toMissionPage(data.mission_id);
             } else if (obj.event === 'addTime') {
                 layer.confirm('确定要盖上今日的时间戳吗', {icon: 3, title:'提示'}, function (index) {
                     layer.close(index);
