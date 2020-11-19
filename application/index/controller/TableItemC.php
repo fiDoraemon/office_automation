@@ -213,7 +213,11 @@ class TableItemC extends Controller
         // 更新条目字段信息
         foreach ($fields as $key => $value) {
             if(substr($key,0, 5) == 'field') {
-                $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
+                if(isset($fields['checkUserList'])) {
+                    $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
+                } else {
+                    $checkUserList = [];
+                }
                 if(!in_array($key, $checkUserList)) {
                     $tableFiledValue = TableFieldValue::get(['item_id' => $tableItem->item_id, 'field_id' => substr($key,5)]);
                     $tableFiledValue->field_value = $value;

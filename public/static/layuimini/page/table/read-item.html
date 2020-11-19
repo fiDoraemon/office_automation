@@ -295,9 +295,9 @@
                     var fieldValues = {};           // 工作表字段值
                     userIdsList = [];            // 多选用户列表数组
                     element = '';
+                    var dateList = [];          // 日期字段列表
                     for (j in fields) {
                         var attr = '';          // textarea 属性
-                        var dateList = [];          // 日期字段列表
                         // 判断字段类型
                         if(fields[j].type == 'textarea') {
                             var input = `<div class="layui-input-block"><textarea name="field${fields[j].field_id}" class="layui-textarea"></textarea></div>`;
@@ -317,6 +317,9 @@
                             var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" autocomplete="off" class="layui-input" readonly></div>`;
                             dateList.push('field' + fields[j].field_id);
                         } else if(fields[j].type == 'user') {
+                            if(fields[j].field_value != 0) {
+                                fields[j].field_value == '';
+                            }
                             var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" ts-selected="${fields[j].field_value}" readonly></div>`;
                             fields[j].field_value = fields[j].field_value2;
                             radioUserList.push('field' + fields[j].field_id);
@@ -360,7 +363,6 @@
                     }
                     $('#fields').append(element);
                     // 表单赋值
-                    console.log(fieldValues);
                     form.val("setValue", fieldValues);
                     // 渲染表单
                     form.render('select');          // 下拉选择
@@ -420,7 +422,12 @@
             // 处理单选和多选用户
             if(radioUserList.length > 0) {
                 for (i in radioUserList) {
-                    result[radioUserList[i]] = $('#' + radioUserList[i]).attr('ts-selected');
+                    var userId = $('#' + radioUserList[i]).attr('ts-selected');
+                    if(userId == '' || userId == null || userId == undefined) {
+                        result[radioUserList[i]] = 0;
+                    } else {
+                        result[radioUserList[i]] = $('#' + radioUserList[i]).attr('ts-selected');
+                    }
                 }
             }
             if(checkUserList.length > 0) {

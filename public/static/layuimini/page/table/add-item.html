@@ -188,7 +188,12 @@
             // 处理单选和多选用户
             if(radioUserList.length > 0) {
                 for (i in radioUserList) {
-                    result[radioUserList[i]] = $('#' + radioUserList[i]).attr('ts-selected');
+                    var userId = $('#' + radioUserList[i]).attr('ts-selected');
+                    if(userId == '' || userId == null || userId == undefined) {
+                        result[radioUserList[i]] = 0;
+                    } else {
+                        result[radioUserList[i]] = $('#' + radioUserList[i]).attr('ts-selected');
+                    }
                 }
             }
             if(checkUserList.length > 0) {
@@ -197,6 +202,7 @@
                     result[checkUserList[i]] = userIdsList[checkUserList[i]].join(';');
                 }
             }
+            console.log(result);
             layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
                 layer.close(index);
                 var index = layer.load(2);
