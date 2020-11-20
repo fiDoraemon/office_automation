@@ -84,47 +84,46 @@
         var worktable;
         // 渲染表格
         function renderTable(value) {
+            // 获取对应的字段列表
             var fields;
             for(i in tableList) {
                 if(tableList[i].table_id == value) {
                     fields = tableList[i].fields;
                 }
             }
+            // 获取需要显示的列
+            var cols = [
+                {field: 'item_id', width: 80, title: 'ID', align: "center", sort: true},
+                {field: 'item_title', width: 150, title: '标题',
+                    templet: function(d){
+                        return `<a class="url" lay-event="read">${d.item_title}</a>`;
+                    }
+                },
+                {field: 'creator', width: 80, title: '发起人', align: "center"},
+                {field: 'labelList', width: 150, title: '标签', align: "center"},
+                {field: 'create_time', width: 170, title: '创建时间', align: "center"},
+                {field: 'update_time', width: 170, title: '更新时间', sort: true, align: "center"},
+                {title: '操作', width: 80, toolbar: '#tableItemListBar', align: "center"}
+            ];
+            for (let i in fields) {
+                if(fields[i].show == 1) {
+                    cols.splice(cols.length - 4, 0, {field: 'field' + fields[i].field_id, width: 170, title: fields[i].name, align: "center",
+                        templet: function(d){
+                            return d.fields[i].field_value;
+                        }
+                    });
+                }
+            }
+            cols.splice(3, 0,
+
+            );
             // 渲染工作表条目列表
             table.render({
                 elem: '#tableItemList',
                 url: '/office_automation/public/item?tableId=' + value,
                 toolbar: '#toolbar',
                 defaultToolbar: ['filter', 'exports', 'print'],
-                cols: [[
-                    {type: "checkbox", width: '3%'},
-                    {field: 'item_id', width: '5%', title: 'ID', align: "center", sort: true},
-                    {field: 'item_title', width: '10%', title: '标题',
-                        templet: function(d){
-                            return `<a class="url" lay-event="read">${d.item_title}</a>`;
-                        }
-                    },
-                    {field: 'creator', width: '8%', title: '发起人', align: "center"},
-                    {field: 'field1', width: '10%', title: fields[0].name, align: "center",
-                        templet: function(d){
-                            return d.fields[0].field_value;
-                        }
-                    },
-                    {field: 'field2', width: '10%', title: fields[1].name, align: "center",
-                        templet: function(d){
-                            return d.fields[1].field_value;
-                        }
-                    },
-                    {field: 'field3', width: '10%', title: fields[2].name, align: "center",
-                        templet: function(d){
-                            return d.fields[2].field_value;
-                        }
-                    },
-                    {field: 'labelList', width: '14%', title: '标签', align: "center"},
-                    {field: 'create_time', width: '10%', title: '创建时间', align: "center"},
-                    {field: 'update_time', width: '10%', title: '更新时间', sort: true, align: "center"},
-                    {title: '操作', width: '10%', toolbar: '#tableItemListBar', align: "center"}
-                ]],
+                cols: [cols],
                 id: 'tableItemList',
                 autoSort: false,
                 initSort: {field:'item_id', type:'desc'},

@@ -57,7 +57,7 @@ class TableItemC extends Controller
             // 获取标签列表
             $tableItem->labelList = implode('；', TableWorkService::getItemLabelList($tableItem->item_id));
             // 获取条目字段列表
-            $tableItem->fields = TableWorkService::getPartItemFieldList($tableItem);
+            $tableItem->fields = TableWorkService::getShowItemFieldList($tableItem);
             unset($tableItem->creator_id);
         }
 

@@ -69,6 +69,10 @@ class TableWorkService
                 $tableFieldUser = new TableFieldUser();
                 $userList = $tableFieldUser->where('field_id', $tableField->field_id)->where('item_id', $tableItem->item_id)->alias('tfu')->join('oa_user u', 'u.user_id = tfu.user_id')->field('tfu.user_id,user_name')->select();
                 $tableField->users = $userList;
+            } else {
+                if($tableField->field_value == null) {
+                    $tableField->field_value = '';
+                }
             }
         }
 
@@ -76,13 +80,12 @@ class TableWorkService
     }
 
     // 获取条目部门字段
-    public static function getPartItemFieldList($tableItem) {
+    public static function getShowItemFieldList($tableItem) {
         $itemId = $tableItem->item_id;
         $tableField = new TableField();
         $tableFieldList = $tableField->alias('tf')->where('table_id', $tableItem->table_id)
             ->where('status', 1)
             ->order('field_id,sort')
-            ->limit(3)
             ->alias('tf')
             ->join('oa_table_field_value tfv', "tfv.field_id = tf.field_id and tfv.item_id = $itemId", 'LEFT')
             ->field('tf.field_id,name,type,value,field_value')
@@ -91,10 +94,9 @@ class TableWorkService
         foreach ($tableFieldList as $tableField) {
             if($tableField->type == 'user') {
                 if($tableField->field_value == null) {
-                    $tableField->field_value = 0;
-                    $tableField->field_value2 = '';
+                    $tableField->field_value = '';
                 } else {
-                    $tableField->field_value2 = UserService::userIdToName($tableField->field_value, 1);
+                    $tableField->field_value = UserService::userIdToName($tableField->field_value, 1);
                 }
             } else if($tableField->type == 'users') {
                 $fieldValue = [];
@@ -104,6 +106,10 @@ class TableWorkService
                     array_push($fieldValue, $user->user_name);
                 }
                 $tableField->field_value = implode('；', $fieldValue);
+            } else {
+                if($tableField->field_value == null) {
+                    $tableField->field_value = '';
+                }
             }
         }
 
