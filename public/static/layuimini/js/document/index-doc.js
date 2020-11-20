@@ -1,7 +1,7 @@
 layui.use(['form', 'table'], function () {
-    var $ = layui.jquery,
-        form = layui.form,
-        table = layui.table;
+    $ = layui.jquery,
+    form = layui.form,
+    table = layui.table;
 
     var isDocAdmin = false;  //标识是否是文控
 
@@ -70,9 +70,9 @@ layui.use(['form', 'table'], function () {
                 {title: '操作',       width:100,         align: "center",
                     templet: function(d){
                         if(isDocAdmin){
-                            return `<a class="layui-btn layui-btn-xs"  href="/Office_Automation/public/upload/${d.path}" download="${d.file_code} ${d.source_name}">下载</a></a>`;
+                            return `<a class="layui-btn layui-btn-xs"  href="/Office_Automation/public/upload/${d.path}" download="${d.file_code} ${d.source_name}">下载</a>`;
                         }
-                        return "无权下载";
+                        return '<a class="layui-btn layui-btn-xs subscribe-btn" onclick="borrowDoc('+ (d.request_id+'') +');">借阅</a>';
                     }
                 }
             ]],
@@ -171,4 +171,32 @@ layui.use(['form', 'table'], function () {
         return false;
     });
 
+
+
 });
+
+/**
+ * 借阅事件
+ * @param docId
+ */
+function borrowDoc(docId){
+    layer.confirm('确定借阅？', {icon: 3, title:'提示'}, function(index){
+        $.ajax({
+            url: "/office_automation/public/index.php/index/document_c/borrowDoc",
+            type: 'get',
+            data: {docId: docId},
+            success: function (res) {
+                if(res.code === 0){
+                    layer.msg("申请成功，请等待文控审批！")
+                }else if(res.code === 35){
+                    layer.msg("您已经借阅了该文档！")
+                }else if(res.code === 36){
+                    layer.msg("您已经申请过该借阅信息，请等待文控审批！")
+                }else{
+                    layer.msg("申请失败！")
+                }
+            },
+            error: function (res) {}
+        });
+    });
+}

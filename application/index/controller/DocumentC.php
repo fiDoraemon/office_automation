@@ -13,6 +13,7 @@ use app\common\Result;
 use app\common\util\curlUtil;
 use app\index\common\DataEnum;
 use app\index\model\Attachment;
+use app\index\model\DocBorrow;
 use app\index\model\DocCodeCount;
 use app\index\model\DocFile;
 use app\index\model\DocRequest;
@@ -571,6 +572,42 @@ class DocumentC
     public function getProjectStageFix($stagePre){
         $listStageFix = ProjectStageInfo::where('project_stage_pre',$stagePre) -> column('project_stage_fix');
         return $listStageFix;
+    }
+
+    /**
+     * 借阅文档
+     */
+    public function borrowDoc(){
+        $docId  = $_GET["docId"];
+        $info   = Session::get("info");
+        $userId = $info["user_id"];
+        $docBorrow = new DocBorrow();
+        //查询是否有已经提交过的借阅申请
+        $borrowInfo = $docBorrow -> where("request_id",$docId)
+                                 -> where("user_id",$userId)
+                                 -> where("effective_time", null)
+                                 -> find();
+        if(!is_null($borrowInfo)){
+            return Result::returnResult(Result::WAITING_DOC_ADMIN);
+        }
+        //查询是否过期
+        $borrowInfo = $docBorrow -> where("request_id",$docId)
+                                 -> where("user_id",$userId)
+                                 -> where("effective_time", ">" , date('Y-m-d H:i:s', time()))
+                                 -> find();
+        if(is_null($borrowInfo)){  //为空，没有符合条件的借阅信息，增加借阅信息
+            $docBorrow -> data([
+                'request_id'   =>  $docId,
+                'user_id'      =>  $userId,
+                'request_time' =>  date('Y-m-d H:i:s', time())
+            ]);
+            $resCount = $docBorrow -> save();
+            if($resCount > 0){
+                return Result::returnResult(Result::SUCCESS);
+            }
+            return Result::returnResult(Result::ERROR);
+        }
+        return Result::returnResult(Result::EXIST_BORROW);
     }
 
     /**

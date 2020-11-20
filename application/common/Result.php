@@ -40,6 +40,8 @@ class Result
     const OBJECT_NOT_EXIST              = 32;
     const PIC_UPLOAD_FAIL               = 33;
     const HAVE_NO_ROOT                  = 34;
+    const EXIST_BORROW                  = 35;
+    const WAITING_DOC_ADMIN             = 36;
 
     // 对应结果
     public static $resultMsg = [
@@ -76,7 +78,9 @@ class Result
         self::EXIST_USER                => '该用户已经存在',
         self::OBJECT_NOT_EXIST          => '对象不存在',
         self::PIC_UPLOAD_FAIL           => '图片上传失败',
-        self::HAVE_NO_ROOT              => '没有根任务'
+        self::HAVE_NO_ROOT              => '没有根任务',
+        self::EXIST_BORROW              => '已经存在借阅信息',
+        self::WAITING_DOC_ADMIN         => '等待文控审批中'
     ];
 
     // 返回结果
