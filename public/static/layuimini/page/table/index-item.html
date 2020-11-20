@@ -94,20 +94,20 @@
             // 获取需要显示的列
             var cols = [
                 {field: 'item_id', width: 80, title: 'ID', align: "center", sort: true},
-                {field: 'item_title', width: 150, title: '标题',
+                {field: 'item_title', minWidth: 150, title: '标题',
                     templet: function(d){
                         return `<a class="url" lay-event="read">${d.item_title}</a>`;
                     }
                 },
                 {field: 'creator', width: 80, title: '发起人', align: "center"},
-                {field: 'labelList', width: 150, title: '标签', align: "center"},
-                {field: 'create_time', width: 170, title: '创建时间', align: "center"},
-                {field: 'update_time', width: 170, title: '更新时间', sort: true, align: "center"},
-                {title: '操作', width: 80, toolbar: '#tableItemListBar', align: "center"}
+                {field: 'labelList', minWidth: 150, title: '标签', align: "center"},
+                {field: 'create_time', minWidth: 170, title: '创建时间', align: "center"},
+                {field: 'update_time', minWidth: 170, title: '更新时间', sort: true, align: "center"},
+                {title: '操作', minWidth: 100, toolbar: '#tableItemListBar', align: "center"}
             ];
             for (let i in fields) {
                 if(fields[i].show == 1) {
-                    cols.splice(cols.length - 4, 0, {field: 'field' + fields[i].field_id, width: 170, title: fields[i].name, align: "center",
+                    cols.splice(cols.length - 4, 0, {field: 'field' + fields[i].field_id, minWidth: 170, title: fields[i].name, align: "center",
                         templet: function(d){
                             return d.fields[i].field_value;
                         }
