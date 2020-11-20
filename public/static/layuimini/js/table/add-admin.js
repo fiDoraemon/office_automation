@@ -140,6 +140,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         "                                    <a class=\"layui-btn-xs data-count-edit icon-btn up moveup\" lay-event=\"up\"><i class=\"fa fa-arrow-up\" aria-hidden=\"true\"></i></a>\n" +
         "                                    <a class=\"layui-btn layui-btn-xs layui-btn-danger icon-btn delete\" lay-event=\"delete\"><i class=\"layui-icon layui-icon-subtraction\"></i></a>\n" +
         "                                    <a class=\"layui-btn layui-btn-xs data-count-edit icon-btn add\" lay-event=\"add\"><i class=\"layui-icon layui-icon-addition\"></i></a>\n" +
+        "                                    <input  type=\"checkbox\" lay-filter=\"switch\" name=\"isShow\" lay-skin=\"switch\" lay-text=\"ON|OFF\" class=\"item-show\">"+
         "                                </div>\n" +
         "                                <div class=\"layui-input-inline field-value\">\n" +
         "                                </div>\n" +
@@ -151,11 +152,12 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             let fieldType    = $(this).find(".fieldType").val();
             let fieldName    = $(this).find(".fieldName").val();
             let fieldValue   = $(this).find(".fieldValue").val();
+            let isShow       = $(this).find(".item-show").next().hasClass("layui-form-onswitch") ? 1 : 0;
             let field = "";
             if(fieldType === "select"){
-                field = {"fieldType":fieldType,"fieldName":fieldName,"fieldValue":fieldValue};
+                field = {"fieldType":fieldType, "fieldName":fieldName, "isShow":isShow, "fieldValue":fieldValue};
             }else{
-                field = {"fieldType":fieldType,"fieldName":fieldName};
+                field = {"fieldType":fieldType, "fieldName":fieldName, "isShow":isShow};
             }
             fieldInfos.push(field);
         });

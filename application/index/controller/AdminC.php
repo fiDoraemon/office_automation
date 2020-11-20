@@ -389,16 +389,13 @@ class AdminC
                 foreach ($fieldList as $field){
                     $tableField = new TableField();
                     $type = $field["fieldType"];
+                    $tableField -> type  = $field["fieldType"];
+                    $tableField -> name  = $field["fieldName"];
+                    $tableField -> show  = $field["isShow"];
                     if($type == "select"){
-                        $tableField -> type  = $field["fieldType"];
-                        $tableField -> name  = $field["fieldName"];
                         $tableField -> value = $field["fieldValue"];
-                        $tableField -> table_id    = $table -> table_id;
-                    }else{
-                        $tableField -> type = $field["fieldType"];
-                        $tableField -> name = $field["fieldName"];
-                        $tableField -> table_id   = $table -> table_id;
                     }
+                    $tableField -> table_id = $table -> table_id;
                     $tableField -> save();
                 }
             }
