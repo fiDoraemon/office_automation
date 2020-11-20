@@ -14,6 +14,7 @@ use app\index\model\TableFieldUser;
 use app\index\model\TableItem;
 use app\index\model\TableItemLabel;
 use app\index\model\TableWork;
+use think\Collection;
 
 class TableWorkService
 {
@@ -49,7 +50,7 @@ class TableWorkService
         $tableField = new TableField();
         $tableFieldList = $tableField->alias('tf')->where('table_id', $tableItem->table_id)
             ->where('status', 1)
-            ->order('sort')
+            ->order('field_id,sort')
             ->alias('tf')
             ->join('oa_table_field_value tfv', "tfv.field_id = tf.field_id and tfv.item_id = $itemId", 'LEFT')
             ->field('tf.field_id,name,type,value,field_value')
@@ -57,7 +58,12 @@ class TableWorkService
 
         foreach ($tableFieldList as $tableField) {
             if($tableField->type == 'user') {            // 单选用户
-                $tableField->field_value2 = UserService::userIdToName($tableField->field_value, 1);
+                if($tableField->field_value == null) {
+                    $tableField->field_value = 0;
+                    $tableField->field_value2 = '';
+                } else {
+                    $tableField->field_value2 = UserService::userIdToName($tableField->field_value, 1);
+                }
             } else if($tableField->type == 'users') {            // 多选用户
                 // 获取多选用户列表
                 $tableFieldUser = new TableFieldUser();
@@ -75,7 +81,7 @@ class TableWorkService
         $tableField = new TableField();
         $tableFieldList = $tableField->alias('tf')->where('table_id', $tableItem->table_id)
             ->where('status', 1)
-            ->order('sort')
+            ->order('field_id,sort')
             ->limit(3)
             ->alias('tf')
             ->join('oa_table_field_value tfv', "tfv.field_id = tf.field_id and tfv.item_id = $itemId", 'LEFT')
@@ -84,7 +90,12 @@ class TableWorkService
 
         foreach ($tableFieldList as $tableField) {
             if($tableField->type == 'user') {
-                $tableField->field_value = UserService::userIdToName($tableField->field_value, 1);
+                if($tableField->field_value == null) {
+                    $tableField->field_value = 0;
+                    $tableField->field_value2 = '';
+                } else {
+                    $tableField->field_value2 = UserService::userIdToName($tableField->field_value, 1);
+                }
             } else if($tableField->type == 'users') {
                 $fieldValue = [];
                 $tableFieldUser = new TableFieldUser();

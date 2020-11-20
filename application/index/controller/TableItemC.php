@@ -53,10 +53,12 @@ class TableItemC extends Controller
         $tableItemList = $tableItem->where('table_id', $tableId)->group("ti.item_id")->page("$page, $limit")->select();
         
         foreach ($tableItemList as $tableItem) {
+            $tableItem->creator = UserService::userIdToName($tableItem->creator_id, 1);
             // 获取标签列表
             $tableItem->labelList = implode('；', TableWorkService::getItemLabelList($tableItem->item_id));
             // 获取条目字段列表
             $tableItem->fields = TableWorkService::getPartItemFieldList($tableItem);
+            unset($tableItem->creator_id);
         }
 
         return Result::returnResult(Result::SUCCESS, $tableItemList, $count);
@@ -220,6 +222,11 @@ class TableItemC extends Controller
                 }
                 if(!in_array($key, $checkUserList)) {
                     $tableFiledValue = TableFieldValue::get(['item_id' => $tableItem->item_id, 'field_id' => substr($key,5)]);
+                    if(!$tableFiledValue) {
+                        $tableFiledValue = new TableFieldValue();
+                        $tableFiledValue->item_id = $tableItem->item_id;
+                        $tableFiledValue->field_id = substr($key,5);
+                    }
                     $tableFiledValue->field_value = $value;
                     $tableFiledValue->save();
                 } else {

@@ -18,7 +18,10 @@ use app\index\model\User;
  */
 class UserService
 {
-    // 工号和名字相互转换
+    /*
+     * 工号和名字相互转换
+     * 1：工号转名字，2：名字转工号
+     */
     public static function userIdToName($string, $type) {
         if($type = 1) {
             $user = User::get(['user_id' => $string]);

@@ -59,7 +59,7 @@
 
             <script type="text/html" id="toolbar">
                 <div class="layui-btn-container">
-                    <button class="layui-btn layui-btn-primary layui-btn-sm" lay-event="add">填写</button>
+                    <button class="layui-btn layui-btn-primary layui-btn-sm" lay-event="add">新增条目</button>
                     <!--<button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>-->
                 </div>
             </script>
@@ -104,7 +104,7 @@
                             return `<a class="url" lay-event="read">${d.item_title}</a>`;
                         }
                     },
-                    {field: 'creator_id', width: '8%', title: '发起人', align: "center"},
+                    {field: 'creator', width: '8%', title: '发起人', align: "center"},
                     {field: 'field1', width: '10%', title: fields[0].name, align: "center",
                         templet: function(d){
                             return d.fields[0].field_value;
@@ -206,13 +206,13 @@
          * toolbar监听事件
          */
         table.on('toolbar(tableItemList)', function (obj) {
-            if($('#work-table').val() == '') {
-                layer.msg('请先选择工作表', {icon: 5});
-                return false;
-            }
             if (obj.event === 'add') {  // 监听添加操作
+                if($('#work-table').val() == '') {
+                    layer.msg('请先选择工作表', {icon: 5});
+                    return false;
+                }
                 var index = layer.open({
-                    title: '填写工作表',
+                    title: '新增条目',
                     type: 2,
                     shade: 0.2,
                     maxmin:true,
@@ -223,10 +223,6 @@
                 $(window).on("resize", function () {
                     // layer.full(index);           TODO
                 });
-            } else if (obj.event === 'delete') {  // 监听删除操作
-                // var checkStatus = table.checkStatus('currentTableId')
-                //     , data = checkStatus.data;
-                // layer.alert(JSON.stringify(data));
             }
         });
 
@@ -251,6 +247,10 @@
             }
         });
     });
+    function reloadTable() {
+        var $ = layui.$;
+        $("buttom[type='submit']").click();
+    }
 </script>
 
 </body>

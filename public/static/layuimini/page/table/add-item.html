@@ -10,21 +10,31 @@
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <link rel="stylesheet" href="../../css/common.css">
     <style>
-
+        /* 表单标签（暂时） */
+        #fields .layui-form-label {
+            width: 120px !important;
+        }
+        #fields .layui-input-block{
+            margin-left: 150px !important;
+        }
+        /* 标签 */
+        .layui-form-label {
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <div class="layuimini-container" style="padding: 30px 30px;">
+    <div class="layuimini-container">
         <div class="layuimini-main">
-            <form class="layui-form layui-form-pane" lay-filter="add-item">
+            <form class="layui-form layuimini-form" lay-filter="add-item">
                 <div class="layui-form-item">
-                    <label class="layui-form-label">工作表</label>
+                    <label class="layui-form-label required">工作表</label>
                     <div class="layui-input-inline" style="width: 30%">
                         <input type="text" id="table-name" autocomplete="off" class="layui-input" readonly>
                     </div>
                 </div>
                 <div class="layui-form-item">
-                    <label class="layui-form-label">标题</label>
+                    <label class="layui-form-label required">标题</label>
                     <div class="layui-input-block">
                         <input type="text" name="item_title" lay-verify="required" lay-reqtext="标题不能为空" autocomplete="off" placeholder="请输入标题" class="layui-input">
                     </div>
@@ -215,8 +225,8 @@
                             layer.alert('提交成功！', {title: '提示'},
                                 function (index) {
                                     layer.close(index);
-                                    // 刷新父页面再关闭自身
-                                    parent.location.reload();
+                                    // 刷新父页面表格
+                                    parent.reloadTable();
                                     var index = parent.layer.getFrameIndex(window.name);
                                     parent.layer.close(index);
                                 }
