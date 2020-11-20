@@ -272,16 +272,16 @@ class MissionC extends Controller
             $useridArray = array();          // 钉钉 userid 列表
 
             foreach ($userIds as $userId) {
-                if($userId == $mission->reporter_id || $userId == $mission->assignee_id) {          // 过滤发起人和处理人
-                    continue;
-                }
+//                if($userId == $mission->reporter_id || $userId == $mission->assignee_id) {          // 过滤发起人和处理人
+//                    continue;
+//                }
                 $missionInterest = new MissionInterest();
                 $missionInterest->mission_id = $mission->mission_id;
                 $missionInterest->user_id = $userId;
                 $missionInterest->save();
 
                 $user = User::getByUserId($userId);
-                if($user->dd_userid != '' && $user->dd_open == 1) {
+                if($userId != $sessionUserId && $user->dd_userid != '' && $user->dd_open == 1) {            // 过滤当前用户
                     array_push($useridArray, $user->dd_userid);
                 }
             }
@@ -474,9 +474,9 @@ class MissionC extends Controller
             $cancelUserIds = array_diff($currentUserIds, $userIds);        // 取消关注的人
 
             foreach ($newUserIds as $userId) {
-                if($userId == $mission->reporter_id || $userId == $mission->assignee_id) {          // 过滤发起人和处理人
-                    continue;
-                }
+//                if($userId == $mission->reporter_id || $userId == $mission->assignee_id) {          // 过滤发起人和处理人
+//                    continue;
+//                }
                 $missionInterest = new MissionInterest();
                 $missionInterest->mission_id = $id;
                 $missionInterest->user_id = $userId;
