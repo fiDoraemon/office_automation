@@ -504,6 +504,7 @@ class AdminC
                     $type   = $field["fieldType"];
                     $name   = $field["fieldName"];
                     $sort   = $field["sort"];
+                    $isShow = $field["isShow"];
                     $tableField = new TableField();
                     if($id != ""){   //旧字段
                         $status = $field["status"];
@@ -511,6 +512,7 @@ class AdminC
                         $newField -> name   = $name;
                         $newField -> status = $status;
                         $newField -> sort   = $sort;
+                        $newField -> show   = $isShow;
                         if($type == "select"){
                             $newField -> value = $field["fieldValue"];;
                         }

@@ -4,6 +4,7 @@ layui.use(['form', 'table'], function () {
     table = layui.table;
 
     var isDocAdmin = false;  //标识是否是文控
+    var isBorrow   = false;  //标识是否是已借阅
 
     /**
      * 获取所需要的查询条件信息
@@ -29,6 +30,11 @@ layui.use(['form', 'table'], function () {
             $("#stageSelect").append($projectStages);
             $("#authorSelect").append($authors);
             tableRender();   //防止出现文控没有下载权限情况
+            // if(isDocAdmin){
+            //     $("#borrow").remove();
+            // }else{
+            //     $("#approval").remove();
+            // }
             form.render('select');
         },
         error: function(res){
@@ -40,17 +46,8 @@ layui.use(['form', 'table'], function () {
             elem: '#fileList',
             url: '/office_automation/public/index.php/index/document_c/getAllDocFile',
             toolbar: '#toolbar',
-            defaultToolbar: ['filter', 'exports', 'print', {
-                title:    '提示',
-                layEvent: 'LAYTABLE_TIPS',
-                icon:     'layui-icon-tips'
-            }],
             cols: [[
-                {title: ' '  , width:50 ,
-                    templet: function(d){
-                        return `<i class="layui-icon layui-icon-file-b"></i>`;
-                    }
-                },
+                {title: ' '  , width:50 , templet: function(d){return `<i class="layui-icon layui-icon-file-b"></i>`;}},
                 {field: 'file_code',  title: '文档编码', width:180},
                 {field: 'source_name',title: '文件名' ,
                     templet: function(d){
@@ -171,7 +168,31 @@ layui.use(['form', 'table'], function () {
         return false;
     });
 
-
+    /**
+     * 我发起的会议按钮监听
+     */
+    table.on('toolbar(fileListFilter)', function (obj) {
+        if (obj.event === 'borrow') {
+            table.reload('fileList', {
+                url: '/office_automation/public/index.php/index/document_c/getMyBorrow',
+            }, 'data');
+            return false;
+        }else if(obj.event === 'approval'){
+            var index = layer.open({
+                title: '待审批文档借阅',
+                type: 2,
+                shade: 0.2,
+                maxmin:true,
+                shadeClose: true,
+                area: ['100%', '100%'],
+                content: 'page/document/approval-doc.html',
+            });
+            $(window).on("resize", function () {
+                layer.full(index);
+            });
+            return false;
+        }
+    });
 
 });
 

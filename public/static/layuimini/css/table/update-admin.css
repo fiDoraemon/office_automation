@@ -66,6 +66,14 @@ ul li{
     color: #6E6E6E ;
 }
 
+.isShow{
+    float: left;
+    font-weight: bold;
+    padding-top: 10px;
+    line-height: 20px;
+    text-align: right;
+}
+
 /*上下移动行*/
 .sortablelist{position:relative;}
 .sortableitem{position:relative;}

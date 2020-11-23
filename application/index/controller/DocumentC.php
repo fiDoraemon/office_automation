@@ -611,6 +611,49 @@ class DocumentC
     }
 
     /**
+     * 查询我借阅的文档
+     */
+    public function getMyBorrow(){
+        $info   = Session::get("info");
+        $userId = $info["user_id"];
+        $docBorrow = new DocBorrow();
+        $requsetIdList = $docBorrow -> where("user_id",$userId)
+                                 -> where("effective_time", ">" , date('Y-m-d H:i:s', time()))
+                                 -> column("request_id");
+        $docFile = new DocFile();
+        $fileList = $docFile -> where("status", 1)
+                             -> where("request_id" ,"in", $requsetIdList)
+                             -> field("request_id,file_code,save_name,source_name,upload_time,path")
+                             -> order("upload_time","desc")
+                             -> select();
+        foreach ($fileList as $file){
+            $file -> author = $file -> request -> requestUser -> user_name;
+            $file -> project = $file -> request -> projectCode -> project_code;
+            $file -> stage = $file -> request -> stage;
+            $file -> remark = $file -> request -> remark;
+            unset($file -> request);
+        }
+        return Result::returnResult(Result::SUCCESS,$fileList);
+    }
+
+    /**
+     * 获取所有的文档审批申请
+     */
+    public function getAllApproval(){
+        $docBorrow = new DocBorrow();
+        $approvalList = $docBorrow -> where("effective_time", null)
+                                   -> field("request_id,user_id,request_time")
+                                   -> select();
+        foreach ($approvalList as $approval){
+            $approval -> code      = $approval -> docFile -> file_code;
+            $approval -> name      = $approval -> docFile -> source_name;
+            $approval -> user_name = $approval -> user    -> user_name;
+            unset( $approval -> docFile, $approval -> user);
+        }
+        return Result::returnResult(Result::SUCCESS,$approvalList);
+    }
+
+    /**
      * 获取所有的审批人
      */
     private function getAllReviewer(){

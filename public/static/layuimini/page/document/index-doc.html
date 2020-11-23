@@ -59,10 +59,10 @@
         </fieldset>
 
         <script type="text/html" id="toolbar">
-            <!--<div class="layui-btn-container">-->
-                <!--<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event=""> 待处理申请 </button>-->
-                <!--<button class="layui-btn layui-btn-sm" lay-event="review"> 需要我处理的申请 </button>-->
-            <!--</div>-->
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-sm" lay-event="borrow" id="borrow"> 我的借阅 </button>
+                <button class="layui-btn layui-btn-sm" lay-event="approval" id="approval"> 审批借阅 </button>
+            </div>
         </script>
 
         <table class="layui-hide" id="fileList" lay-filter="fileListFilter"></table>

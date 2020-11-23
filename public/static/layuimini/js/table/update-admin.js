@@ -181,7 +181,18 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             let name   = fieldList[i].name;
             let value  = fieldList[i].value;
             let status = fieldList[i].status;
-            let fieldInfo = "<li class=\"sortableitem\" lay-value=\"" + id + "\"><div class=\"layui-input-inline\">";
+            let show   = fieldList[i].show;
+            let fieldInfo = "<li class=\"sortableitem\" lay-value=\"" + id + "\">\n" +
+                "                <div class=\"layui-input-inline\">\n";
+            if(show === 1){
+                fieldInfo += "<span class=\"isShow\">是否显示：</span><input  type=\"checkbox\" checked lay-filter=\"switch\" name=\"isShow\" lay-skin=\"switch\" lay-text=\"ON|OFF\" class=\"show\">\n" +
+                             "</div>\n" +
+                             "<div class=\"layui-input-inline\">\n";
+            }else{
+                fieldInfo += "<span class=\"isShow\">是否显示：</span><input  type=\"checkbox\" lay-filter=\"switch\" name=\"isShow\" lay-skin=\"switch\" lay-text=\"ON|OFF\" class=\"show\">\n" +
+                             "</div>" +
+                             "<div class=\"layui-input-inline\">\n";
+            }
             fieldInfo += " <select name=\"fieldType\" style=\"float: left;\" class=\"fieldType\" lay-filter=\"select-field-type\" lay-verify=\"required\">";
             switch(type){
                 case "text":
@@ -191,7 +202,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                     fieldInfo += " <option value=\"textarea\" selected>多行文本</option>";
                     break;
                 case "select":
-                    fieldInfo += " <option value=\"select\" selected>自定义多选</option>";
+                    fieldInfo += " <option value=\"select\" selected>自定义单选</option>";
                     break;
                 case "user":
                     fieldInfo += " <option value=\"user\" selected>单选员工</option>";
@@ -239,13 +250,15 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             $("#userList").append(userInfo);
         }
     }
-
     var newField = " <li class=\"new-field sortableitem\" lay-value=\"\">\n" +
+        "                                <div class=\"layui-input-inline\">\n" +
+        "                                   <span class='isShow'>是否显示：</span><input  type=\"checkbox\" lay-filter=\"switch\" name=\"isShow\" lay-skin=\"switch\" lay-text=\"ON|OFF\" class=\"show\">" +
+        "                                </div>" +
         "                                <div class=\"layui-input-inline\">\n" +
         "                                    <select name=\"fieldType\" style=\"float: left;\" class=\"fieldType\" lay-filter=\"select-field-type\" lay-verify=\"required\">\n" +
         "                                        <option value=\"text\" selected>单行文本</option>\n" +
         "                                        <option value=\"textarea\">多行文本</option>\n" +
-        "                                        <option value=\"select\">自定义多选</option>\n" +
+        "                                        <option value=\"select\">自定义单选</option>\n" +
         "                                        <option value=\"user\">单选员工</option>\n" +
         "                                        <option value=\"users\">多选员工</option>\n" +
         "                                        <option value=\"date\">日期</option>\n" +
@@ -273,11 +286,13 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             let fieldName    = $(this).find(".fieldName").val();
             let fieldValue   = $(this).find(".fieldValue").val();
             let status       = $(this).find(".status").next().hasClass("layui-form-onswitch") ? 1 : 0;
+            let isShow       = $(this).find(".show").next().hasClass("layui-form-onswitch") ? 1 : 0;
+            console.log(isShow)
             let field = "";
             if(fieldType === "select"){
-                field = {"sort": sort++, "id": id, "fieldType": fieldType,"fieldName": fieldName,"fieldValue": fieldValue};
+                field = {"sort": sort++, "id": id, "fieldType": fieldType,"fieldName": fieldName,"isShow":isShow,"fieldValue": fieldValue};
             }else{
-                field = {"sort": sort++, "id": id, "fieldType": fieldType,"fieldName": fieldName};
+                field = {"sort": sort++, "id": id, "fieldType": fieldType,"fieldName": fieldName,"isShow":isShow};
             }
             if(id !== ""){
                 field.status = status;

@@ -26,7 +26,7 @@ class TableWork extends Model
      * @return \think\model\relation\HasMany
      */
     public function fields(){
-        return $this -> hasMany('TableField',"table_id","table_id")->field('field_id,name,type,value,sort,status,show')->order("sort,field_id");
+        return $this -> hasMany('TableField',"table_id","table_id")->field('field_id,name,type,value,sort,status,show')->order("sort");
     }
 
     /**
