@@ -603,6 +603,7 @@ class DocumentC
             ]);
             $resCount = $docBorrow -> save();
             if($resCount > 0){
+                $this -> sendBorrowMessage($docBorrow -> id);
                 return Result::returnResult(Result::SUCCESS);
             }
             return Result::returnResult(Result::ERROR);
@@ -642,7 +643,7 @@ class DocumentC
     public function getAllApproval(){
         $docBorrow = new DocBorrow();
         $approvalList = $docBorrow -> where("effective_time", null)
-                                   -> field("request_id,user_id,request_time")
+                                   -> field("id,request_id,user_id,request_time")
                                    -> select();
         foreach ($approvalList as $approval){
             $approval -> code      = $approval -> docFile -> file_code;
@@ -651,6 +652,30 @@ class DocumentC
             unset( $approval -> docFile, $approval -> user);
         }
         return Result::returnResult(Result::SUCCESS,$approvalList);
+    }
+
+    /**
+     * 同意借阅
+     */
+    public function passBorrow(){
+        $borrowId = $_POST["borrowId"];
+        $docBorrow = DocBorrow::get($borrowId);
+        $docBorrow -> effective_time = date('Y-m-d H:i:s', time()+3600*24*30);
+        $docBorrow -> save();
+        $this -> passBorrowMsg($borrowId);
+        return Result::returnResult(Result::SUCCESS);
+    }
+
+    /**
+     * 反对借阅
+     */
+    public function noPassBorrow(){
+        $borrowId = $_POST["borrowId"];
+        $docBorrow = DocBorrow::get($borrowId);
+        $docBorrow -> effective_time = $docBorrow -> request_time;
+        $docBorrow  -> save();
+        $this -> noPassBorrowMsg($borrowId);
+        return Result::returnResult(Result::SUCCESS);
     }
 
     /**
@@ -871,6 +896,67 @@ class DocumentC
         $templet .= '▪ 文档列表：' . $fileList . "\n";
         $templet .= '▪ 链接：' . $url;
         $message  = '◉ ' . '您的文档审批(#' . $requestId . ')已通过！' . "\n" . $templet;
+        $data['data']['content'] = $message;
+        $result = curlUtil::post($postUrl, $data);
+        return true;
+    }
+
+    /**
+     * 发送钉钉消息(给所有文控发送钉钉消息)
+     */
+    private function sendBorrowMessage($borrowId){
+        $docBorrow = DocBorrow::get($borrowId);
+        $userIdList = UserRole::where('role_id',1) -> column('user_id');
+        $DDidList = User::where('user_id','in',$userIdList) -> column('dd_userid');
+        $DDidList = implode(',',$DDidList);
+        $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?borrowId=' . $borrowId;
+        $data = DataEnum::$msgData;
+        $data['userList'] = $DDidList;
+        $requestName = Session::get("info")["user_name"];
+        $templet  = '▪ 申请人：'   . $requestName . "\n";
+        $templet .= '▪ 借阅文档编码：' .  $docBorrow -> docFile -> file_code . "\n";
+        $templet .= '▪ 借阅文档名称：' .  $docBorrow -> docFile -> source_name . "\n";
+        $templet .= '▪ 链接：' . $url;
+        $message  = '◉ ' . '您有文档借阅申请(#' . $borrowId . ')待处理！' . "\n" . $templet;
+        $data['data']['content'] = $message;
+        $result = curlUtil::post($postUrl, $data);
+        return true;
+    }
+
+    /**
+     * 给借阅人发送同意借阅消息
+     */
+    private function passBorrowMsg($borrowId){
+        $docBorrow = DocBorrow::get($borrowId);
+        $userDDid = User::where('user_id',$docBorrow -> user_id) -> value('dd_userid');
+        $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
+        $data = DataEnum::$msgData;
+        $data['userList'] = $userDDid;
+        $requestName = Session::get("info")["user_name"];
+        $templet  = '▪ 审批人：'   . $requestName . "\n";
+        $templet .= '▪ 借阅文档编码：' .  $docBorrow -> docFile -> file_code . "\n";
+        $templet .= '▪ 借阅文档名称：' .  $docBorrow -> docFile -> source_name . "\n";
+        $message  = '◉ ' . '您的文档借阅申请(#' . $borrowId . ')已通过！' . "\n" . $templet;
+        $data['data']['content'] = $message;
+        $result = curlUtil::post($postUrl, $data);
+        return true;
+    }
+
+    /**
+     * 给借阅人发送反对借阅消息
+     */
+    private function noPassBorrowMsg($borrowId){
+        $docBorrow = DocBorrow::get($borrowId);
+        $userDDid = User::where('user_id',$docBorrow -> user_id) -> value('dd_userid');
+        $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
+        $data = DataEnum::$msgData;
+        $data['userList'] = $userDDid;
+        $requestName = Session::get("info")["user_name"];
+        $templet  = '▪ 审批人：'   . $requestName . "\n";
+        $templet .= '▪ 借阅文档编码：' .  $docBorrow -> docFile -> file_code . "\n";
+        $templet .= '▪ 借阅文档名称：' .  $docBorrow -> docFile -> source_name . "\n";
+        $message  = '◉ ' . '您的文档借阅申请(#' . $borrowId . ')已被驳回！' . "\n" . $templet;
         $data['data']['content'] = $message;
         $result = curlUtil::post($postUrl, $data);
         return true;

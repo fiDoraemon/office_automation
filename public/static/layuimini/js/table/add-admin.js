@@ -183,7 +183,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 success: function(res){
                     layer.close(loadingIndex);
                     if(res.code === 0){
-                        console.log(res)
                         var index = layer.alert("发起成功", {
                             title: '提示'
                         }, function () {

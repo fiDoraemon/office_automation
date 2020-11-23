@@ -12,10 +12,12 @@
 <body>
 <div class="layuimini-container">
     <div class="layuimini-main">
-
         <table class="layui-hide" id="fileList" lay-filter="fileListFilter"></table>
-
     </div>
+    <script type="text/html" id="currentTableBar">
+        <a class="layui-btn layui-btn-xs data-count-edit" lay-event="pass">同意</a>
+        <a class="layui-btn layui-btn-xs layui-btn-danger data-count-delete" lay-event="no-pass">驳回</a>
+    </script>
 </div>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/document/approval-doc.js" charset="utf-8"></script>

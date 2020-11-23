@@ -4,7 +4,7 @@ layui.use(['form', 'table'], function () {
     table = layui.table;
 
     var isDocAdmin = false;  //标识是否是文控
-    var isBorrow   = false;  //标识是否是已借阅
+    var isBorrow   = false;  //标识是否是已借阅界面
 
     /**
      * 获取所需要的查询条件信息
@@ -30,11 +30,6 @@ layui.use(['form', 'table'], function () {
             $("#stageSelect").append($projectStages);
             $("#authorSelect").append($authors);
             tableRender();   //防止出现文控没有下载权限情况
-            // if(isDocAdmin){
-            //     $("#borrow").remove();
-            // }else{
-            //     $("#approval").remove();
-            // }
             form.render('select');
         },
         error: function(res){
@@ -51,7 +46,7 @@ layui.use(['form', 'table'], function () {
                 {field: 'file_code',  title: '文档编码', width:180},
                 {field: 'source_name',title: '文件名' ,
                     templet: function(d){
-                        if(isDocAdmin){
+                        if(isDocAdmin || isBorrow){
                             return `<a style="color:#009688" href="/Office_Automation/public/upload/${d.path}" download="${d.file_code} ${d.source_name}">
                                         <i class="layui-icon layui-icon-download-circle"></i> ${d.source_name}
                                     </a>`;
@@ -66,7 +61,7 @@ layui.use(['form', 'table'], function () {
                 {field: 'upload_time',title: '归档日期', width: 200, sort: true},
                 {title: '操作',       width:100,         align: "center",
                     templet: function(d){
-                        if(isDocAdmin){
+                        if(isDocAdmin || isBorrow){
                             return `<a class="layui-btn layui-btn-xs"  href="/Office_Automation/public/upload/${d.path}" download="${d.file_code} ${d.source_name}">下载</a>`;
                         }
                         return '<a class="layui-btn layui-btn-xs subscribe-btn" onclick="borrowDoc('+ (d.request_id+'') +');">借阅</a>';
@@ -85,6 +80,7 @@ layui.use(['form', 'table'], function () {
      * 监听所属项目复选框选择
      */
     form.on('select(projectCode)', function (data) {
+        isBorrow = false;
         table.reload('fileList', {
             url: '/office_automation/public/index.php/index/document_c/getDocFileOfCondition',
             page: {
@@ -121,6 +117,7 @@ layui.use(['form', 'table'], function () {
      * 监听项目阶段复选框选择
      */
     form.on('select(projectStage)', function (data) {
+        isBorrow = false;
         table.reload('fileList', {
             url: '/office_automation/public/index.php/index/document_c/getDocFileOfCondition',
             page: {
@@ -138,6 +135,7 @@ layui.use(['form', 'table'], function () {
      * 监听作者复选框选择
      */
     form.on('select(author)', function (data) {
+        isBorrow = false;
         table.reload('fileList', {
             url: '/office_automation/public/index.php/index/document_c/getDocFileOfCondition',
             page: {
@@ -155,6 +153,7 @@ layui.use(['form', 'table'], function () {
      * 搜索框监听操作
      */
     form.on('submit(data-search-btn)', function (data) {
+        isBorrow = false;
         var result = data.field;
         table.reload('fileList', {
             url: '/office_automation/public/index.php/index/document_c/getDocFileOfKeyword',
@@ -173,11 +172,16 @@ layui.use(['form', 'table'], function () {
      */
     table.on('toolbar(fileListFilter)', function (obj) {
         if (obj.event === 'borrow') {
+            isBorrow = true;
             table.reload('fileList', {
                 url: '/office_automation/public/index.php/index/document_c/getMyBorrow',
             }, 'data');
             return false;
         }else if(obj.event === 'approval'){
+            if(!isDocAdmin){
+                layer.msg("您没有审批权限！");
+                return;
+            }
             var index = layer.open({
                 title: '待审批文档借阅',
                 type: 2,
@@ -185,7 +189,7 @@ layui.use(['form', 'table'], function () {
                 maxmin:true,
                 shadeClose: true,
                 area: ['100%', '100%'],
-                content: 'page/document/approval-doc.html',
+                content: 'approval-doc.html',
             });
             $(window).on("resize", function () {
                 layer.full(index);

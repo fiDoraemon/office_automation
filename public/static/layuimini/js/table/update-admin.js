@@ -287,7 +287,6 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             let fieldValue   = $(this).find(".fieldValue").val();
             let status       = $(this).find(".status").next().hasClass("layui-form-onswitch") ? 1 : 0;
             let isShow       = $(this).find(".show").next().hasClass("layui-form-onswitch") ? 1 : 0;
-            console.log(isShow)
             let field = "";
             if(fieldType === "select"){
                 field = {"sort": sort++, "id": id, "fieldType": fieldType,"fieldName": fieldName,"isShow":isShow,"fieldValue": fieldValue};
