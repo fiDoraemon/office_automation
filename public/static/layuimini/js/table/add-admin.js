@@ -126,7 +126,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         "                                        <option value=\"\">--字段类型--</option>\n" +
         "                                        <option value=\"text\" selected>单行文本</option>\n" +
         "                                        <option value=\"textarea\">多行文本</option>\n" +
-        "                                        <option value=\"select\">自定义多选</option>\n" +
+        "                                        <option value=\"select\">自定义单选</option>\n" +
         "                                        <option value=\"user\">单选员工</option>\n" +
         "                                        <option value=\"users\">多选员工</option>\n" +
         "                                        <option value=\"date\">日期</option>\n" +
