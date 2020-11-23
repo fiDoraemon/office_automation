@@ -7,6 +7,8 @@ layui.use(['form','miniTab','upload'], function () {
 
     var uploadList = []; //上传的文件
 
+    var projectStage;
+
     /**
      * 获取所需要的查询条件信息
      */
@@ -41,12 +43,25 @@ layui.use(['form','miniTab','upload'], function () {
             type:'get',
             data:{ projectId : data.value},
             success: function(res){
-                var projectStages = res;
-                var $projectStages = "<option value=\"\">--请选择--</option>";
-                for (var i = 0; i < projectStages.length; i++){
-                    $projectStages += "<option value='" + projectStages[i] + "'>" + projectStages[i] + "</option>";
+                projectStage = res;
+                let arr = [];   //用于去重
+                let stagePre = "<option value=\"\">--请选择--</option>";
+                for(let i = 0; i < res.length; i++){
+                    let index = res[i].indexOf('-');
+                    if(index === -1){
+                        if($.inArray(res[i],arr) === -1) {
+                            arr.push(res[i]);
+                            stagePre += "<option value='" + res[i] + "'>" + res[i] + "</option>";
+                        }
+                    }else{
+                        let pre = res[i].substr(0, index);
+                        if($.inArray(pre,arr) === -1) {
+                            arr.push(pre);
+                            stagePre += "<option value='" + pre + "'>" + pre + "</option>";
+                        }
+                    }
                 }
-                $("#stageSelect").append($projectStages);
+                $("#stageSelect").append(stagePre);
                 //需要重新加载
                 form.render('select');
             },
@@ -59,23 +74,20 @@ layui.use(['form','miniTab','upload'], function () {
     //监听选择所属项目前缀下拉选择
     form.on('select(selectStagePre)',function(data){
         $("#stageFix").empty();
-        $.ajax({
-            url: "/office_automation/public/index.php/index/document_c/getProjectStageFix",
-            type:'get',
-            data:{ stagePre : data.value},
-            success: function(res){
-                console.log("res",res);
-                var $projectStages = "<option value=\"0\">--请选择--</option>";
-                for (var i = 0; i < res.length; i++){
-                    $projectStages += "<option value='" + res[i] + "'>" + res[i] + "</option>";
+        let stagePre = data.value;
+        let stageFix = "<option value=\"0\">--请选择--</option>";
+        for(let i = 0; i < projectStage.length; i++){
+            if(projectStage[i].indexOf(stagePre) === 0){
+                let index = projectStage[i].indexOf('-');
+                if(index >= 0){
+                    let fix = projectStage[i].substr(index + 1,  projectStage[i].length-1);
+                    stageFix += "<option value='" + fix + "'>" + fix + "</option>";
                 }
-                $("#stageFix").append($projectStages);
-                //需要重新加载
-                form.render('select');
-            },
-            error: function(res){
             }
-        });
+        }
+        $("#stageFix").append(stageFix);
+        //需要重新加载
+        form.render('select');
         return false;
     });
 
