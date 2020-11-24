@@ -90,6 +90,7 @@ class DocumentC
             $file -> project = $file -> request -> projectCode -> project_code;
             $file -> stage = $file -> request -> stage;
             $file -> remark = $file -> request -> remark;
+            $file -> controlled = $file -> request -> controlled;
             unset($file -> request);
         }
         return Result::returnResult(Result::SUCCESS,$fileList,$count);
@@ -136,6 +137,7 @@ class DocumentC
             $file -> project = $file -> request -> projectCode -> project_code;
             $file -> stage = $file -> request -> stage;
             $file -> remark = $file -> request -> remark;
+            $file -> controlled = $file -> request -> controlled;
             unset($file -> request);
         }
         return Result::returnResult(Result::SUCCESS,$fileList,$count);
@@ -170,6 +172,7 @@ class DocumentC
             $file -> project = $file -> request -> projectCode -> project_code;
             $file -> stage = $file -> request -> stage;
             $file -> remark = $file -> request -> remark;
+            $file -> controlled = $file -> request -> controlled;
             unset($file -> request);
         }
         return Result::returnResult(Result::SUCCESS,$fileList,$count);

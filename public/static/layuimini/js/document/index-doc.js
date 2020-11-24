@@ -62,6 +62,9 @@ layui.use(['form', 'table'], function () {
                 {title: '操作',       width:100,         align: "center",
                     templet: function(d){
                         if(isDocAdmin || isBorrow){
+                            if(d.controlled === 1){
+                                return `<a class="layui-btn layui-btn-xs"  href="/Office_Automation/public/upload/${d.path}" download="${d.file_code}-受控-${d.source_name}">下载</a>`;
+                            }
                             return `<a class="layui-btn layui-btn-xs"  href="/Office_Automation/public/upload/${d.path}" download="${d.file_code} ${d.source_name}">下载</a>`;
                         }
                         return '<a class="layui-btn layui-btn-xs subscribe-btn" onclick="borrowDoc('+ (d.request_id+'') +');">借阅</a>';
