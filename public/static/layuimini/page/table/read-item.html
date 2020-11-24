@@ -297,34 +297,54 @@
                     element = '';
                     var dateList = [];          // 日期字段列表
                     for (j in fields) {
-                        var attr = '';          // textarea 属性
+                        if(fields[j].type == 'textarea') {
+                            var input = $(`
+                            <div class="layui-form-item layui-form-text">
+                                <label class="layui-form-label">${fields[j].name}</label>
+                                <div class="layui-input-block"></div>
+                            </div>`);
+                        } else if(fields[j].type == 'users'){
+                            var input = $(`
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">${fields[j].name}</label>
+                            </div>`);
+                        } else {
+                            var input = $(`
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">${fields[j].name}</label>
+                                <div class="layui-input-block"></div>
+                            </div>`);
+                        }
+
                         // 判断字段类型
                         if(fields[j].type == 'textarea') {
-                            var input = `<div class="layui-input-block"><textarea name="field${fields[j].field_id}" class="layui-textarea"></textarea></div>`;
-                            attr = ' layui-form-text';
+                            input.find('.layui-input-block').append(`<textarea name="field${fields[j].field_id}" class="layui-textarea"></textarea>`);
+                            fieldValues['field' + fields[j].field_id] = fields[j].field_value;           // 加入赋值数组
                         } else if(fields[j].type == 'select') {
                             var values = fields[j].value.split('，');
-                            var input = `
-                                <div class="layui-input-block">
-                                    <select name="field${fields[j].field_id}" lay-filter="field-select">
-                                        <option value=""></option>
-                                `;
-                            for(k in values) {
-                                input += `<option value="${values[k]}">${values[k]}</option>`;
+                            var select = $(`
+                            <select name="field${fields[j].field_id}" lay-filter="field-select">
+                                <option value=""></option>
+                            </select>`);
+                            for(var k in values) {
+                                select.append(`<option value="${values[k]}">${values[k]}</option>`);
                             }
-                            input += `</select></div>`;
+                            input.find('.layui-input-block').append(select);
+                            fieldValues['field' + fields[j].field_id] = fields[j].field_value;           // 加入赋值数组
                         } else if(fields[j].type == 'date') {
-                            var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" autocomplete="off" class="layui-input" readonly></div>`;
+                            input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" autocomplete="off" class="layui-input" readonly>`);
                             dateList.push('field' + fields[j].field_id);
+                            fieldValues['field' + fields[j].field_id] = fields[j].field_value;           // 加入赋值数组
                         } else if(fields[j].type == 'user') {
                             if(fields[j].field_value != 0) {
-                                fields[j].field_value == '';
+                                input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" ts-selected="${fields[j].field_value}" readonly>`);
+                                fieldValues['field' + fields[j].field_id] = fields[j].field_value2;           // 加入赋值数组
+                            } else {
+                                input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly>`);
                             }
-                            var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" ts-selected="${fields[j].field_value}" readonly></div>`;
-                            fields[j].field_value = fields[j].field_value2;
                             radioUserList.push('field' + fields[j].field_id);
                         } else if(fields[j].type == 'users') {
-                            var input = `
+                            input.append(`
                             <div class="layui-input-inline">
                                 <select class="select-department" select-user="field${fields[j].field_id}" lay-filter="multipleSelect-department">
                                     <option value="">请选择部门</option>
@@ -335,37 +355,37 @@
                                     <option value="">请选择用户</option>
                                 </select>
                             </div>
-                            `;
-                            var UserListDiv = `<div id="field${fields[j].field_id}-userList" class="multipleSelect">`;
+                            <div id="field${fields[j].field_id}-userList" class="multipleSelect"></div>`);
                             var users = fields[j].users;
                             userIdsList['field' + fields[j].field_id] = [];         // 定义已选的全局变量
                             for (i in users) {
-                                UserListDiv += `
+                                input.find('.multipleSelect').append(`
                                 <a href="javascript:;">
                                     <span lay-value="${users[i].user_id}">${users[i].user_name}</span>
                                     <i class="layui-icon layui-icon-close"></i></a>
-                                `;
+                                `);
                                 userIdsList['field' + fields[j].field_id].push(users[i].user_id);           // 加入已选的全局变量
                             }
-                            UserListDiv += `</div>`;
-                            input += UserListDiv;
                             checkUserList.push('field' + fields[j].field_id);
+                        } else if(fields[j].type == 'checkbox') {
+                            var values = fields[j].value.split('，');
+                            for(var k in values) {
+                                input.find('.layui-input-block').append(`<input type="checkbox" name="field${fields[j].field_id}[${values[k]}]" title="${values[k]}" lay-filter="customize-check" value="${values[k]}">`);
+                            }
+                            // 加入赋值数组
+                            var array = fields[j].field_value.split(';');
+                            for(var i in array) {
+                                fieldValues['field' + fields[j].field_id + '[' + array[i] + ']'] = true;
+                            }
                         } else {
-                            var input = `<div class="layui-input-block"><input type="text" name="field${fields[j].field_id}" class="layui-input"></div>`;
+                            input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" class="layui-input">`);
+                            fieldValues['field' + fields[j].field_id] = fields[j].field_value;
                         }
-                        fieldValues['field' + fields[j].field_id] = fields[j].field_value;
-                        element += `
-                        <div class="layui-form-item${attr}">
-                            <label class="layui-form-label">${fields[j].name}</label>
-                            ${input}
-                        </div>
-                        `;
+                        $('#fields').append(input);
                     }
-                    $('#fields').append(element);
-                    // 表单赋值
-                    form.val("setValue", fieldValues);
-                    // 渲染表单
-                    form.render('select');          // 下拉选择
+                    // 渲染表单（下拉选择和复选框）
+                    form.render('select', 'add-item');
+                    form.render('checkbox', 'add-item');
                     for(i in dateList) {            // 日期
                         laydate.render({
                             elem: '#' + dateList[i]
@@ -377,6 +397,9 @@
                     if(checkUserList.length > 0) {          // 多选用户
                         departmentSelect($, form);
                     }
+                    // 表单赋值
+                    form.val("setValue", fieldValues);
+                    console.log(fieldValues);
                     // 填充处理意见表
                     var processList = itemDetail.processList;
                     element = '';
@@ -397,6 +420,20 @@
                         `;
                     }
                     $('#item-process').append(element);
+                } else {
+                    layer.open({
+                        type: 0,
+                        title: '提示',
+                        content: res.msg,
+                        icon: 5,
+                        anim: 6,
+                        yes: function(index, layero){
+                            return false;
+                        },
+                        cancel: function(index, layero){
+                            return false;
+                        }
+                    });
                 }
                 layer.close(index);
             }
@@ -435,6 +472,8 @@
                 for (i in checkUserList) {
                     result[checkUserList[i]] = userIdsList[checkUserList[i]].join(';');
                 }
+            } else {
+                result.checkUserList = '';
             }
             // 去除多余数据
             delete result.create_time;

@@ -17,6 +17,7 @@ use app\index\service\LabelService;
 use app\index\service\TableWorkService;
 use app\index\service\UserService;
 use think\Controller;
+use think\Db;
 use think\Request;
 use think\Session;
 
@@ -29,26 +30,37 @@ class TableItemC extends Controller
      */
     public function index($tableId = '', $page = 1, $limit = 10, $keyword = '')
     {
-        if(!$tableId) {
-            return Result::returnResult(Result::SUCCESS, [], 0);
-        }
+        $sessionUserId = Session::get("info")["user_id"];
         $tableItem = new TableItem();
         $tableItem->alias('ti');
         $keyword = input('get.keyword');
         $label = input('get.label');
-        if($keyword) {
-            $tableItem->where('item_title', 'like', "%$keyword%");
+        $itemId = input('get.item_id');
+
+        if(!$tableId) {
+            return Result::returnResult(Result::SUCCESS, [], 0);
         }
-        if($label) {
-            $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
+        if($itemId) {
+            $tableItem->where('item_id', $itemId);
+        } else {
+            if($keyword) {
+                $tableItem->where('item_title', 'like', "%$keyword%");
+            }
+            if($label) {
+                $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
+            }
         }
         $count = $tableItem->where('table_id', $tableId)->group("ti.item_id")->count();
         $tableItem->alias('ti');
-        if($keyword) {
-            $tableItem->where('item_title', 'like', "%$keyword%");
-        }
-        if($label) {
-            $tableItem->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
+        if($itemId) {
+            $tableItem->where('item_id', $itemId);
+        } else {
+            if($keyword) {
+                $tableItem->where('item_title', 'like', "%$keyword%");
+            }
+            if($label) {
+                $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
+            }
         }
         $tableItemList = $tableItem->where('table_id', $tableId)->group("ti.item_id")->page("$page, $limit")->select();
         
@@ -99,58 +111,64 @@ class TableItemC extends Controller
      */
     public function save(Request $request)
     {
-        $sessionUserId = Session::get("info")["user_id"];
-        $fields = input('post.');
-        // 增加条目信息
-        $tableItem = new TableItem([
-            'table_id' => $fields['table_id'],
-            'item_title' => $fields['item_title'],
-            'creator_id' => $sessionUserId,
-            'create_time' => date('Y-m-d H:i:s', time())
-        ]);
-        $tableItem->save();
-        // 增加条目字段对应值
-        foreach ($fields as $key => $value) {
-            if(substr($key,0, 5) == 'field') {
-                if(isset($fields['checkUserList'])) {
-                    $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
-                } else {
-                    $checkUserList = [];
-                }
-                if(in_array($key, $checkUserList)) {
-                    $userList = explode(';', $fields[$key]);
-                    foreach ($userList as $user) {
-                        $tableFieldUser = new TableFieldUser();
-                        $tableFieldUser->field_id = substr($key,5);
-                        $tableFieldUser->user_id = $user;
-                        $tableFieldUser->item_id = $tableItem->item_id;
-                        $tableFieldUser->save();
+        Db::transaction(function () {           // 开启事务
+            $sessionUserId = Session::get("info")["user_id"];
+            $fields = input('post.');
+            // 增加条目信息
+            $tableItem = new TableItem([
+                'table_id' => $fields['table_id'],
+                'item_title' => $fields['item_title'],
+                'creator_id' => $sessionUserId,
+                'create_time' => date('Y-m-d H:i:s', time())
+            ]);
+            $tableItem->save();
+            // 增加条目字段对应值
+            $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
+            foreach ($fields as $key => $value) {
+                if(substr($key,0, 5) == 'field') {
+                    $fieldId = substr($key,5);
+                    if(in_array($key, $checkUserList)) {
+                        $userList = explode(';', $fields[$key]);
+                        foreach ($userList as $user) {
+                            $tableFieldUser = new TableFieldUser();
+                            $tableFieldUser->field_id = $fieldId;
+                            $tableFieldUser->user_id = $user;
+                            $tableFieldUser->item_id = $tableItem->item_id;
+                            $tableFieldUser->save();
+                        }
+                    } else {
+                        if(is_array($value)) {          // 如果是自定义多选
+                            $array = [];
+                            foreach ($value as $one) {
+                                array_push($array, $one);
+                            }
+                            $value = implode(';', $array);
+                        }
+                        $tableFiledValue = new TableFieldValue();
+                        $tableFiledValue->item_id = $tableItem->item_id;
+                        $tableFiledValue->field_id = $fieldId;
+                        $tableFiledValue->field_value = $value;
+                        $tableFiledValue->save();
                     }
-                } else {
-                    $tableFiledValue = new TableFieldValue();
-                    $tableFiledValue->item_id = $tableItem->item_id;
-                    $tableFiledValue->field_id = substr($key,5);
-                    $tableFiledValue->field_value = $value;
-                    $tableFiledValue->save();
                 }
             }
-        }
-        // 处理条目标签
-        if($fields['label_list']) {
-            $labelList = explode('；', input('label_list'));
-            foreach ($labelList as $label) {
-                $labelModel = Label::get(['label_name' => $label]);
-                if(!$labelModel) {
-                    $labelModel = new Label();
-                    $labelModel->label_name = $label;
-                    $labelModel->save();
+            // 处理条目标签
+            if($fields['label_list']) {
+                $labelList = explode('；', input('label_list'));
+                foreach ($labelList as $label) {
+                    $labelModel = Label::get(['label_name' => $label]);
+                    if(!$labelModel) {
+                        $labelModel = new Label();
+                        $labelModel->label_name = $label;
+                        $labelModel->save();
+                    }
+                    $tableItemLabel = new TableItemLabel();
+                    $tableItemLabel->item_id = $tableItem->item_id;
+                    $tableItemLabel->label_id = $labelModel->label_id;
+                    $tableItemLabel->save();
                 }
-                $tableItemLabel = new TableItemLabel();
-                $tableItemLabel->item_id = $tableItem->item_id;
-                $tableItemLabel->label_id = $labelModel->label_id;
-                $tableItemLabel->save();
             }
-        }
+        });
 
         return Result::returnResult(Result::SUCCESS);
     }
@@ -164,6 +182,10 @@ class TableItemC extends Controller
     public function read($id)
     {
         $tableItem = TableItem::get($id);
+        // 判断用户是否是表的可见人
+        if(!TableWorkService::isViewTavle($tableItem->table_id)) {
+            return Result::returnResult(Result::NO_ACCESS);
+        }
         $tableItem->creator_name = UserService::userIdToName($tableItem->creator_id, 1);          // 关联发起人
         $tableItem->table_name = $tableItem->table->table_name;         // 关联工作表
         // 获取工作表字段
@@ -206,91 +228,97 @@ class TableItemC extends Controller
      */
     public function update(Request $request, $id)
     {
-        $sessionUserId = Session::get("info")["user_id"];
-        $tableItem = TableItem::get($id);
-        $fields = input('put.');
-        // 更新条目信息
-        $tableItem->item_title = $fields['item_title'];
-        $tableItem->save();
-        // 更新条目字段信息
-        foreach ($fields as $key => $value) {
-            if(substr($key,0, 5) == 'field') {
-                if(isset($fields['checkUserList'])) {
-                    $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
-                } else {
-                    $checkUserList = [];
-                }
-                if(!in_array($key, $checkUserList)) {
-                    $tableFiledValue = TableFieldValue::get(['item_id' => $tableItem->item_id, 'field_id' => substr($key,5)]);
-                    if(!$tableFiledValue) {
-                        $tableFiledValue = new TableFieldValue();
-                        $tableFiledValue->item_id = $tableItem->item_id;
-                        $tableFiledValue->field_id = substr($key,5);
-                    }
-                    $tableFiledValue->field_value = $value;
-                    $tableFiledValue->save();
-                } else {
-                    $submitUserList = explode(';', $fields[$key]);            // 提交的多选用户列表
-                    // 获取当前的多选用户列表
-                    $tableFieldUser = new TableFieldUser();
-                    $currentUserList = $tableFieldUser->where('item_id', $tableItem->item_id)->where('field_id', substr($key,5))->column('user_id');
-                    $newUserList = array_diff($submitUserList, $currentUserList);         // 新增加的用户
-                    $cancelUserList = array_diff($currentUserList, $submitUserList);        // 取消的用户
-                    foreach ($newUserList as $newUser) {
+        Db::transaction(function () use($id) {           // 开启事务
+            $sessionUserId = Session::get("info")["user_id"];
+            $tableItem = TableItem::get($id);
+            $fields = input('put.');
+            // 更新条目信息
+            $tableItem->item_title = $fields['item_title'];
+            $tableItem->save();
+            // 更新条目字段信息
+            $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
+            foreach ($fields as $key => $value) {
+                if(substr($key,0, 5) == 'field') {
+                    $fieldId = substr($key,5);
+                    if(in_array($key, $checkUserList)) {
+                        $submitUserList = explode(';', $fields[$key]);            // 提交的多选用户列表
+                        // 获取当前的多选用户列表
                         $tableFieldUser = new TableFieldUser();
-                        $tableFieldUser->field_id = substr($key,5);
-                        $tableFieldUser->user_id = $newUser;
-                        $tableFieldUser->item_id = $tableItem->item_id;
-                        $tableFieldUser->save();
-                    }
-                    foreach ($cancelUserList as $cancelUser) {
-                        $tableFieldUser = TableFieldUser::get(['field_id' => substr($key,5), 'user_id' => $cancelUser, 'item_id' => $tableItem->item_id]);
-                        if($tableFieldUser) {
-                            $tableFieldUser->delete();
+                        $currentUserList = $tableFieldUser->where('item_id', $tableItem->item_id)->where('field_id', $fieldId)->column('user_id');
+                        $newUserList = array_diff($submitUserList, $currentUserList);         // 新增加的用户
+                        $cancelUserList = array_diff($currentUserList, $submitUserList);        // 取消的用户
+                        foreach ($newUserList as $newUser) {
+                            $tableFieldUser = new TableFieldUser();
+                            $tableFieldUser->field_id = $fieldId;
+                            $tableFieldUser->user_id = $newUser;
+                            $tableFieldUser->item_id = $tableItem->item_id;
+                            $tableFieldUser->save();
                         }
+                        foreach ($cancelUserList as $cancelUser) {
+                            $tableFieldUser = TableFieldUser::get(['field_id' => $fieldId, 'user_id' => $cancelUser, 'item_id' => $tableItem->item_id]);
+                            if($tableFieldUser) {
+                                $tableFieldUser->delete();
+                            }
+                        }
+                    } else {
+                        if(is_array($value)) {          // 如果是自定义多选
+                            $array = [];
+                            foreach ($value as $one) {
+                                array_push($array, $one);
+                            }
+                            $value = implode(';', $array);
+                        }
+                        $tableFiledValue = TableFieldValue::get(['item_id' => $tableItem->item_id, 'field_id' => $fieldId]);
+                        if(!$tableFiledValue) {
+                            $tableFiledValue = new TableFieldValue();
+                            $tableFiledValue->item_id = $tableItem->item_id;
+                            $tableFiledValue->field_id = $fieldId;
+                        }
+                        $tableFiledValue->field_value = $value;
+                        $tableFiledValue->save();
                     }
                 }
             }
-        }
-        // 处理条目标签
-        if($fields['label_list']) {
-            $labelList = explode('；', $fields['label_list']);
-            foreach ($labelList as $label) {
-                $labelModel = Label::get(['label_name' => $label]);
-                if(!$labelModel) {
-                    $labelModel = new Label();
-                    $labelModel->label_name = $label;
-                    $labelModel->save();
-                }
-                $tableItemLabel = TableItemLabel::get(['item_id' => $tableItem->item_id, 'label_id' => $labelModel->label_id]);
-                if(!$tableItemLabel) {
-                    $tableItemLabel = new TableItemLabel();
-                    $tableItemLabel->item_id = $tableItem->item_id;
-                    $tableItemLabel->label_id = $labelModel->label_id;
-                    $tableItemLabel->save();
+            // 处理条目标签
+            if($fields['label_list']) {
+                $labelList = explode('；', $fields['label_list']);
+                foreach ($labelList as $label) {
+                    $labelModel = Label::get(['label_name' => $label]);
+                    if(!$labelModel) {
+                        $labelModel = new Label();
+                        $labelModel->label_name = $label;
+                        $labelModel->save();
+                    }
+                    $tableItemLabel = TableItemLabel::get(['item_id' => $tableItem->item_id, 'label_id' => $labelModel->label_id]);
+                    if(!$tableItemLabel) {
+                        $tableItemLabel = new TableItemLabel();
+                        $tableItemLabel->item_id = $tableItem->item_id;
+                        $tableItemLabel->label_id = $labelModel->label_id;
+                        $tableItemLabel->save();
+                    }
                 }
             }
-        }
-        // 增加条目处理信息
-        if($fields['process_note'] || $fields['attachment_list']) {
-            $tableItemProcess = new TableItemProcess();
-            $tableItemProcess->item_id = $id;
-            $tableItemProcess->handler_id = $sessionUserId;
-            $tableItemProcess->process_note = $fields['process_note'];
-            $tableItemProcess->save();
-        }
-        // 处理条目附件
-        if($fields['attachment_list']) {
-            $attachmentIdList = explode(';', $fields['attachment_list']);
-            foreach ($attachmentIdList as $attachmentId) {
-                $attachment = Attachment::get($attachmentId);
-                $attachment->attachment_type = 'item';
-                $attachment->related_id = $tableItemProcess->process_id;
-                $attachment->save();
+            // 增加条目处理信息
+            if($fields['process_note'] || $fields['attachment_list']) {
+                $tableItemProcess = new TableItemProcess();
+                $tableItemProcess->item_id = $id;
+                $tableItemProcess->handler_id = $sessionUserId;
+                $tableItemProcess->process_note = $fields['process_note'];
+                $tableItemProcess->save();
             }
-        }
+            // 处理条目附件
+            if($fields['attachment_list']) {
+                $attachmentIdList = explode(';', $fields['attachment_list']);
+                foreach ($attachmentIdList as $attachmentId) {
+                    $attachment = Attachment::get($attachmentId);
+                    $attachment->attachment_type = 'item';
+                    $attachment->related_id = $tableItemProcess->process_id;
+                    $attachment->save();
+                }
+            }
+        });
 
-        return Result::returnResult(Result::SUCCESS, $tableItem);
+        return Result::returnResult(Result::SUCCESS);
     }
 
     /**

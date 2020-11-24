@@ -50,6 +50,12 @@
                                 </div>
                             </div>
                             <div class="layui-inline">
+                                <label class="layui-form-label">条目号</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="item_id" class="layui-input" placeholder="请输入条目号">
+                                </div>
+                            </div>
+                            <div class="layui-inline">
                                 <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
                             </div>
                         </div>
@@ -86,9 +92,9 @@
         function renderTable(value) {
             // 获取对应的字段列表
             var fields;
-            for(i in tableList) {
+            for(var i in tableList) {
                 if(tableList[i].table_id == value) {
-                    fields = tableList[i].fields;
+                    fields = tableList[i].partFields;
                 }
             }
             // 获取需要显示的列
@@ -106,17 +112,14 @@
                 {title: '操作', minWidth: 100, toolbar: '#tableItemListBar', align: "center"}
             ];
             for (let i in fields) {
-                if(fields[i].show == 1) {
-                    cols.splice(cols.length - 4, 0, {field: 'field' + fields[i].field_id, minWidth: 170, title: fields[i].name, align: "center",
-                        templet: function(d){
-                            return d.fields[i].field_value;
-                        }
-                    });
-                }
+                cols.splice(cols.length - 4, 0, {field: 'field' + fields[i].field_id, minWidth: 170, title: fields[i].name, align: "center",
+                    templet: function(d){
+                        return d.fields[i].field_value;
+                    }
+                });
             }
-            cols.splice(3, 0,
-
-            );
+            console.log(cols);
+            console.log(fields);
             // 渲染工作表条目列表
             table.render({
                 elem: '#tableItemList',
@@ -174,6 +177,7 @@
                 return false;
             }
             if(data.value != worktable) {
+                $("input[name='item_id']").val('');         // 清除条目号输入框
                 renderTable(data.value);
                 worktable = data.value;
             }
@@ -187,14 +191,15 @@
                 return false;
             }
 
-            //执行搜索重载
+            // 执行搜索重载
             table.reload('tableItemList', {
                 page: {
                     curr: 1
                 },
                 where: {
                     keyword: result.keyword,
-                    label: result.label
+                    label: result.label,
+                    item_id: result.item_id
                 }
             }, 'data');
 
@@ -232,7 +237,7 @@
                 var index = layer.open({
                     title: '条目详情',
                     type: 2,
-                    content: '../table/read-item.html?itemId=' + data.item_id,
+                    content: '../table/read-item.html?v=1&itemId=' + data.item_id,
                     shade: 0.2,
                     maxmin:true,
                     shadeClose: true,

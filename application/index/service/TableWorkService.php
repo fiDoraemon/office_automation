@@ -13,8 +13,11 @@ use app\index\model\TableField;
 use app\index\model\TableFieldUser;
 use app\index\model\TableItem;
 use app\index\model\TableItemLabel;
+use app\index\model\TableUser;
 use app\index\model\TableWork;
+use app\index\model\User;
 use think\Collection;
+use think\Session;
 
 class TableWorkService
 {
@@ -23,18 +26,18 @@ class TableWorkService
         $tableWork = new TableWork();
         $tableList = $tableWork->where('status', 1)->alias('tw')->join('oa_table_user tu', "tu.table_id = tw.table_id and tu.user_id = $sessionUserId")->field('tw.table_id,table_name')->select();
         foreach ($tableList as $table) {
-            $table->fields;
+            $table->partFields;
         }
 
         return $tableList;
     }
 
     // 获取工作表的字段列表
-    public static function getTableFields($tableId) {
-        $tableWork = TableWork::get($tableId);
-
-        return $tableWork->fields;
-    }
+//    public static function getTableFields($tableId) {
+//        $tableWork = TableWork::get($tableId);
+//
+//        return $tableWork->fields;
+//    }
 
     // 获取工作表条目标签列表
     public static function getItemLabelList($itemId) {
@@ -50,42 +53,39 @@ class TableWorkService
         $tableField = new TableField();
         $tableFieldList = $tableField->alias('tf')->where('table_id', $tableItem->table_id)
             ->where('status', 1)
-            ->order('field_id,sort')
+            ->order('sort,field_id')
             ->alias('tf')
             ->join('oa_table_field_value tfv', "tfv.field_id = tf.field_id and tfv.item_id = $itemId", 'LEFT')
             ->field('tf.field_id,name,type,value,field_value')
             ->select();
 
         foreach ($tableFieldList as $tableField) {
+            $tableField->field_value = $tableField->field_value? $tableField->field_value : '';         // 添加新字段而没有对应值的情况
             if($tableField->type == 'user') {            // 单选用户
-                if($tableField->field_value == null) {
+                if(!$tableField->field_value) {
                     $tableField->field_value = 0;
-                    $tableField->field_value2 = '';
                 } else {
                     $tableField->field_value2 = UserService::userIdToName($tableField->field_value, 1);
                 }
-            } else if($tableField->type == 'users') {            // 多选用户
+            } elseif($tableField->type == 'users') {            // 多选用户
                 // 获取多选用户列表
                 $tableFieldUser = new TableFieldUser();
                 $userList = $tableFieldUser->where('field_id', $tableField->field_id)->where('item_id', $tableItem->item_id)->alias('tfu')->join('oa_user u', 'u.user_id = tfu.user_id')->field('tfu.user_id,user_name')->select();
                 $tableField->users = $userList;
-            } else {
-                if($tableField->field_value == null) {
-                    $tableField->field_value = '';
-                }
             }
         }
 
         return $tableFieldList;
     }
 
-    // 获取条目部门字段
+    // 获取条目部分字段
     public static function getShowItemFieldList($tableItem) {
         $itemId = $tableItem->item_id;
         $tableField = new TableField();
         $tableFieldList = $tableField->alias('tf')->where('table_id', $tableItem->table_id)
             ->where('status', 1)
-            ->order('field_id,sort')
+            ->where('show', 1)
+            ->order('sort,field_id')
             ->alias('tf')
             ->join('oa_table_field_value tfv', "tfv.field_id = tf.field_id and tfv.item_id = $itemId", 'LEFT')
             ->field('tf.field_id,name,type,value,field_value')
@@ -114,5 +114,18 @@ class TableWorkService
         }
 
         return $tableFieldList;
+    }
+
+    // 判断用户是否有权限查看条目
+    public static function isViewTavle($tableId) {
+        $sessionUserId = Session::get("info")["user_id"];
+        $tableUser = TableUser::get(['table_id' => $tableId, 'user_id' => $sessionUserId]);
+        if(!$tableUser) {           // 是否是表的可见人
+            if(!UserService::isAdmin($sessionUserId)) {         // 是否是管理员
+                return false;
+            }
+        }
+
+        return true;
     }
 }

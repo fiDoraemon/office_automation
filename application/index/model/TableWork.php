@@ -26,7 +26,7 @@ class TableWork extends Model
      * @return \think\model\relation\HasMany
      */
     public function fields(){
-        return $this -> hasMany('TableField',"table_id","table_id")->field('field_id,name,type,value,sort,status,show')->order("sort");
+        return $this -> hasMany('TableField',"table_id","table_id")->field('field_id,name,type,value,sort,status,show')->order("sort,field_id");
     }
 
     /**
@@ -37,4 +37,11 @@ class TableWork extends Model
         return $this -> hasMany('TableUser',"table_id","table_id")->field('user_id');
     }
 
+    /**
+     * 与表部分字段一对多对应）
+     * @return \think\model\relation\HasMany
+     */
+    public function partFields(){
+        return $this -> hasMany('TableField',"table_id","table_id")->where('status', 1)->where('show', 1)->order("sort,field_id")->field('field_id,name,type,value');
+    }
 }
