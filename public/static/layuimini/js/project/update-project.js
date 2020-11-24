@@ -38,10 +38,12 @@ layui.use(['form', 'table'], function () {
                 type:'post',
                 data: projectInfo,
                 success: function(res){
+                    layer.close(loadingIndex);
                     if(res.code !== 0){
+                        console.log("gdg")
+                        layer.msg("没有内容更改");
                         return;
                     }
-                    layer.close(loadingIndex);
                     layer.alert('修改成功！', {title: '提示'},
                         function (index) {
                             layer.close(index);
