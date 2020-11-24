@@ -3,7 +3,6 @@ layui.use(['form', 'table'], function () {
         form = layui.form;
 
     var projectId = getQueryVariable('projectId');
-    console.log("projectId",projectId);
 
     //获取项目信息
     $.ajax({
@@ -13,7 +12,6 @@ layui.use(['form', 'table'], function () {
             projectId : projectId
         },
         success: function(res){
-            console.log(res)
             if(res.code !== 0){
                 return;
             }
@@ -40,7 +38,6 @@ layui.use(['form', 'table'], function () {
                 success: function(res){
                     layer.close(loadingIndex);
                     if(res.code !== 0){
-                        console.log("gdg")
                         layer.msg("没有内容更改");
                         return;
                     }

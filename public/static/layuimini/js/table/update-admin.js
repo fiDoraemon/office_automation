@@ -116,7 +116,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
     form.on('select(select-field-type)',function(data){
         let fieldType = data.value;
         var thisDom = $(data.elem); //DOM对象转jq对象
-        if(fieldType === "select"){
+        if(fieldType === "select" || fieldType === "checkbox" ){
             thisDom.parent().next().next().next().html(fieldValue);
         }else{
             thisDom.parent().next().next().next().html("");
@@ -204,6 +204,9 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 case "select":
                     fieldInfo += " <option value=\"select\" selected>自定义单选</option>";
                     break;
+                case "checkbox":
+                    fieldInfo += " <option value=\"checkbox\" selected>自定义单选</option>";
+                    break;
                 case "user":
                     fieldInfo += " <option value=\"user\" selected>单选员工</option>";
                     break;
@@ -258,7 +261,8 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         "                                    <select name=\"fieldType\" style=\"float: left;\" class=\"fieldType\" lay-filter=\"select-field-type\" lay-verify=\"required\">\n" +
         "                                        <option value=\"text\" selected>单行文本</option>\n" +
         "                                        <option value=\"textarea\">多行文本</option>\n" +
-        "                                        <option value=\"select\">自定义单选</option>\n" +
+        "                                        <option value=\"select\">自定义单选</option>" +
+        "                                        <option value=\"checkbox\">自定义多选</option>\n" +
         "                                        <option value=\"user\">单选员工</option>\n" +
         "                                        <option value=\"users\">多选员工</option>\n" +
         "                                        <option value=\"date\">日期</option>\n" +

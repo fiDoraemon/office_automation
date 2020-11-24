@@ -72,7 +72,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
     form.on('select(select-field-type)',function(data){
         let fieldType = data.value;
         var thisDom = $(data.elem); //DOM对象转jq对象
-        if(fieldType === "select"){
+        if(fieldType === "select" || fieldType === "checkbox"){
             thisDom.parent().next().next().next().html(fieldValue);
         }else{
             thisDom.parent().next().next().next().html("");
@@ -127,6 +127,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         "                                        <option value=\"text\" selected>单行文本</option>\n" +
         "                                        <option value=\"textarea\">多行文本</option>\n" +
         "                                        <option value=\"select\">自定义单选</option>\n" +
+        "                                        <option value=\"checkbox\">自定义多选</option>" +
         "                                        <option value=\"user\">单选员工</option>\n" +
         "                                        <option value=\"users\">多选员工</option>\n" +
         "                                        <option value=\"date\">日期</option>\n" +
