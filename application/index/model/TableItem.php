@@ -16,4 +16,10 @@ class TableItem extends Model
     {
         return $this->hasMany('TableItemProcess','item_id','item_id')->alias('tip')->join('oa_user u', 'tip.handler_id = u.user_id')->field('process_id,user_name as handler,process_note,process_time');
     }
+
+    // 关联任务（一对多）：不行
+    public function missions()
+    {
+        return $this->hasMany('Mission','item_id','item_id')->limit(20)->field('mission_id,mission_title,assignee_id,status,finish_date');
+    }
 }

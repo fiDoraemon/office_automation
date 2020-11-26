@@ -8,11 +8,14 @@
 
 namespace app\index\service;
 
+use app\common\util\curlUtil;
+use app\index\common\DataEnum;
 use app\index\model\Cooperation;
 use app\index\model\Mission;
 use app\index\model\MissionInterest;
 use app\index\model\MissionProcess;
 use app\index\model\User;
+use think\Session;
 
 /**
  * 任务服务类
@@ -140,5 +143,25 @@ class MissionService
         $interestList = $missionInterest->where('mission_id', $missionId)->select();
 
         return $interestList;
+    }
+
+    // 发送钉钉消息
+    public static function sendMessge($missionId) {
+        $sessionUserId = Session::get("info")["user_id"];
+        $mission = Mission::get($missionId);
+        $data = DataEnum::$msgData;
+        $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?missionId=' . $mission->mission_id;
+        $templet = '▪ 标题：' . $mission->mission_title . "\n" . '▪ 描述：' . $mission->description . "\n" . "▪ 截止日期：" . $mission->finish_date . "\n" . '▪ 链接：' . $url;
+        // 发送给处理人
+        if ($sessionUserId != $mission->assignee_id && $mission->assignee->dd_userid != '' && $mission->assignee->dd_open == 1) {
+            $data['userList'] = $mission->assignee->dd_userid;
+            $message = '◉ 您有新的任务(#' . $mission->mission_id . ')待处理' . "\n" . $templet;
+            $data['data']['content'] = $message;
+
+            curlUtil::post($postUrl, $data);
+        }
+
+        return true;
     }
 }

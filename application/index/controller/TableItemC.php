@@ -6,6 +6,7 @@ use app\common\Result;
 use app\index\common\DataEnum;
 use app\index\model\Attachment;
 use app\index\model\Label;
+use app\index\model\Mission;
 use app\index\model\TableField;
 use app\index\model\TableFieldValue;
 use app\index\model\TableItem;
@@ -14,6 +15,7 @@ use app\index\model\TableItemLabel;
 use app\index\model\TableItemProcess;
 use app\index\model\TableWork;
 use app\index\service\LabelService;
+use app\index\service\MissionService;
 use app\index\service\TableWorkService;
 use app\index\service\UserService;
 use think\Controller;
@@ -41,7 +43,7 @@ class TableItemC extends Controller
             return Result::returnResult(Result::SUCCESS, [], 0);
         }
         if($itemId) {
-            $tableItem->where('item_id', $itemId);
+            $tableItem->where('sort', $itemId);         // 使用排序代替条目号
         } else {
             if($keyword) {
                 $tableItem->where('item_title', 'like', "%$keyword%");
@@ -53,7 +55,7 @@ class TableItemC extends Controller
         $count = $tableItem->where('table_id', $tableId)->group("ti.item_id")->count();
         $tableItem->alias('ti');
         if($itemId) {
-            $tableItem->where('item_id', $itemId);
+            $tableItem->where('sort', $itemId);          // 使用排序代替条目号
         } else {
             if($keyword) {
                 $tableItem->where('item_title', 'like', "%$keyword%");
@@ -62,14 +64,13 @@ class TableItemC extends Controller
                 $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
             }
         }
-        $tableItemList = $tableItem->where('table_id', $tableId)->group("ti.item_id")->page("$page, $limit")->select();
+        $tableItemList = $tableItem->where('table_id', $tableId)->group("ti.item_id")->order('sort desc')->page("$page, $limit")->select();
         
         foreach ($tableItemList as $tableItem) {
             $tableItem->creator = UserService::userIdToName($tableItem->creator_id, 1);
-            // 获取标签列表
-            $tableItem->labelList = implode('；', TableWorkService::getItemLabelList($tableItem->item_id));
-            // 获取条目字段列表
-            $tableItem->fields = TableWorkService::getShowItemFieldList($tableItem);
+            $tableItem->labelList = implode('；', TableWorkService::getItemLabelList($tableItem->item_id));          // 获取标签列表
+            $tableItem->fields = TableWorkService::getShowItemFieldList($tableItem);            // 获取条目字段列表
+            $tableItem->current_process = TableWorkService::getCurrentProcess($tableItem->item_id);         // 获取最近处理信息
             unset($tableItem->creator_id);
         }
 
@@ -188,9 +189,11 @@ class TableItemC extends Controller
         }
         $tableItem->creator_name = UserService::userIdToName($tableItem->creator_id, 1);          // 关联发起人
         $tableItem->table_name = $tableItem->table->table_name;         // 关联工作表
-        // 获取工作表字段
-        $tableItem->fields = TableWorkService::getItemFieldList($tableItem);
+        $tableItem->fields = TableWorkService::getItemFieldList($tableItem);            // 获取工作表字段
         $tableItem->label_list = implode('；', TableWorkService::getItemLabelList($id));         // 获取条目标签列表
+        $labelList = LabelService::getLabelList();          // 获取标签列表
+        // 获取任务列表
+        $tableItem->missionList = TableWorkService::getMissionList($tableItem->item_id);
         // 获取条目处理列表
         foreach ($tableItem->processList as $process) {
             // 获取条目附件列表
@@ -199,7 +202,6 @@ class TableItemC extends Controller
             }
         }
         unset($tableItem->item_id, $tableItem->creator_id, $tableItem->table_id, $tableItem->table);
-        $labelList = LabelService::getLabelList();          // 获取标签列表
         $data = [
             'itemDetail' => $tableItem,
             'labelList' => $labelList
@@ -314,6 +316,23 @@ class TableItemC extends Controller
                     $attachment->attachment_type = 'item';
                     $attachment->related_id = $tableItemProcess->process_id;
                     $attachment->save();
+                }
+            }
+            // 添加条目任务
+            if(isset($fields['assignee'])) {
+                foreach ($fields['assignee'] as $key => $assignee) {
+                    $mission = new Mission();
+                    $mission->data([
+                        'mission_title' => $fields['mission_title'][$key],
+                        'reporter_id' => $sessionUserId,
+                        'assignee_id' => $assignee,
+                        'finish_date' => $fields['finish_date'][$key],
+                        'description' => $fields['description'][$key],
+                        'item_id' => $tableItem->item_id,
+                        'create_time' => date('Y-m-d H:i:s', time())
+                    ]);
+                    $mission->save();
+                    MissionService::sendMessge($mission->mission_id);           // 发送钉钉消息
                 }
             }
         });

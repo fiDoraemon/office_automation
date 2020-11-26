@@ -9,10 +9,13 @@
 namespace app\index\service;
 
 
+use app\index\common\DataEnum;
+use app\index\model\Mission;
 use app\index\model\TableField;
 use app\index\model\TableFieldUser;
 use app\index\model\TableItem;
 use app\index\model\TableItemLabel;
+use app\index\model\TableItemProcess;
 use app\index\model\TableUser;
 use app\index\model\TableWork;
 use app\index\model\User;
@@ -31,13 +34,6 @@ class TableWorkService
 
         return $tableList;
     }
-
-    // 获取工作表的字段列表
-//    public static function getTableFields($tableId) {
-//        $tableWork = TableWork::get($tableId);
-//
-//        return $tableWork->fields;
-//    }
 
     // 获取工作表条目标签列表
     public static function getItemLabelList($itemId) {
@@ -116,6 +112,19 @@ class TableWorkService
         return $tableFieldList;
     }
 
+    // 获取条目任务列表
+    public static function getMissionList($itemId) {
+        $mission = new Mission();
+        $missionList = $mission->where('item_id', $itemId)->field('mission_id,mission_title,assignee_id,status,finish_date')->select();
+        foreach ($missionList as $mission) {
+            $mission->assignee_name = $mission->assignee->user_name;
+            $mission->current_process = $mission->process? $mission->process[0]->process_note : '';
+            $mission->status = DataEnum::$missionStatus[$mission->status];
+            unset($mission->assignee_id, $mission->assignee, $mission->process);
+        }
+        return $missionList;
+    }
+
     // 判断用户是否有权限查看条目
     public static function isViewTavle($tableId) {
         $sessionUserId = Session::get("info")["user_id"];
@@ -127,5 +136,13 @@ class TableWorkService
         }
 
         return true;
+    }
+
+    // 获取条目最近处理信息
+    public static function getCurrentProcess($itemId) {
+        $tableItemProcess = new TableItemProcess();
+        $currentProcess = $tableItemProcess->where('item_id', $itemId)->order('process_id desc')->find();
+
+        return $currentProcess? $currentProcess->process_note : '';
     }
 }

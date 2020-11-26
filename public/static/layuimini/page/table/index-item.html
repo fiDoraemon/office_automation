@@ -79,7 +79,7 @@
 
         </div>
     </div>
-<script src="../../lib/layui-v2.5.5/layui.all.js" charset="utf-8"></script>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/common.js" charset="utf-8"></script>
 <script>
     layui.use(['form', 'table'], function () {
@@ -99,26 +99,28 @@
             }
             // 获取需要显示的列
             var cols = [
-                {field: 'item_id', width: 80, title: 'ID', align: "center", sort: true},
-                {field: 'item_title', minWidth: 150, title: '标题',
+                {field: 'sort', width: 80, title: 'ID', align: "center"},
+                {field: 'item_title', width: 150, title: '标题',
                     templet: function(d){
                         return `<a class="url" lay-event="read">${d.item_title}</a>`;
                     }
                 },
                 {field: 'creator', width: 80, title: '发起人', align: "center"},
-                {field: 'labelList', minWidth: 150, title: '标签', align: "center"},
-                {field: 'create_time', minWidth: 170, title: '创建时间', align: "center"},
-                {field: 'update_time', minWidth: 170, title: '更新时间', sort: true, align: "center"},
-                {title: '操作', minWidth: 100, toolbar: '#tableItemListBar', align: "center"}
+                {field: 'current_process', width: 200, title: '最新处理信息'},
+                {field: 'labelList', width: 150, title: '标签', align: "center"},
+                {field: 'create_time', width: 170, title: '创建时间', align: "center"},
+                {field: 'update_time', width: 170, title: '更新时间', sort: true, align: "center"},
+                {title: '操作', width: 100, toolbar: '#tableItemListBar', align: "center"}
             ];
             for (let i in fields) {
-                cols.splice(cols.length - 4, 0, {field: 'field' + fields[i].field_id, minWidth: 170, title: fields[i].name, align: "center",
+                cols.splice(cols.length - 5, 0, {field: 'field' + fields[i].field_id, width: 170, title: fields[i].name, align: "center",
                     templet: function(d){
                         return d.fields[i].field_value;
                     }
                 });
             }
             // 渲染工作表条目列表
+            var pagelimit = localStorage.getItem("pageLimit")? localStorage.getItem("pageLimit") : 20
             table.render({
                 elem: '#tableItemList',
                 url: '/office_automation/public/item?tableId=' + value,
@@ -127,15 +129,23 @@
                 cols: [cols],
                 id: 'tableItemList',
                 autoSort: false,
-                initSort: {field:'item_id', type:'desc'},
-                limits: [10, 15, 20, 25, 50, 100],
-                limit: 10,
+                initSort: {field:'sort', type:'desc'},
+                limits: [20, 50, 100],
+                limit: pagelimit,
                 page: true,
                 skin: 'line',
                 done: function(res, curr, count){
                     // 解决刚进来时如果无数据不显示“无数据”问题
                     if($('.layui-table-body table tbody').children().length == 0 && $('.layui-table-body').children().length == 1) {
                         $('.layui-table-body').append(`<div class="layui-none">无数据</div>`);
+                    }
+                    // 保存分页数到缓存
+                    if(localStorage.getItem("pageLimit")) {
+                        if(localStorage.getItem("pageLimit") != $('.layui-laypage-limits select').val()) {
+                            localStorage.setItem("pageLimit", $('.layui-laypage-limits select').val());
+                        }
+                    } else {
+                        localStorage.setItem("pageLimit", $('.layui-laypage-limits select').val());
                     }
                 }
             });
@@ -229,9 +239,6 @@
                     area: ['100%', '100%'],
                     content: 'add-item.html?v=1&tableId=' + $('#work-table').val(),
                 });
-                $(window).on("resize", function () {
-                    // layer.full(index);           TODO
-                });
             }
         });
 
@@ -256,6 +263,8 @@
             }
         });
     });
+
+    // 刷新表格
     function reloadTable() {
         var $ = layui.$;
         $("button[type='submit']").click();

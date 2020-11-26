@@ -145,7 +145,7 @@ function departmentSelect() {
 }
 
 // 处理人下拉表格
-function userSelectTable(tableSelect, element) {
+function userSelectTable(element) {
     layui.use(['tableSelect'], function () {
         var tableSelect = layui.tableSelect;
 
@@ -180,7 +180,7 @@ function toMissionPage(missionId){
         layer.open({
             title: '任务详情',
             type: 2,
-            content: 'read.html?id=' + missionId,
+            content: '../mission/read.html?id=' + missionId,
             shade: 0.2,
             maxmin:true,
             shadeClose: true,

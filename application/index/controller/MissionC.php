@@ -256,17 +256,6 @@ class MissionC extends Controller
             $mission->allowField(true)->save();
             $this->recordMissionView($mission->mission_id);         // 加进任务浏览记录
 
-            // 插入初始任务处理信息
-            $missionProcess = new MissionProcess();
-            $missionProcess->data([
-                'mission_id' => $mission->mission_id,
-                'handler_id' => $sessionUserId,
-                'process_note' => '初始处理任务信息',
-                'post_assignee_id' => input('post.assignee_id'),
-                'post_finish_date' => input('post.finish_date')
-            ]);
-            $missionProcess->save();
-
             $useridList = '';            // 关注人钉钉 userid 以,分隔字符串
             // 插入任务和关注人对应信息
             if (input('post.invite_follow')) {
@@ -293,6 +282,17 @@ class MissionC extends Controller
             // 任务处理关联附件
             $attachmentList = '';           // 附件清单字符串
             if (input('post.attachment_list')) {
+                // 插入初始任务处理信息
+                $missionProcess = new MissionProcess();
+                $missionProcess->data([
+                    'mission_id' => $mission->mission_id,
+                    'handler_id' => $sessionUserId,
+                    'process_note' => '初始处理任务信息',
+                    'post_assignee_id' => input('post.assignee_id'),
+                    'post_finish_date' => input('post.finish_date')
+                ]);
+                $missionProcess->save();
+
                 $attachmentIds = explode(';', input('post.attachment_list'));
                 $attachmentArray = array();
                 foreach ($attachmentIds as $attachmentId) {
