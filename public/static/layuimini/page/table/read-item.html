@@ -536,7 +536,30 @@
             `);
             $('#mission-info').append(element);
             // 渲染表单（处理人和日期）
-            userSelectTable('#assignee' + num);
+            tableSelect.render({
+                elem: '#assignee' + num,
+                checkedKey: 'user_id',
+                searchPlaceholder: '用户/部门关键词',
+                height:'250',
+                width:'400',
+                table: {
+                    url: '/office_automation/public/index.php/index/user_c/getAllUsers'
+                    ,cols: [[
+                        { type: 'radio' },
+                        { field: 'user_id', title: '工号' },
+                        { field: 'user_name', title: '姓名' },
+                        { field: 'department_name', title: '部门'}
+                    ]]
+                },
+                done: function (elem, data) {
+                    var result = data.data;
+                    if(result.length != 0) {
+                        elem.val(result[0].user_name);
+                    } else {
+                        elem.val('');
+                    }
+                }
+            });
             laydate.render({
                 elem: '#finish-date' + num
             });
