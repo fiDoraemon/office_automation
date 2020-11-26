@@ -42,27 +42,19 @@ class TableItemC extends Controller
         if(!$tableId) {
             return Result::returnResult(Result::SUCCESS, [], 0);
         }
-        if($itemId) {
-            $tableItem->where('sort', $itemId);         // 使用排序代替条目号
-        } else {
-            if($keyword) {
-                $tableItem->where('item_title', 'like', "%$keyword%");
-            }
-            if($label) {
-                $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
-            }
+        if($keyword) {
+            $tableItem->where('item_title', 'like', "%$keyword%");
+        }
+        if($label) {
+            $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
         }
         $count = $tableItem->where('table_id', $tableId)->group("ti.item_id")->count();
         $tableItem->alias('ti');
-        if($itemId) {
-            $tableItem->where('sort', $itemId);          // 使用排序代替条目号
-        } else {
-            if($keyword) {
-                $tableItem->where('item_title', 'like', "%$keyword%");
-            }
-            if($label) {
-                $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
-            }
+        if($keyword) {
+            $tableItem->where('item_title', 'like', "%$keyword%");
+        }
+        if($label) {
+            $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
         }
         $tableItemList = $tableItem->where('table_id', $tableId)->group("ti.item_id")->order('sort desc')->page("$page, $limit")->select();
         
@@ -351,5 +343,16 @@ class TableItemC extends Controller
     public function delete($id)
     {
         //
+    }
+
+    // 判断条目是否存在
+    public function isExist($tableId, $sort)
+    {
+        $tableItem = TableItem::get(['table_id' => $tableId, 'sort' => $sort]);
+        if($tableItem) {
+            return Result::returnResult(Result::SUCCESS, $tableItem->item_id);
+        } else {
+            return Result::returnResult(Result::OBJECT_NOT_EXIST);
+        }
     }
 }

@@ -50,13 +50,16 @@
                                 </div>
                             </div>
                             <div class="layui-inline">
+                                <button type="submit" class="layui-btn layui-btn-primary" lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                            </div>
+                            <div class="layui-inline">
                                 <label class="layui-form-label">条目号</label>
                                 <div class="layui-input-inline">
-                                    <input type="text" name="item_id" class="layui-input" placeholder="请输入条目号">
+                                    <input type="text" id="sort" class="layui-input" placeholder="请输入条目号">
                                 </div>
                             </div>
                             <div class="layui-inline">
-                                <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                                <button type="button" class="layui-btn layui-btn-sm" id="to-mission"><i class="layui-icon"></i></button>
                             </div>
                         </div>
                     </form>
@@ -213,8 +216,7 @@
                 },
                 where: {
                     keyword: result.keyword,
-                    label: result.label,
-                    item_id: result.item_id
+                    label: result.label
                 }
             }, 'data');
 
@@ -261,6 +263,37 @@
                 });
                 return false;
             }
+        });
+
+        // 进入条目详情
+        $('#to-mission').click(function () {
+            if($('#work-table').val() == '') {
+                layer.msg('未选择工作表', {icon: 5});
+                return false;
+            }
+            if($('#sort').val() == '') {
+                layer.msg('未填写条目号', {icon: 5});
+                return false;
+            }
+            $.get(
+                '/office_automation/public/index/table_item_c/isExist?tableId=' + $('#work-table').val() + '&sort=' + $('#sort').val(),
+                function(res){
+                    if(res.code == 0) {
+                        var itemId = res.data;
+                        var index = layer.open({
+                            title: '条目详情',
+                            type: 2,
+                            content: 'read-item.html?itemId=' + itemId,
+                            shade: 0.2,
+                            maxmin:true,
+                            shadeClose: true,
+                            area: ['100%', '100%'],
+                        });
+                    } else {
+                        layer.msg('条目号不存在', {icon: 5});
+                    }
+                }
+            );
         });
     });
 

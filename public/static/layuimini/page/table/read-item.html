@@ -528,7 +528,7 @@
             let element = $(`
             <tr>
                 <td><input type="text" name="mission_title[${num}]" lay-verify="required" lay-reqtext="任务标题不能为空" placeholder="请输入任务标题" autocomplete="off" class="layui-input"></td>
-                <td><input type="text" name="assignee[${num}]" id="assignee${num}" lay-verify="required" lay-reqtext="未选择处理人" placeholder="请选择处理人" autocomplete="off" class="layui-input" readonly></td>
+                <td><input type="text" name="assignee[${num}]" id="assignee${num}" lay-verify="required" lay-reqtext="未选择处理人" placeholder="请选择处理人" autocomplete="off" class="layui-input" readonly style="cursor: pointer"></td>
                 <td><input type="text" name="finish_date[${num}]" id="finish-date${num}" lay-verify="date" placeholder="请选择截止日期" autocomplete="off" class="layui-input" readonly></td>
                 <td><input type="text" name="description[${num}]" lay-verify="required" lay-reqtext="任务描述不能为空" placeholder="请输入任务描述" autocomplete="off" class="layui-input"></td>
                 <td><button type="button" class="layui-btn layui-btn-danger layui-btn-sm delete-mission">删除</button></td>
