@@ -115,11 +115,13 @@ class TableItemC extends Controller
         Db::transaction(function () {           // 开启事务
             $sessionUserId = Session::get("info")["user_id"];
             $fields = input('post.');
+            $maxSort = TableWorkService::getMaxItemSort($fields['table_id']);
             // 增加条目信息
             $tableItem = new TableItem([
                 'table_id' => $fields['table_id'],
                 'item_title' => $fields['item_title'],
                 'creator_id' => $sessionUserId,
+                'sort' => $maxSort + 1,
                 'create_time' => date('Y-m-d H:i:s', time())
             ]);
             $tableItem->save();

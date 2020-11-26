@@ -145,4 +145,12 @@ class TableWorkService
 
         return $currentProcess? $currentProcess->process_note : '';
     }
+
+    // 获取工作表最大条目序号
+    public static function getMaxItemSort($tableId) {
+        $tableItem = new TableItem();
+        $maxItemSort = $tableItem->where('table_id', $tableId)->max('sort');
+
+        return $maxItemSort;
+    }
 }
