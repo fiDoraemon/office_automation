@@ -27,7 +27,7 @@
             <fieldset class="table-search-fieldset">
                 <legend>操作</legend>
                 <div style="margin: 10px 10px 10px 10px">
-                    <form class="layui-form layui-form-pane" lay-filter="setValue">
+                    <form class="layui-form layui-form-pane" lay-filter="index-item">
                         <div class="layui-form-item">
                             <div class="layui-inline">
                                 <label class="layui-form-label">工作表</label>
@@ -62,6 +62,7 @@
                                 <button type="button" class="layui-btn layui-btn-sm" id="to-mission"><i class="layui-icon"></i></button>
                             </div>
                         </div>
+                        <div class="layui-form-item" id="filter-fields"></div>
                     </form>
                 </div>
             </fieldset>
@@ -83,14 +84,15 @@
         </div>
     </div>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
-<script src="../../js/common.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script src="../../js/common.js?v=1" charset="utf-8"></script>
 <script>
     layui.use(['form', 'table'], function () {
         var $ = layui.jquery,
             form = layui.form,
             table = layui.table;
 
-        var worktable;          //
+        var worktable;          // 当前的工作表
         // 渲染表格
         function renderTable(value) {
             // 获取对应的字段列表
@@ -155,20 +157,20 @@
         }
 
         // 获取信息
-        var tableList;
+        var tableList;          // 工作表列表
+        var radioUserList = [];          // 单选用户字段列表
         var index = layer.load(2);
         $.get(
             "/office_automation/public/index/table_item_c/getTableList",
             function (res, status) {
                 if(res.code == 0) {
-                    // 填充工作表下拉列表
                     tableList = res.data;
+                    // 填充工作表下拉列表
                     var element = '';
                     for(i in tableList) {
                         element += `<option value="${tableList[i].table_id}">${tableList[i].table_name}</option>`;
                     }
                     $('#work-table').append(element);
-                    form.render('select');
                     // 如果有工作表
                     if(tableList.length > 0) {
                         if(localStorage.getItem('tableId')) {           // 记忆的工作表
@@ -177,11 +179,46 @@
                             var tableId = tableList[0].table_id;
 
                         }
-                        form.val("setValue", {
+                        form.val("index-item", {
                             "table_id": tableId,
                         });
                         renderTable(tableId);
                         worktable = tableId;
+                        // 填充筛选输入框
+                        for (var i in tableList) {          // 找到对应工作表索引
+                            if(tableList[i].table_id == tableId) {
+                                break;
+                            }
+                        }
+                        var partFields = tableList[i].partFields;
+                        for(var i in partFields) {
+                            var input = $(`
+                            <div class="layui-inline">
+                                <label class="layui-form-label">${partFields[i].name}</label>
+                                <div class="layui-input-inline"></div>
+                            </div>`);
+                            if(partFields[i].type == 'select' || partFields[i].type == 'checkbox') {
+                                var values = partFields[i].value.split('，');
+                                var select = $(`
+                                <select name="field${partFields[i].field_id}">
+                                    <option value=""></option>
+                                </select>`);
+                                for(var k in values) {
+                                    select.append(`<option value="${values[k]}">${values[k]}</option>`);
+                                }
+                                input.find('.layui-input-inline').append(select);
+                                $('#filter-fields').append(input);
+                            } else if(partFields[i].type == 'user' || partFields[i].type == 'users') {
+                                input.find('.layui-input-inline').append(`<input type="text" name="field${partFields[i].field_id}" id="field${partFields[i].field_id}" class="layui-input" readonly>`);
+                                $('#filter-fields').append(input);
+                                radioUserList.push('field' + partFields[i].field_id);
+                            }
+                        }
+                        // 渲染表单
+                        form.render('select', 'index-item');
+                        for(var i in radioUserList) {
+                            userSelectTable('#' + radioUserList[i]);
+                        }
                     }
                 }
                 layer.close(index);
@@ -208,16 +245,22 @@
                 layer.msg('请先选择工作表！', {icon: 5});
                 return false;
             }
-
+            for(var i in result) {
+                if(radioUserList.includes(i)) {
+                    var userId = $('#' + i).attr('ts-selected');
+                    if(userId == '' || userId == null || userId == undefined) {
+                        result[i] = '';
+                    } else {
+                        result[i] = $('#' + i).attr('ts-selected');
+                    }
+                }
+            }
             // 执行搜索重载
             table.reload('tableItemList', {
                 page: {
                     curr: 1
                 },
-                where: {
-                    keyword: result.keyword,
-                    label: result.label
-                }
+                where: result
             }, 'data');
 
             return false;

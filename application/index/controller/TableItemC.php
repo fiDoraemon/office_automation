@@ -33,37 +33,77 @@ class TableItemC extends Controller
     public function index($tableId = '', $page = 1, $limit = 10, $keyword = '')
     {
         $sessionUserId = Session::get("info")["user_id"];
+        $fields = input('get.');
         $tableItem = new TableItem();
         $tableItem->alias('ti');
-        $keyword = input('get.keyword');
-        $label = input('get.label');
-        $itemId = input('get.item_id');
+        $keyword = input('get.keyword');            // 标题关键词
+        $label = input('get.label');            // 标签
+        // 获取筛选字段
+        $fieldList = [];
+        foreach ($fields as $key => $field) {
+            if(substr($key,0, 5) == 'field' && $field != '') {
+                $fieldId = substr($key, 5);
+                $fieldList[$fieldId] = $field;
+            }
+        }
 
         if(!$tableId) {
             return Result::returnResult(Result::SUCCESS, [], 0);
         }
-        if($keyword) {
-            $tableItem->where('item_title', 'like', "%$keyword%");
-        }
-        if($label) {
-            $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
-        }
-        $count = $tableItem->where('table_id', $tableId)->group("ti.item_id")->count();
+        // 获取条目数目
         $tableItem->alias('ti');
         if($keyword) {
             $tableItem->where('item_title', 'like', "%$keyword%");
         }
         if($label) {
-            $tableItem->alias('ti')->join('oa_table_item_label til','til.item_id = ti.item_id')->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
+            $tableItem->join('oa_table_item_label til','til.item_id = ti.item_id')
+                ->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
         }
-        $tableItemList = $tableItem->where('table_id', $tableId)->group("ti.item_id")->order('sort desc')->page("$page, $limit")->select();
-        
+        if($fieldList) {
+            foreach ($fieldList as $key => $value) {
+                $tableField = TableField::get($key);
+                $tableName = 't' . $key;
+                if($tableField->type == 'checkbox') {
+                    $tableItem->join("oa_table_field_value $tableName", "$tableName.item_id = ti.item_id and $tableName.field_id = $key and $tableName.field_value like '%$value%'");
+                } else if($tableField->type == 'users') {
+                    $tableItem->join("oa_table_field_user $tableName", "$tableName.item_id = ti.item_id and $tableName.field_id = $key and $tableName.user_id = '$value'");
+                } else {
+                    $tableItem->join("oa_table_field_value $tableName", "$tableName.item_id = ti.item_id and $tableName.field_id = $key and $tableName.field_value = '$value'");
+                }
+            }
+        }
+        $count = $tableItem->where('table_id', $tableId)->group("ti.item_id")->count();
+        // 获取条目列表
+        $tableItem->alias('ti');
+        if($keyword) {
+            $tableItem->where('item_title', 'like', "%$keyword%");
+        }
+        if($label) {
+            $tableItem->join('oa_table_item_label til','til.item_id = ti.item_id')
+                ->join('oa_label l', "l.label_id = til.label_id and l.label_name like '%$label%'");
+        }
+        if($fieldList) {
+            foreach ($fieldList as $key => $value) {
+                $tableField = TableField::get($key);
+                $tableName = 't' . $key;
+                if($tableField->type == 'checkbox') {
+                    $tableItem->join("oa_table_field_value $tableName", "$tableName.item_id = ti.item_id and $tableName.field_id = $key and $tableName.field_value like '%$value%'");
+                } else if($tableField->type == 'users') {
+                    $tableItem->join("oa_table_field_user $tableName", "$tableName.item_id = ti.item_id and $tableName.field_id = $key and $tableName.user_id = '$value'");
+                } else {
+                    $tableItem->join("oa_table_field_value $tableName", "$tableName.item_id = ti.item_id and $tableName.field_id = $key and $tableName.field_value = '$value'");
+                }
+            }
+        }
+        $tableItemList = $tableItem->where('table_id', $tableId)->group("ti.item_id")
+            ->order('sort desc')->page("$page, $limit")->select();
+        // 处理条目列表
         foreach ($tableItemList as $tableItem) {
             $tableItem->creator = UserService::userIdToName($tableItem->creator_id, 1);
             $tableItem->labelList = implode('；', TableWorkService::getItemLabelList($tableItem->item_id));          // 获取标签列表
             $tableItem->fields = TableWorkService::getShowItemFieldList($tableItem);            // 获取条目字段列表
             $tableItem->current_process = TableWorkService::getCurrentProcess($tableItem->item_id);         // 获取最近处理信息
-            unset($tableItem->creator_id);
+            unset($tableItem->creator_id, $tableItem->table_id);
         }
 
         return Result::returnResult(Result::SUCCESS, $tableItemList, $count);
@@ -104,7 +144,7 @@ class TableItemC extends Controller
      */
     public function save(Request $request)
     {
-        Db::transaction(function () {           // 开启事务
+        return Db::transaction(function () {           // 开启事务
             $sessionUserId = Session::get("info")["user_id"];
             $fields = input('post.');
             $maxSort = TableWorkService::getMaxItemSort($fields['table_id']);
@@ -163,9 +203,9 @@ class TableItemC extends Controller
                     $tableItemLabel->save();
                 }
             }
-        });
 
-        return Result::returnResult(Result::SUCCESS);
+            return Result::returnResult(Result::SUCCESS);
+        });
     }
 
     /**
@@ -224,7 +264,7 @@ class TableItemC extends Controller
      */
     public function update(Request $request, $id)
     {
-        Db::transaction(function () use($id) {           // 开启事务
+        return Db::transaction(function () use($id) {           // 开启事务
             $sessionUserId = Session::get("info")["user_id"];
             $tableItem = TableItem::get($id);
             $fields = input('put.');
@@ -329,9 +369,9 @@ class TableItemC extends Controller
                     MissionService::sendMessge($mission->mission_id);           // 发送钉钉消息
                 }
             }
-        });
 
-        return Result::returnResult(Result::SUCCESS);
+            return Result::returnResult(Result::SUCCESS);
+        });
     }
 
     /**

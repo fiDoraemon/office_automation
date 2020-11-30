@@ -153,6 +153,8 @@ function userSelectTable(element) {
             elem: element,
             checkedKey: 'user_id',
             searchPlaceholder: '用户/部门关键词',
+            height:'250',
+            width:'400',
             table: {
                 url: '/office_automation/public/index.php/index/user_c/getAllUsers'
                 ,cols: [[
