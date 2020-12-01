@@ -531,8 +531,8 @@ class DocumentC
      * @param $newFile 新文件名
      */
     private function moveDocFile($oldFilePath,$newPath,$newFile){
-        $oldFilePath = ROOT_PATH . 'public/upload/' . $oldFilePath;
-        $newPath = ROOT_PATH . 'public/upload/' . $newPath;
+        $oldFilePath = ROOT_PATH . 'public/upload/' . iconv('utf-8', 'gbk', $oldFilePath);          // windows 下需要转换编码
+        $newPath = ROOT_PATH . 'public/upload/' . iconv('utf-8', 'gbk', $newPath);
         if (!is_dir( $newPath)){
             mkdir($newPath,0777,true);
         }
