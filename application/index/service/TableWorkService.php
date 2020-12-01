@@ -153,4 +153,11 @@ class TableWorkService
 
         return $maxItemSort;
     }
+
+    // 获取工作表的可见人列表
+    public static function getViewUserList($tableId) {
+        $tableUser = new TableUser();
+        $viewUserList = $tableUser->alias('tu')->where('table_id', $tableId)->join('oa_user u', 'u.user_id = tu.user_id')->field('tu.user_id,u.user_name')->select();
+        return $viewUserList;
+    }
 }

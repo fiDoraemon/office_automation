@@ -113,6 +113,10 @@ class TableItemC extends Controller
     public function getTableList() {
         $sessionUserId = Session::get("info")["user_id"];
         $tableList = TableWorkService::getTableList($sessionUserId);
+        foreach ($tableList as $table) {
+            // 获取工作表的可见人列表
+            $table->viewUserList = TableWorkService::getViewUserList($table->table_id);
+        }
 
         return Result::returnResult(Result::SUCCESS, $tableList);
     }

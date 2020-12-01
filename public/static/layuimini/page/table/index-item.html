@@ -94,14 +94,14 @@
 
         var worktable;          // 当前的工作表
         // 渲染表格
-        function renderTable(value) {
+        function renderTable(tableId) {
             // 获取对应的字段列表
-            var fields;
             for(var i in tableList) {
-                if(tableList[i].table_id == value) {
-                    fields = tableList[i].partFields;
+                if(tableList[i].table_id == tableId) {
+                    break;
                 }
             }
+            var fields = tableList[i].partFields;
             // 获取需要显示的列
             var cols = [
                 {field: 'sort', width: 80, title: 'ID', align: "center"},
@@ -128,7 +128,7 @@
             var pagelimit = localStorage.getItem("pageLimit")? localStorage.getItem("pageLimit") : 20
             table.render({
                 elem: '#tableItemList',
-                url: '/office_automation/public/item?tableId=' + value,
+                url: '/office_automation/public/item?tableId=' + tableId,
                 toolbar: '#toolbar',
                 defaultToolbar: ['filter', 'exports', 'print'],
                 cols: [cols],
@@ -155,6 +155,48 @@
                 }
             });
         }
+        // 渲染筛选输入框
+        function renderSelectInput(tableId) {
+            $('#filter-fields').empty();
+            // 获取对应的字段列表
+            for(var i in tableList) {
+                if(tableList[i].table_id == tableId) {
+                    break;
+                }
+            }
+            var partFields = tableList[i].partFields;
+            var viewUserList = tableList[i].viewUserList;
+            for(var i in partFields) {
+                if(['select','checkbox','user','users'].includes(partFields[i].type)) {
+                    var input = $(`
+                                <div class="layui-inline">
+                                    <label class="layui-form-label" style="width: auto">${partFields[i].name}</label>
+                                    <div class="layui-input-inline"></div>
+                                </div>`);
+                    var select = $(`
+                                <select name="field${partFields[i].field_id}">
+                                    <option value=""></option>
+                                </select>`);
+                    if(partFields[i].type == 'select' || partFields[i].type == 'checkbox') {
+                        var values = partFields[i].value.split('，');
+                        for(var k in values) {
+                            select.append(`<option value="${values[k]}">${values[k]}</option>`);
+                        }
+                    } else if(partFields[i].type == 'user' || partFields[i].type == 'users') {
+                        var select = $(`
+                                <select name="field${partFields[i].field_id}">
+                                    <option value=""></option>
+                                </select>`);
+                        for(var k in viewUserList) {
+                            select.append(`<option value="${viewUserList[k]['user_id']}">${viewUserList[k]['user_name']}</option>`);
+                        }
+                    }
+                    input.find('.layui-input-inline').append(select);
+                    $('#filter-fields').append(input);
+                }
+            }
+            form.render('select', 'index-item');
+        }
 
         // 获取信息
         var tableList;          // 工作表列表
@@ -164,15 +206,15 @@
             "/office_automation/public/index/table_item_c/getTableList",
             function (res, status) {
                 if(res.code == 0) {
-                    tableList = res.data;
                     // 填充工作表下拉列表
-                    var element = '';
-                    for(i in tableList) {
-                        element += `<option value="${tableList[i].table_id}">${tableList[i].table_name}</option>`;
-                    }
-                    $('#work-table').append(element);
-                    // 如果有工作表
+                    tableList = res.data;
                     if(tableList.length > 0) {
+                        var element = '';
+                        for(i in tableList) {
+                            element += `<option value="${tableList[i].table_id}">${tableList[i].table_name}</option>`;
+                        }
+                        $('#work-table').append(element);
+
                         if(localStorage.getItem('tableId')) {           // 记忆的工作表
                             var tableId = localStorage.getItem('tableId');
                         } else {
@@ -182,43 +224,10 @@
                         form.val("index-item", {
                             "table_id": tableId,
                         });
-                        renderTable(tableId);
+                        renderTable(tableId);           // 渲染表格
                         worktable = tableId;
-                        // 填充筛选输入框
-                        for (var i in tableList) {          // 找到对应工作表索引
-                            if(tableList[i].table_id == tableId) {
-                                break;
-                            }
-                        }
-                        var partFields = tableList[i].partFields;
-                        for(var i in partFields) {
-                            var input = $(`
-                            <div class="layui-inline">
-                                <label class="layui-form-label">${partFields[i].name}</label>
-                                <div class="layui-input-inline"></div>
-                            </div>`);
-                            if(partFields[i].type == 'select' || partFields[i].type == 'checkbox') {
-                                var values = partFields[i].value.split('，');
-                                var select = $(`
-                                <select name="field${partFields[i].field_id}">
-                                    <option value=""></option>
-                                </select>`);
-                                for(var k in values) {
-                                    select.append(`<option value="${values[k]}">${values[k]}</option>`);
-                                }
-                                input.find('.layui-input-inline').append(select);
-                                $('#filter-fields').append(input);
-                            } else if(partFields[i].type == 'user' || partFields[i].type == 'users') {
-                                input.find('.layui-input-inline').append(`<input type="text" name="field${partFields[i].field_id}" id="field${partFields[i].field_id}" class="layui-input" readonly>`);
-                                $('#filter-fields').append(input);
-                                radioUserList.push('field' + partFields[i].field_id);
-                            }
-                        }
-                        // 渲染表单
+                        renderSelectInput(tableId);         // 填充筛选输入框
                         form.render('select', 'index-item');
-                        for(var i in radioUserList) {
-                            userSelectTable('#' + radioUserList[i]);
-                        }
                     }
                 }
                 layer.close(index);
@@ -231,10 +240,11 @@
                 return false;
             }
             if(data.value != worktable) {
-                $("input[name='item_id']").val('');         // 清除条目号输入框
-                renderTable(data.value);
+                // $("input[name='item_id']").val('');         // 清除条目号输入框
+                renderTable(data.value);            // 重新渲染表格
                 worktable = data.value;
                 localStorage.setItem("tableId", worktable);         // 保存工作表号到缓存
+                renderSelectInput(data.value);
             }
         });
 
@@ -245,16 +255,7 @@
                 layer.msg('请先选择工作表！', {icon: 5});
                 return false;
             }
-            for(var i in result) {
-                if(radioUserList.includes(i)) {
-                    var userId = $('#' + i).attr('ts-selected');
-                    if(userId == '' || userId == null || userId == undefined) {
-                        result[i] = '';
-                    } else {
-                        result[i] = $('#' + i).attr('ts-selected');
-                    }
-                }
-            }
+            return false;
             // 执行搜索重载
             table.reload('tableItemList', {
                 page: {
