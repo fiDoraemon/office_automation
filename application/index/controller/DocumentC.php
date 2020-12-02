@@ -732,14 +732,16 @@ class DocumentC
      */
     private function getDocCode($projectCode,$projectStage){
         $stagePre = explode("-",$projectStage);
-        $docCodeCount = new DocCodeCount();
-        $stageCount = $docCodeCount -> where(["project_code" => $projectCode,"stage" => $stagePre[0]])
-                                    -> find();
-        $count = $stageCount -> count;
-        $count++;
-        $stageCount -> count = $count;
-        $stageCount -> save();
-        $count = str_pad($count,4,"0",STR_PAD_LEFT);
+        $docCodeCount = DocCodeCount::get(['project_code' => $projectCode, 'stage' => $stagePre[0]]);
+        if(!$docCodeCount) {
+            $docCodeCount = new DocCodeCount();
+            $docCodeCount->project_code = $projectCode;
+            $docCodeCount->stage = $stagePre[0];
+            $docCodeCount->count = 0;
+        }
+        $docCodeCount->count = $docCodeCount->count + 1;
+        $docCodeCount -> save();
+        $count = str_pad($docCodeCount->count,4,"0",STR_PAD_LEFT);
         return $projectCode . "-" . $projectStage . "-" . $count;
     }
 
