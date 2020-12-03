@@ -51,6 +51,13 @@
                     </div>
                     <div class="layui-form-mid layui-word-aux">标签与标签之间需用中文分号分隔(；)</div>
                 </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">颜色选择</label>
+                    <div class="layui-input-block">
+                        <input type="hidden" name="color" value="#666">
+                        <span class="layui-btn layui-btn-primary select-color" style="padding:0 12px;min-width:45px;background-color: #666;"></span>
+                    </div>
+                </div>
                 <!-- 字段 -->
                 <div id="fields"></div>
                 <div class="layui-form-item" style="margin-top: 40px">
@@ -66,6 +73,8 @@
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script src="../../js/common.js?v=1" charset="utf-8"></script>
+<script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf-8"></script>
+<script src="../../lib/jq-module/paigusu.min.js" charset="utf-8"></script>
 <script>
     layui.use(['form', 'laydate', 'tableSelect', 'miniTab'], function () {
         var $ = layui.$,
@@ -75,8 +84,18 @@
             upload = layui.upload,
             tableSelect = layui.tableSelect,
             miniTab = layui.miniTab;
-
+        // 颜色选择
+        $('.select-color').paigusu({
+            color: '#666',           //初始色
+        }, function (event, obj) {          // 元素，对象
+            $(event).css('background-color', '#' + obj.hex);
+            $('input[name="color"]').val('#' + obj.hex);
+        });
         // 获取信息
+        var dateList = [];          // 日期字段列表
+        var radioUserList = [];          // 单选用户字段列表
+        var checkUserList = [];          // 多选用户字段列表
+        var missionList = [];           // 任务字段列表
         var index = layer.load(2);
         $.get(
             "/office_automation/public/item/create?tableId=" + getQueryVariable('tableId'),
@@ -151,6 +170,9 @@
                             for(var k in values) {
                                 input.find('.layui-input-block').append(`<input type="checkbox" name="field${fields[j].field_id}[]" title="${values[k]}" lay-filter="customize-check" value="${values[k]}">`);
                             }
+                        } else if(fields[j].type == 'mission') {
+                            input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly>`);
+                            missionList.push('field' + fields[j].field_id);
                         } else {
                             input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" class="layui-input">`);
                         }
@@ -175,16 +197,13 @@
                             userIdsList[checkUserList[i]] = [];
                         }
                     }
-
+                    for(var i in missionList) {            // 任务
+                        missionSelectTable('#' + missionList[i]);
+                    }
                     layer.close(index);
                 }
             }
         );
-
-        // 监听工作表下拉选择
-        var dateList = [];          // 日期字段列表
-        var radioUserList = [];          // 单选用户字段列表
-        var checkUserList = [];          // 多选用户字段列表
 
         // 监听标签选择搜索框
         form.on('select(label-serach)', function(data){

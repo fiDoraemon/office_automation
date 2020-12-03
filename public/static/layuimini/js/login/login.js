@@ -47,7 +47,6 @@ function sendData(){
         url: "/office_automation/public/index.php/index/login_c/login",
         type:'post',
         //dataType: 'json',//返回的内容的类型，由于PHP文件是直接echo的，那么这里就是text
-        timeout: 1000,//超时时间
         data: {
             userNum  : userNum,
             userPwd  : userPwd,

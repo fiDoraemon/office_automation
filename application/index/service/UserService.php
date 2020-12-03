@@ -25,7 +25,7 @@ class UserService
      * 1：工号转名字，2：名字转工号
      */
     public static function userIdToName($string, $type) {
-        if($type = 1) {
+        if($type == 1) {
             $user = User::get(['user_id' => $string]);
             return $user->user_name;
         } else {
@@ -42,6 +42,17 @@ class UserService
             return true;
         } else {
             return false;
+        }
+    }
+
+    // 判断名字是否合法
+    public static function isRightName($userName) {
+        $user = new User();
+        $count = $user->where('user_name', $userName)->count();
+        if($count > 1 || $count == 0) {
+            return false;
+        } else {
+            return true;
         }
     }
 }

@@ -3,6 +3,7 @@
 namespace app\index\controller;
 
 use app\common\Result;
+use app\common\util\ExcelUtil;
 use app\index\common\DataEnum;
 use app\index\model\Attachment;
 use app\index\model\Label;
@@ -14,6 +15,7 @@ use app\index\model\TableFieldUser;
 use app\index\model\TableItemLabel;
 use app\index\model\TableItemProcess;
 use app\index\model\TableWork;
+use app\index\model\User;
 use app\index\service\LabelService;
 use app\index\service\MissionService;
 use app\index\service\TableWorkService;
@@ -158,6 +160,7 @@ class TableItemC extends Controller
                 'item_title' => $fields['item_title'],
                 'creator_id' => $sessionUserId,
                 'sort' => $maxSort + 1,
+                'color' => $fields['color'],
                 'create_time' => date('Y-m-d H:i:s', time())
             ]);
             $tableItem->save();
@@ -193,19 +196,7 @@ class TableItemC extends Controller
             }
             // 处理条目标签
             if($fields['label_list']) {
-                $labelList = explode('；', input('label_list'));
-                foreach ($labelList as $label) {
-                    $labelModel = Label::get(['label_name' => $label]);
-                    if(!$labelModel) {
-                        $labelModel = new Label();
-                        $labelModel->label_name = $label;
-                        $labelModel->save();
-                    }
-                    $tableItemLabel = new TableItemLabel();
-                    $tableItemLabel->item_id = $tableItem->item_id;
-                    $tableItemLabel->label_id = $labelModel->label_id;
-                    $tableItemLabel->save();
-                }
+                TableWorkService::processItemlabel($fields['label_list'], $tableItem->item_id);
             }
 
             return Result::returnResult(Result::SUCCESS);
@@ -274,6 +265,7 @@ class TableItemC extends Controller
             $fields = input('put.');
             // 更新条目信息
             $tableItem->item_title = $fields['item_title'];
+            $tableItem->color = $fields['color'];
             $tableItem->save();
             // 更新条目字段信息
             $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
@@ -321,22 +313,7 @@ class TableItemC extends Controller
             }
             // 处理条目标签
             if($fields['label_list']) {
-                $labelList = explode('；', $fields['label_list']);
-                foreach ($labelList as $label) {
-                    $labelModel = Label::get(['label_name' => $label]);
-                    if(!$labelModel) {
-                        $labelModel = new Label();
-                        $labelModel->label_name = $label;
-                        $labelModel->save();
-                    }
-                    $tableItemLabel = TableItemLabel::get(['item_id' => $tableItem->item_id, 'label_id' => $labelModel->label_id]);
-                    if(!$tableItemLabel) {
-                        $tableItemLabel = new TableItemLabel();
-                        $tableItemLabel->item_id = $tableItem->item_id;
-                        $tableItemLabel->label_id = $labelModel->label_id;
-                        $tableItemLabel->save();
-                    }
-                }
+                TableWorkService::processItemlabel($fields['label_list'], $id);
             }
             // 增加条目处理信息
             if($fields['process_note'] || $fields['attachment_list']) {
@@ -398,5 +375,128 @@ class TableItemC extends Controller
         } else {
             return Result::returnResult(Result::OBJECT_NOT_EXIST);
         }
+    }
+
+    // 通过导入excel文件更新条目信息
+    public function updateItemByImportExcel($tableId) {
+        return Db::transaction(function () use($tableId) {           // 开启事务
+            $file = $this->request->file('file');
+            if($file) {
+                // 文件移动到temp文件夹
+                $info = $file->validate(['size' => 52428800])->rule('uniqid')->move(ROOT_PATH . 'public/upload/temp/');
+                $filePath = ROOT_PATH . 'public/upload/temp/' . $info->getFilename();
+                $itemList = ExcelUtil::readExcel($filePath);
+                unset($info);           // 释放文件
+                unlink($filePath);          // 删除临时文件
+            } else {
+                return Result::returnResult(Result::UPLOAD_ERROR);
+            }
+            $tableWork = TableWork::get($tableId);
+            // 获取工作表字段名称列表
+            $cols = ['id', '标题', '发起人', '最新处理信息', '标签', '创建时间', '更新时间'];
+            foreach ($tableWork->partFields as $field) {
+                array_splice($cols, count($cols) - 4, 0, [$field->name]);
+            }
+            // 判断表格信息是否符合要求
+            $errorResult = Result::returnResult(Result::ERROR);
+            if ($itemList[0] != $cols) {
+                $errorResult['msg'] = '表头不正确';
+                return $errorResult;
+            }
+            for ($i = 1; $i < count($itemList); $i++) {
+                $item = $itemList[$i];
+                $tableItem = TableItem::get(['table_id' => $tableId, 'sort' => $item[0]]);
+                if ($tableItem) {
+                    if ($tableItem->item_title != $item[1]) {
+                        $errorResult['msg'] = '第' . $i . '行条目号和条目标题不对应';
+                        return $errorResult;
+                    }
+                } else {
+                    $errorResult['msg'] = '第' . $i . '行条目不存在';
+                    return $errorResult;
+                }
+                for ($j = 3; $j < count($cols) - 4; $j++) {
+                    $tableField = $tableWork->partFields[$j - 3];
+                    if ($tableField->type == 'user' || $tableField->type == 'users') {
+                        $userList = explode('；', $item[$j]);
+                        foreach ($userList as $user) {
+                            if (!UserService::isRightName($user)) {
+                                $errorResult['msg'] = '第' . $i . '行条目' . $tableField->name . '字段值中的用户不存在或存在两个';
+                                return $errorResult;
+                            }
+                        }
+                    } else if ($tableField->type == 'select' || $tableField->type == 'checkbox') {
+                        $valueList = explode('；', $item[$j]);
+                        foreach ($valueList as $value) {
+                            if($value == '') {
+                                continue;
+                            }
+                            $selectList = explode('，', $tableField->value);
+                            $result = false;
+                            foreach ($selectList as $select) {
+                                if ($value == $select) {
+                                    $result = true;
+                                    break;
+                                }
+                            }
+                            if (!$result) {
+                                $errorResult['msg'] = '第' . $i . '行条目' . $tableField->name . '字段值不在允许的范围内';
+                                return $errorResult;
+                            }
+                        }
+                    }
+                }
+            }
+            // 更新条目信息
+            for ($i = 1; $i < count($itemList); $i++) {
+                $item = $itemList[$i];          // 条目信息
+                $tableItem = TableItem::get(['table_id' => $tableId, 'sort' => $item[0]]);
+                // 处理条目标签
+                TableWorkService::processItemlabel($item[count($item) - 3], $tableItem->item_id);
+                // 从第四列开始处理工作表字段
+                for ($j = 3; $j < count($cols) - 4; $j++) {
+                    $tableField = $tableWork->partFields[$j - 3];            // 工作表字段对象
+                    if($tableField->type == 'users') {
+                        $userList = explode('；', $item[$j]);
+                        foreach ($userList as $user) {
+                            if($user == '') {
+                                continue;
+                            }
+                            $userId = UserService::userIdToName($user, 2);
+                            $tableFieldUser = TableFieldUser::get(['item_id' => $tableItem->item_id, 'field_id' => $tableField->field_id, 'user_id' => $userId]);
+                            if (!$tableFieldUser) {
+                                $tableFieldUser = new TableFieldUser();
+                                $tableFieldUser->item_id = $tableItem->item_id;
+                                $tableFieldUser->field_id = $tableField->field_id;
+                                $tableFieldUser->user_id = $userId;
+                                $tableFieldUser->save();
+                            }
+                        }
+                    } else {
+                        $tableFieldValue = TableFieldValue::get(['item_id' => $tableItem->item_id, 'field_id' => $tableField->field_id]);
+                        if(!$tableFieldValue) {
+                            $tableFieldValue = new TableFieldValue();
+                            $tableFieldValue->item_id = $tableItem->item_id;
+                            $tableFieldValue->field_id = $tableField->field_id;
+                        }
+                        if($tableField->type == 'user') {
+                            if ($item[$j] == '') {
+                                $userId = 0;
+                            } else {
+                                $userId = UserService::userIdToName($item[$j], 2);
+                            }
+                            $tableFieldValue->field_value = $userId;
+                        } else if($tableField->type == 'checkbox') {
+                            $tableFieldValue->field_value = str_ireplace("；",";", $item[$j]);
+                        } else {
+                            $tableFieldValue->field_value = $item[$j];
+                        }
+                        $tableFieldValue->save();
+                    }
+                }
+            }
+
+            return Result::returnResult(Result::SUCCESS);
+        });
     }
 }

@@ -176,6 +176,41 @@ function userSelectTable(element) {
     });
 }
 
+// 任务下拉表格
+function missionSelectTable(element) {
+    layui.use(['tableSelect'], function () {
+        var tableSelect = layui.tableSelect;
+
+        tableSelect.render({
+            elem: element,
+            checkedKey: 'mission_id',
+            searchPlaceholder: '任务号/任务标题',
+            height:'250',
+            width:'400',
+            table: {
+                url: '/office_automation/public/index/mission_c/selectIndex'
+                ,cols: [[
+                    { type: 'radio' },
+                    { field: 'mission_id', title: '任务号' },
+                    { field: 'mission_title', title: '任务标题' },
+                    { field: 'assignee_name', title: '处理人' }
+                ]]
+                ,page: false
+            },
+            done: function (elem, data) {
+                var result = data.data;
+                if(result.length != 0) {
+                    var userList = $(element).val().split('；');
+                    if(userList.includes(elem.val(result[0].mission_id))) {
+                        userList.push(elem.val(result[0].mission_id));
+                        $(element).val(userList.join('；'));
+                    }
+                }
+            }
+        });
+    });
+}
+
 // 打开任务弹窗
 function toMissionPage(missionId){
     layui.use([], function () {

@@ -10,6 +10,7 @@ namespace app\index\service;
 
 
 use app\index\common\DataEnum;
+use app\index\model\Label;
 use app\index\model\Mission;
 use app\index\model\TableField;
 use app\index\model\TableFieldUser;
@@ -58,12 +59,12 @@ class TableWorkService
         foreach ($tableFieldList as $tableField) {
             $tableField->field_value = $tableField->field_value? $tableField->field_value : '';         // 添加新字段而没有对应值的情况
             if($tableField->type == 'user') {            // 单选用户
-                if(!$tableField->field_value) {
-                    $tableField->field_value = 0;
-                } else {
+                if($tableField->field_value) {
                     $tableField->field_value2 = UserService::userIdToName($tableField->field_value, 1);
+                } else {
+                    $tableField->field_value = 0;
                 }
-            } elseif($tableField->type == 'users') {            // 多选用户
+            } else if($tableField->type == 'users') {            // 多选用户
                 // 获取多选用户列表
                 $tableFieldUser = new TableFieldUser();
                 $userList = $tableFieldUser->where('field_id', $tableField->field_id)->where('item_id', $tableItem->item_id)->alias('tfu')->join('oa_user u', 'u.user_id = tfu.user_id')->field('tfu.user_id,user_name')->select();
@@ -88,11 +89,15 @@ class TableWorkService
             ->select();
 
         foreach ($tableFieldList as $tableField) {
+            // 添加新字段而没有对应值的情况
+            if($tableField->field_value == null) {
+                $tableField->field_value = '';
+            }
             if($tableField->type == 'user') {
-                if($tableField->field_value == null) {
-                    $tableField->field_value = '';
-                } else {
+                if($tableField->field_value) {
                     $tableField->field_value = UserService::userIdToName($tableField->field_value, 1);
+                } else {
+                    $tableField->field_value = '';
                 }
             } else if($tableField->type == 'users') {
                 $fieldValue = [];
@@ -102,10 +107,8 @@ class TableWorkService
                     array_push($fieldValue, $user->user_name);
                 }
                 $tableField->field_value = implode('；', $fieldValue);
-            } else {
-                if($tableField->field_value == null) {
-                    $tableField->field_value = '';
-                }
+            } else if($tableField->type == 'checkbox') {
+                $tableField->field_value = str_ireplace(";","；", $tableField->field_value);
             }
         }
 
@@ -159,5 +162,33 @@ class TableWorkService
         $tableUser = new TableUser();
         $viewUserList = $tableUser->alias('tu')->where('table_id', $tableId)->join('oa_user u', 'u.user_id = tu.user_id')->field('tu.user_id,u.user_name')->select();
         return $viewUserList;
+    }
+
+    // 处理条目标签
+    public static function processItemlabel($labelList, $itemId) {
+        $labelList = explode('；', $labelList);
+        $itemLabels = [];          // 目前的条目标签对应号列表
+        // 新增加的
+        foreach ($labelList as $label) {
+            $labelModel = Label::get(['label_name' => $label]);
+            if(!$labelModel) {
+                $labelModel = new Label();
+                $labelModel->label_name = $label;
+                $labelModel->save();
+            }
+            $tableItemLabel = TableItemLabel::get(['item_id' => $itemId, 'label_id' => $labelModel->label_id]);
+            if(!$tableItemLabel) {
+                $tableItemLabel = new TableItemLabel();
+                $tableItemLabel->item_id = $itemId;
+                $tableItemLabel->label_id = $labelModel->label_id;
+                $tableItemLabel->save();
+            }
+            array_push($itemLabels, $tableItemLabel->label_id);
+        }
+        // 删除的
+        $tableItemLabel = new TableItemLabel();
+        $tableItemLabel->where('item_id', $itemId)->where('label_id', 'not in', $itemLabels)->delete();
+
+        return true;
     }
 }

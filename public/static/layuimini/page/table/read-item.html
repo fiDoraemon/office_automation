@@ -90,6 +90,13 @@
                     </div>
                     <div class="layui-form-mid layui-word-aux">标签与标签之间需用中文分号分隔(；)</div>
                 </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">颜色选择</label>
+                    <div class="layui-input-block">
+                        <input type="hidden" name="color">
+                        <span class="layui-btn layui-btn-primary select-color" style="padding:0 12px;min-width:45px"></span>
+                    </div>
+                </div>
                 <!-- 字段 -->
                 <div id="fields"></div>
                 <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
@@ -206,6 +213,8 @@
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script src="../../js/common.js?v=1" charset="utf-8"></script>
+<script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf-8"></script>
+<script src="../../lib/jq-module/paigusu.min.js" charset="utf-8"></script>
 <script>
     layui.use(['form', 'laydate', 'upload', 'tableSelect', 'table'], function () {
         var $ = layui.$,
@@ -216,11 +225,6 @@
             tableSelect = layui.tableSelect,
             table = layui.table;
 
-        //日期
-        laydate.render({
-            elem: '#create_time'
-        });
-
         //文件上传
         var fileListView = $('#fileList')
             ,uploadListIns = upload.render({
@@ -228,7 +232,7 @@
             ,url: '/office_automation/public/attachment'
             ,auto: false
             ,multiple: true
-            ,size: 51200            // 单位 KB，最大 50MB
+            ,size: 61440            // 单位 KB，最大 60MB
             ,accept: 'file'
             ,bindAction: '#start_upload'
             ,choose: function(obj){
@@ -328,10 +332,19 @@
                     var itemDetail = res.data.itemDetail;
                     form.val("setValue", {
                         "table_name": itemDetail.table_name,
-                        'item_title' : itemDetail.item_title,
-                        'creator' : itemDetail.creator_name,
-                        'create_time' : itemDetail.create_time,
-                        'label_list' : itemDetail.label_list
+                        'item_title': itemDetail.item_title,
+                        'color': itemDetail.color,
+                        'creator': itemDetail.creator_name,
+                        'create_time': itemDetail.create_time,
+                        'label_list': itemDetail.label_list
+                    });
+                    // 颜色选择
+                    $('.select-color').css('background-color', itemDetail.color);
+                    $('.select-color').paigusu({
+                        color: itemDetail.color,
+                    }, function (event, obj) {
+                        $(event).css('background-color', '#' + obj.hex);
+                        $('input[name="color"]').val('#' + obj.hex);
                     });
                     // 填充条目字段
                     var fields = itemDetail.fields;

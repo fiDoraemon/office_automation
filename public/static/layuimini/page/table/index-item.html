@@ -70,7 +70,7 @@
             <script type="text/html" id="toolbar">
                 <div class="layui-btn-container">
                     <button class="layui-btn layui-btn-primary layui-btn-sm" lay-event="add">新增条目</button>
-                    <!--<button class="layui-btn layui-btn-sm layui-btn-danger data-delete-btn" lay-event="delete"> 删除 </button>-->
+                    <button class="layui-btn layui-btn-sm" lay-event="import">批量导入更新</button>
                 </div>
             </script>
 
@@ -87,10 +87,11 @@
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script src="../../js/common.js?v=1" charset="utf-8"></script>
 <script>
-    layui.use(['form', 'table'], function () {
+    layui.use(['form', 'table', 'upload'], function () {
         var $ = layui.jquery,
             form = layui.form,
-            table = layui.table;
+            table = layui.table,
+            upload = layui.upload;
 
         var worktable;          // 当前的工作表
         // 渲染表格
@@ -104,23 +105,47 @@
             var fields = tableList[i].partFields;
             // 获取需要显示的列
             var cols = [
-                {field: 'sort', width: 80, title: 'ID', align: "center"},
+                {field: 'sort', width: 80, title: 'id', align: "center",
+                    templet: function(d){
+                        return `<span style="color: ${d.color}">${d.sort}</span>`;
+                    }
+                },
                 {field: 'item_title', width: 150, title: '标题',
                     templet: function(d){
                         return `<a class="url" lay-event="read">${d.item_title}</a>`;
                     }
                 },
-                {field: 'creator', width: 80, title: '发起人', align: "center"},
-                {field: 'current_process', width: 200, title: '最新处理信息'},
-                {field: 'labelList', width: 150, title: '标签', align: "center"},
-                {field: 'create_time', width: 170, title: '创建时间', align: "center"},
-                {field: 'update_time', width: 170, title: '更新时间', sort: true, align: "center"},
+                {field: 'creator', width: 80, title: '发起人', align: "center",
+                    templet: function(d){
+                        return `<span style="color: ${d.color}">${d.creator}</span>`;
+                    }
+                },
+                {field: 'current_process', width: 200, title: '最新处理信息',
+                    templet: function(d){
+                        return `<span style="color: ${d.color}">${d.current_process}</span>`;
+                    }
+                },
+                {field: 'labelList', width: 150, title: '标签', align: "center",
+                    templet: function(d){
+                        return `<span style="color: ${d.color}">${d.labelList}</span>`;
+                    }
+                },
+                {field: 'create_time', width: 170, title: '创建时间', align: "center",
+                    templet: function(d){
+                        return `<span style="color: ${d.color}">${d.create_time}</span>`;
+                    }
+                },
+                {field: 'update_time', width: 170, title: '更新时间', sort: true, align: "center",
+                    templet: function(d){
+                        return `<span style="color: ${d.color}">${d.update_time}</span>`;
+                    }
+                },
                 {title: '操作', width: 100, toolbar: '#tableItemListBar', align: "center"}
             ];
             for (let i in fields) {
                 cols.splice(cols.length - 5, 0, {field: 'field' + fields[i].field_id, width: 170, title: fields[i].name, align: "center",
                     templet: function(d){
-                        return d.fields[i].field_value;
+                        return `<span style="color: ${d.color}">${d.fields[i].field_value}</span>`;
                     }
                 });
             }
@@ -270,7 +295,7 @@
          * toolbar监听事件
          */
         table.on('toolbar(tableItemList)', function (obj) {
-            if (obj.event === 'add') {  // 监听添加操作
+            if (obj.event === 'add') {
                 if($('#work-table').val() == '') {
                     layer.msg('请先选择工作表', {icon: 5});
                     return false;
@@ -283,6 +308,62 @@
                     shadeClose: true,
                     area: ['100%', '100%'],
                     content: 'add-item.html?v=1&tableId=' + $('#work-table').val(),
+                });
+            } else if(obj.event === 'import') {
+                if($('#work-table').val() == '') {
+                    layer.msg('请先选择工作表！', {icon: 5});
+                    return false;
+                }
+                var element = `
+                <div style="text-align: center;padding-top: 10px;">
+                    <div class="layui-upload-drag" id="uploadExcel" style="margin: 0 auto">
+                        <i class="layui-icon"></i>
+                        <p>点击上传，或将文件拖拽到此处</p>
+                    </div>
+                    <button id="start-upload" class="layui-hide"></button>
+                    <div id="file-name" style="margin-top: 20px;color: #999;"></div>
+                </div>
+                `;
+                layer.open({
+                    type: 0,
+                    title: '上传excel文件',
+                    content: element,
+                    skin: 'layui-layer-lan',
+                    area: ['30%', '50%'],
+                    shadeClose: true,
+                    anim: 4,
+                    scrollbar: false,
+                    yes: function(index, layero){
+                        layer.close(index);
+                        $('#start-upload').click();
+                    }
+                });
+                var index;
+                upload.render({
+                    elem: '#uploadExcel'
+                    ,url: '/office_automation/public/index/table_item_c/updateItemByImportExcel?tableId=' + $('#work-table').val()
+                    ,exts: 'xlsx|xls'
+                    ,auto: false
+                    ,bindAction: '#start-upload'
+                    ,choose: function(obj){
+                        var files = obj.pushFile();
+                        obj.preview(function(index, file, result){
+                            $('#file-name').text(file.name);
+                        });
+                    }
+                    ,before: function(obj){
+                        index = layer.load(2);
+                    }
+                    ,done: function(res){
+                        layer.close(index);
+                        if(res.code == 0) {
+                            layer.msg('批量导入成功', {icon: 6}, function () {
+                                $("button[type='submit']").click();
+                            });
+                        } else {
+                            layer.msg(res.msg, {icon: 5});
+                        }
+                    }
                 });
             }
         });

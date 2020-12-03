@@ -22,7 +22,7 @@ class AttachmentService
 
         $fileInfo = $file->getInfo();
         // 验证并移动文件（最大 50 MB）
-        $info = $file->validate(['size' => 52428800])->move(ROOT_PATH . 'public' . DS . 'upload');
+        $info = $file->validate(['size' => 52428800])->move(ROOT_PATH . 'public/upload');
 
         if ($info) {
             // 插入附件信息
