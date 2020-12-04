@@ -171,7 +171,7 @@
                                 input.find('.layui-input-block').append(`<input type="checkbox" name="field${fields[j].field_id}[]" title="${values[k]}" lay-filter="customize-check" value="${values[k]}">`);
                             }
                         } else if(fields[j].type == 'mission') {
-                            input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly>`);
+                            input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" autocomplete="off">`);
                             missionList.push('field' + fields[j].field_id);
                         } else {
                             input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" class="layui-input">`);
@@ -230,6 +230,25 @@
             if(result.label_list.includes(';')) {
                 layer.msg('标签列表需用中文分号；分隔', {icon: 5});
                 return false;
+            }
+            // 处理任务
+            if(missionList.length > 0) {
+                // result = true;
+                // for (var i in missionList) {
+                //     $.ajax({
+                //         url: '/office_automation/public/index/table_item_c/checkMission?missionList=' + result[missionList[i]],
+                //         async: false,           // 同步
+                //         success: function (res) {
+                //             if(res.code != 0) {
+                //                 result = false;
+                //             }
+                //         }
+                //     });
+                // }
+                // if(!result) {
+                //     layer.msg('任务字段值中的任务不存在', {icon: 5});
+                //     return false;
+                // }
             }
             // 处理单选和多选用户
             if(radioUserList.length > 0) {

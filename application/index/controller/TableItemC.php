@@ -98,7 +98,7 @@ class TableItemC extends Controller
             }
         }
         $tableItemList = $tableItem->where('table_id', $tableId)->group("ti.item_id")
-            ->order('sort desc')->page("$page, $limit")->select();
+            ->order('sort desc')->page("$page, $limit")->field('ti.item_id,ti.table_id,ti.item_title,ti.creator_id,ti.sort,ti.color,ti.create_time,ti.update_time')->select();
         // 处理条目列表
         foreach ($tableItemList as $tableItem) {
             $tableItem->creator = UserService::userIdToName($tableItem->creator_id, 1);
@@ -169,7 +169,8 @@ class TableItemC extends Controller
             foreach ($fields as $key => $value) {
                 if(substr($key,0, 5) == 'field') {
                     $fieldId = substr($key,5);
-                    if(in_array($key, $checkUserList)) {
+                    $tableField = TableField::get($fieldId);
+                    if($tableField->type == 'users') {
                         $userList = explode(';', $fields[$key]);
                         foreach ($userList as $user) {
                             $tableFieldUser = new TableFieldUser();
@@ -179,12 +180,9 @@ class TableItemC extends Controller
                             $tableFieldUser->save();
                         }
                     } else {
-                        if(is_array($value)) {          // 如果是自定义多选
-                            $array = [];
-                            foreach ($value as $one) {
-                                array_push($array, $one);
-                            }
-                            $value = implode(';', $array);
+                        // 如果是自定义多选
+                        if($tableField->type == 'checkbox') {
+                            $value = implode(';', $value);
                         }
                         $tableFiledValue = new TableFieldValue();
                         $tableFiledValue->item_id = $tableItem->item_id;
@@ -272,7 +270,8 @@ class TableItemC extends Controller
             foreach ($fields as $key => $value) {
                 if(substr($key,0, 5) == 'field') {
                     $fieldId = substr($key,5);
-                    if(in_array($key, $checkUserList)) {
+                    $tableField = TableField::get($fieldId);
+                    if($tableField->type == 'users') {
                         $submitUserList = explode(';', $fields[$key]);            // 提交的多选用户列表
                         // 获取当前的多选用户列表
                         $tableFieldUser = new TableFieldUser();
@@ -293,14 +292,12 @@ class TableItemC extends Controller
                             }
                         }
                     } else {
-                        if(is_array($value)) {          // 如果是自定义多选
-                            $array = [];
-                            foreach ($value as $one) {
-                                array_push($array, $one);
-                            }
-                            $value = implode(';', $array);
+                        // 如果是自定义多选
+                        if($tableField->type == 'checkbox') {
+                            $value = implode(';', $value);
                         }
                         $tableFiledValue = TableFieldValue::get(['item_id' => $tableItem->item_id, 'field_id' => $fieldId]);
+                        // 不存在对应的值记录时
                         if(!$tableFiledValue) {
                             $tableFiledValue = new TableFieldValue();
                             $tableFiledValue->item_id = $tableItem->item_id;
@@ -498,5 +495,18 @@ class TableItemC extends Controller
 
             return Result::returnResult(Result::SUCCESS);
         });
+
+        // 验证任务是否存在
+        function checkMission($missionList) {
+            $missionList = explode('；', $missionList);
+            foreach ($missionList as $mission) {
+                $missionModel = Mission::get($mission);
+                if(!$missionModel) {
+                    return Result::returnResult(Result::OBJECT_NOT_EXIST);
+                }
+            }
+
+            return Result::returnResult(Result::SUCCESS);
+        }
     }
 }

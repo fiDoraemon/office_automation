@@ -131,6 +131,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
         "                                        <option value=\"user\">单选员工</option>\n" +
         "                                        <option value=\"users\">多选员工</option>\n" +
         "                                        <option value=\"date\">日期</option>\n" +
+        "                                        <option value=\"mission\">任务</option>\n" +
         "                                    </select>\n" +
         "                                </div>\n" +
         "                                <div class=\"layui-input-inline\">\n" +

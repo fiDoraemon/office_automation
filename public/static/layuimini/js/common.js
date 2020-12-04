@@ -53,6 +53,11 @@ layui.use(['form'], function () {
         removeFromArray(userIdsList[userSelect], userId);
         $(this).parent().remove();
     });
+
+    // 查看任务详情（从父页面打开）
+    $('body').on('click', '.to-mission2', function () {
+        parent.toMissionPage($(this).attr('mission-id'));
+    });
 });
 // 休眠 单位：毫秒
 function sleep(numberMillis) {
@@ -186,7 +191,6 @@ function missionSelectTable(element) {
             checkedKey: 'mission_id',
             searchPlaceholder: '任务号/任务标题',
             height:'250',
-            width:'400',
             table: {
                 url: '/office_automation/public/index/mission_c/selectIndex'
                 ,cols: [[
@@ -195,15 +199,18 @@ function missionSelectTable(element) {
                     { field: 'mission_title', title: '任务标题' },
                     { field: 'assignee_name', title: '处理人' }
                 ]]
-                ,page: false
             },
             done: function (elem, data) {
                 var result = data.data;
                 if(result.length != 0) {
-                    var userList = $(element).val().split('；');
-                    if(userList.includes(elem.val(result[0].mission_id))) {
-                        userList.push(elem.val(result[0].mission_id));
-                        $(element).val(userList.join('；'));
+                    if(elem.val() == '') {
+                        elem.val(result[0].mission_id);
+                    } else {
+                        var userList = elem.val().split('；');
+                        if(!userList.includes(result[0].mission_id + '')) {
+                            userList.push(result[0].mission_id);
+                            elem.val(userList.join('；'));
+                        }
                     }
                 }
             }

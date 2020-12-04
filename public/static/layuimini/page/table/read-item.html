@@ -27,10 +27,21 @@
         /* 链接 */
         .url {
             color: #1E9FFF;
+            cursor: pointer;
         }
         .url:hover {
             color: #0567b0;
+        }
+        /* 任务 */
+        .layui-inline .to-mission2 {
+            color: #1E9FFF;;
+            padding: 9px;
             cursor: pointer;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .layui-inline .to-mission2:hover {
+            text-decoration: underline;
         }
         /* 表单标签（暂时） */
         #fields .layui-form-label {
@@ -212,7 +223,7 @@
 
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
-<script src="../../js/common.js?v=1" charset="utf-8"></script>
+<script src="../../js/common.js?v=2" charset="utf-8"></script>
 <script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf-8"></script>
 <script src="../../lib/jq-module/paigusu.min.js" charset="utf-8"></script>
 <script>
@@ -350,8 +361,9 @@
                     var fields = itemDetail.fields;
                     var fieldValues = {};           // 工作表字段值
                     userIdsList = [];            // 多选用户列表数组
-                    element = '';
                     var dateList = [];          // 日期字段列表
+                    var missionList = [];           // 任务字段列表
+                    element = '';
                     for (j in fields) {
                         if(fields[j].type == 'textarea') {
                             var input = $(`
@@ -363,6 +375,13 @@
                             var input = $(`
                             <div class="layui-form-item">
                                 <label class="layui-form-label">${fields[j].name}</label>
+                            </div>`);
+                        } else if(fields[j].type == 'mission'){
+                            var input = $(`
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">${fields[j].name}</label>
+                                <div class="layui-input-inline"></div>
+                                <div class="layui-inline" style="width: 70%;"></div>
                             </div>`);
                         } else {
                             var input = $(`
@@ -418,7 +437,8 @@
                                 input.find('.multipleSelect').append(`
                                 <a href="javascript:;">
                                     <span lay-value="${users[i].user_id}">${users[i].user_name}</span>
-                                    <i class="layui-icon layui-icon-close"></i></a>
+                                    <i class="layui-icon layui-icon-close"></i>
+                                </a>
                                 `);
                                 userIdsList['field' + fields[j].field_id].push(users[i].user_id);           // 加入已选的全局变量
                             }
@@ -432,6 +452,13 @@
                             var array = fields[j].field_value.split(';');
                             for(var i in array) {
                                 fieldValues['field' + fields[j].field_id + '[' + array[i] + ']'] = true;
+                            }
+                        } else if(fields[j].type == 'mission') {
+                            input.find('.layui-input-inline').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input">`);
+                            missionList.push('field' + fields[j].field_id);
+                            fieldValues['field' + fields[j].field_id] = fields[j].field_value;
+                            for(var i in fields[j].missionList) {
+                                input.find('.layui-inline').append(`<div class="to-mission2" mission-id="${fields[j].missionList[i]['mission_id']}">${fields[j].missionList[i]['mission_id']}：${fields[j].missionList[i]['mission_title']}</div>`);
                             }
                         } else {
                             input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" class="layui-input">`);
@@ -452,6 +479,9 @@
                     }
                     if(checkUserList.length > 0) {          // 多选用户
                         departmentSelect($, form);
+                    }
+                    for(var i in missionList) {            // 任务
+                        missionSelectTable('#' + missionList[i]);
                     }
                     // 表单赋值
                     form.val("setValue", fieldValues);

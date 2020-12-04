@@ -57,7 +57,10 @@ class TableWorkService
             ->select();
 
         foreach ($tableFieldList as $tableField) {
-            $tableField->field_value = $tableField->field_value? $tableField->field_value : '';         // 添加新字段而没有对应值的情况
+            // 添加新字段而没有对应值的情况
+            if($tableField->field_value == null) {
+                $tableField->field_value = '';
+            }
             if($tableField->type == 'user') {            // 单选用户
                 if($tableField->field_value) {
                     $tableField->field_value2 = UserService::userIdToName($tableField->field_value, 1);
@@ -67,8 +70,16 @@ class TableWorkService
             } else if($tableField->type == 'users') {            // 多选用户
                 // 获取多选用户列表
                 $tableFieldUser = new TableFieldUser();
-                $userList = $tableFieldUser->where('field_id', $tableField->field_id)->where('item_id', $tableItem->item_id)->alias('tfu')->join('oa_user u', 'u.user_id = tfu.user_id')->field('tfu.user_id,user_name')->select();
+                $userList = $tableFieldUser->where('field_id', $tableField->field_id)
+                    ->where('item_id', $tableItem->item_id)
+                    ->alias('tfu')->join('oa_user u', 'u.user_id = tfu.user_id')
+                    ->field('tfu.user_id,user_name')->select();
                 $tableField->users = $userList;
+            } else if($tableField->type == 'mission') {            // 任务
+                $missions = str_ireplace('；',',', $tableField->field_value);
+                $mission = new Mission();
+                $missionList = $mission->where('mission_id', 'in', $missions)->field('mission_id,mission_title')->select();
+                $tableField->missionList = $missionList;
             }
         }
 
