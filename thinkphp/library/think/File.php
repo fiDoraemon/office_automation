@@ -236,10 +236,11 @@ class File extends SplFileObject
         }
 
         /* 检查图像文件 */
-        if (!$this->checkImg()) {
-            $this->error = 'illegal image files';
-            return false;
-        }
+        // TODO 暂时注释掉
+//        if (!$this->checkImg()) {
+//            $this->error = 'illegal image files';
+//            return false;
+//        }
 
         return true;
     }
@@ -391,7 +392,7 @@ class File extends SplFileObject
             } else {
                 switch ($this->rule) {
                     case 'date':
-                        $savename = date('Ym') . DS . md5(microtime(true));
+                        $savename = date('Ym') . DS . md5(microtime(true));         // TODO 暂时去掉字母d
                         break;
                     default:
                         if (in_array($this->rule, hash_algos())) {

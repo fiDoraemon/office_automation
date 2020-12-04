@@ -218,6 +218,100 @@ function missionSelectTable(element) {
     });
 }
 
+// 上传附件
+function uploadAttachment() {
+    layui.use(['upload'], function () {
+        var $ = layui.$,
+            upload = layui.upload;
+
+        var fileListView = $('#fileList')
+            ,uploadListIns = upload.render({
+            elem: '#attachment'
+            ,url: '/office_automation/public/attachment'
+            ,auto: false
+            ,multiple: true
+            ,size: 51200            // 单位 KB，最大 50MB
+            ,accept: 'file'
+            ,bindAction: '#start_upload'
+            ,choose: function(obj){
+                if($('#fileList').children().length > 9) {
+                    return layer.msg('最多上传十个附件！');
+                }
+                var files = this.files = obj.pushFile();         // 将每次选择的文件追加到文件队列
+
+                $("#start_upload").removeAttr("disabled");
+                // 预读本地文件
+                obj.preview(function(index, file, result){          // 分别是文件索引、文件对象、文件base64编码
+                    var tr = $(['<tr id="upload-'+ index +'">'
+                        ,'<td>'+ file.name +'</td>'
+                        ,'<td>'+ (file.size/1024).toFixed(1) +'kb</td>'
+                        ,'<td>等待上传</td>'
+                        ,'<td>'
+                        ,'<button class="layui-btn layui-btn-xs layui-hide reload">重传</button>'
+                        ,'<button class="layui-btn layui-btn-xs layui-btn-danger delete">删除</button>'
+                        ,'</td>'
+                        ,'</tr>'].join(''));
+
+                    //单个重传
+                    tr.find('.reload').on('click', function(){
+                        obj.upload(index, file);
+                    });
+
+                    //删除
+                    tr.find('.delete').on('click', function(){
+                        delete files[index];            // 删除对应的文件
+                        tr.remove();
+                        uploadListIns.config.elem.next()[0].value = '';         // 清空 input file 值，以免删除后出现同名文件不可选
+                        if(!files) {
+                            $("#start_upload").attr("disabled", true);
+                        }
+                    });
+
+                    fileListView.append(tr);
+                });
+            }
+            ,before: function(obj){
+                layer.load();            // 取消上传后仍会触发 before
+            }
+            ,done: function(res, index, upload){
+                if(res.code == 0){
+                    // 写入附件 id
+                    if($('#attachment_list').val() == '') {
+                        $('#attachment_list').val(res.data.id);
+                    } else {
+                        var ids = $('#attachment_list').val().split(';');
+                        if(!ids.includes(res.data.id)) {
+                            ids.push(res.data.id);
+                        }
+                        $('#attachment_list').val(ids.join(';'));
+                    }
+
+                    var tr = fileListView.find('tr#upload-'+ index)
+                        ,tds = tr.children();
+                    tds.eq(2).html('<span style="color: #5FB878;">上传成功</span>');
+                    tds.eq(3).html('');
+                    delete this.files[index];            // 删除文件队列已经上传成功的文件
+                } else {
+                    console.log('上传失败：' + res.msg + `(${index})`);
+                    this.error(index, upload);
+                }
+            }
+            ,allDone: function(obj){
+                layer.closeAll('loading');
+                layer.msg('上传完成！');
+                $("#start_upload").attr("disabled", true);
+                console.log('上传完成！共上传' + obj.total + '个文件，成功文件数：' + obj.successful +'，失败文件数：' + obj.aborted);
+            }
+            ,error: function(index, upload){            // 分别为当前文件的索引、重新上传的方法
+                var tr = fileListView.find('tr#upload-'+ index)
+                    ,tds = tr.children();
+                tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
+                tds.eq(3).find('.reload').removeClass('layui-hide');           // 显示重传
+            }
+        });
+    });
+}
+
 // 打开任务弹窗
 function toMissionPage(missionId){
     layui.use([], function () {
