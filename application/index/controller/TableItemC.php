@@ -119,8 +119,12 @@ class TableItemC extends Controller
             // 获取工作表的可见人列表
             $table->viewUserList = TableWorkService::getViewUserList($table->table_id);
         }
+        $data = [
+            'tableList' => $tableList,
+            'isAdmin' => UserService::isAdmin($sessionUserId)? 1 : 0
+        ];
 
-        return Result::returnResult(Result::SUCCESS, $tableList);
+        return Result::returnResult(Result::SUCCESS, $data);
     }
 
     /**
@@ -377,22 +381,23 @@ class TableItemC extends Controller
     // 通过导入excel文件更新条目信息
     public function updateItemByImportExcel($tableId) {
         return Db::transaction(function () use($tableId) {           // 开启事务
-            $file = $this->request->file('file');
-            if($file) {
-                // 文件移动到temp文件夹
-                $info = $file->validate(['size' => 52428800])->rule('uniqid')->move(ROOT_PATH . 'public/upload/temp/');
-                $filePath = ROOT_PATH . 'public/upload/temp/' . $info->getFilename();
-                $itemList = ExcelUtil::readExcel($filePath);
-                unset($info);           // 释放文件
-                unlink($filePath);          // 删除临时文件
-            } else {
-                return Result::returnResult(Result::UPLOAD_ERROR);
-            }
             $tableWork = TableWork::get($tableId);
             // 获取工作表字段名称列表
             $cols = ['id', '标题', '发起人', '最新处理信息', '标签', '创建时间', '更新时间'];
             foreach ($tableWork->partFields as $field) {
                 array_splice($cols, count($cols) - 4, 0, [$field->name]);
+            }
+            // 获取上传的文件信息
+            $file = $this->request->file('file');
+            if($file) {
+                // 文件移动到temp文件夹
+                $info = $file->validate(['size' => 52428800])->rule('uniqid')->move(ROOT_PATH . 'public/upload/temp/');
+                $filePath = ROOT_PATH . 'public/upload/temp/' . $info->getFilename();
+                $itemList = ExcelUtil::readExcel($filePath, count($cols));
+                unset($info);           // 释放文件
+                unlink($filePath);          // 删除临时文件
+            } else {
+                return Result::returnResult(Result::UPLOAD_ERROR);
             }
             // 判断表格信息是否符合要求
             $errorResult = Result::returnResult(Result::ERROR);
@@ -441,6 +446,12 @@ class TableItemC extends Controller
                                 return $errorResult;
                             }
                         }
+                    } else if($tableField->type == 'mission') {
+                        $result = $this->checkMission($item[$j]);
+                        if($result['code'] != 0) {
+                            $errorResult['msg'] = '第' . $i . '行条目' . $tableField->name . '中的任务不存在';
+                            return $errorResult;
+                        }
                     }
                 }
             }
@@ -454,21 +465,7 @@ class TableItemC extends Controller
                 for ($j = 3; $j < count($cols) - 4; $j++) {
                     $tableField = $tableWork->partFields[$j - 3];            // 工作表字段对象
                     if($tableField->type == 'users') {
-                        $userList = explode('；', $item[$j]);
-                        foreach ($userList as $user) {
-                            if($user == '') {
-                                continue;
-                            }
-                            $userId = UserService::userIdToName($user, 2);
-                            $tableFieldUser = TableFieldUser::get(['item_id' => $tableItem->item_id, 'field_id' => $tableField->field_id, 'user_id' => $userId]);
-                            if (!$tableFieldUser) {
-                                $tableFieldUser = new TableFieldUser();
-                                $tableFieldUser->item_id = $tableItem->item_id;
-                                $tableFieldUser->field_id = $tableField->field_id;
-                                $tableFieldUser->user_id = $userId;
-                                $tableFieldUser->save();
-                            }
-                        }
+                        TableWorkService::processItemUsers($item[$j], $tableItem->item_id, $tableField->field_id);
                     } else {
                         $tableFieldValue = TableFieldValue::get(['item_id' => $tableItem->item_id, 'field_id' => $tableField->field_id]);
                         if(!$tableFieldValue) {
@@ -495,18 +492,155 @@ class TableItemC extends Controller
 
             return Result::returnResult(Result::SUCCESS);
         });
+    }
 
-        // 验证任务是否存在
-        function checkMission($missionList) {
-            $missionList = explode('；', $missionList);
-            foreach ($missionList as $mission) {
-                $missionModel = Mission::get($mission);
-                if(!$missionModel) {
-                    return Result::returnResult(Result::OBJECT_NOT_EXIST);
+    /**
+     * 验证任务是否存在
+     * @param $missionList
+     * @return array
+     * @throws \think\exception\DbException
+     */
+    public function checkMission($missionList) {
+        $missionList = explode('；', $missionList);
+        foreach ($missionList as $mission) {
+            $missionModel = Mission::get($mission);
+            if(!$missionModel) {
+                return Result::returnResult(Result::OBJECT_NOT_EXIST);
+            }
+        }
+
+        return Result::returnResult(Result::SUCCESS);
+    }
+
+    /**
+     * 通过导入excel文件更新条目信息
+     * @param $tableId
+     * @return mixed
+     */
+    public function addItemByImportExcel($tableId) {
+        return Db::transaction(function () use($tableId) {           // 开启事务
+            $tableWork = TableWork::get($tableId);
+            // 获取工作表字段名称列表
+            $cols = ['id', '标题', '发起人', '最新处理信息', '标签', '创建时间', '更新时间'];
+            foreach ($tableWork->partFields as $field) {
+                array_splice($cols, count($cols) - 4, 0, [$field->name]);
+            }
+            // 获取上传文件信息
+            $file = $this->request->file('file');
+            if($file) {
+                // 文件移动到temp文件夹
+                $info = $file->validate(['size' => 52428800])->rule('uniqid')->move(ROOT_PATH . 'public/upload/temp/');
+                $filePath = ROOT_PATH . 'public/upload/temp/' . $info->getFilename();
+                $itemList = ExcelUtil::readExcel($filePath, count($cols));
+                unset($info);           // 释放文件
+                unlink($filePath);          // 删除临时文件
+            } else {
+                return Result::returnResult(Result::UPLOAD_ERROR);
+            }
+            // 判断表格信息是否符合要求
+            $errorResult = Result::returnResult(Result::ERROR);
+            if ($itemList[0] != $cols) {
+                $errorResult['msg'] = '表头不正确';
+                return $errorResult;
+            }
+            for ($i = 1; $i < count($itemList); $i++) {
+                $item = $itemList[$i];
+                if($item[1] == '') {
+                    $errorResult['msg'] = '条目标题不能为空';
+                    return $errorResult;
+                }
+                for ($j = 3; $j < count($cols) - 4; $j++) {
+                    $tableField = $tableWork->partFields[$j - 3];
+                    if ($tableField->type == 'user' || $tableField->type == 'users') {
+                        $userList = explode('；', $item[$j]);
+                        foreach ($userList as $user) {
+                            if (!UserService::isRightName($user)) {
+                                $errorResult['msg'] = '第' . $i . '行条目' . $tableField->name . '字段值中的用户不存在或存在两个';
+                                return $errorResult;
+                            }
+                        }
+                    } else if ($tableField->type == 'select' || $tableField->type == 'checkbox') {
+                        $valueList = explode('；', $item[$j]);
+                        foreach ($valueList as $value) {
+                            if($value == '') {
+                                continue;
+                            }
+                            $selectList = explode('，', $tableField->value);
+                            $result = false;
+                            foreach ($selectList as $select) {
+                                if ($value == $select) {
+                                    $result = true;
+                                    break;
+                                }
+                            }
+                            if (!$result) {
+                                $errorResult['msg'] = '第' . $i . '行条目' . $tableField->name . '字段值不在允许的范围内';
+                                return $errorResult;
+                            }
+                        }
+                    } else if($tableField->type == 'mission') {
+                        $result = $this->checkMission($item[$j]);
+                        if($result['code'] != 0) {
+                            $errorResult['msg'] = '第' . $i . '行条目' . $tableField->name . '中的任务不存在';
+                            return $errorResult;
+                        }
+                    }
+                }
+            }
+            // 增加条目
+            $sessionUserId = Session::get('info')['user_id'];
+            $maxSort = TableWorkService::getMaxItemSort($tableId);
+            $tableItem = new TableItem([
+                'table_id' => $tableId,
+                'item_title' => $item[1],
+                'creator_id' => $sessionUserId,
+                'sort' => $maxSort + 1,
+                'create_time' => date('Y-m-d H:i:s', time())
+            ]);
+            $tableItem->save();
+            // 增加条目信息
+            for ($i = 1; $i < count($itemList); $i++) {
+                $item = $itemList[$i];          // 条目信息
+                // 处理条目标签
+                TableWorkService::processItemlabel($item[count($item) - 3], $tableItem->item_id);
+                // 从第四列开始处理工作表字段
+                for ($j = 3; $j < count($cols) - 4; $j++) {
+                    $tableField = $tableWork->partFields[$j - 3];            // 工作表字段对象
+                    if($tableField->type == 'users') {
+                        $userList = explode('；', $item[$j]);
+                        foreach ($userList as $user) {
+                            if($user == '') {
+                                continue;
+                            }
+                            $userId = UserService::userIdToName($user, 2);
+                            $tableFieldUser = new TableFieldUser();
+                            $tableFieldUser->item_id = $tableItem->item_id;
+                            $tableFieldUser->field_id = $tableField->field_id;
+                            $tableFieldUser->user_id = $userId;
+                            $tableFieldUser->save();
+                        }
+                    } else {
+                        $tableFieldValue = new TableFieldValue();
+                        $tableFieldValue->item_id = $tableItem->item_id;
+                        $tableFieldValue->field_id = $tableField->field_id;
+                        if($tableField->type == 'user') {
+                            if ($item[$j] == '') {
+                                $userId = 0;
+                            } else {
+                                $userId = UserService::userIdToName($item[$j], 2);
+                            }
+                            $tableFieldValue->field_value = $userId;
+                        } else if($tableField->type == 'checkbox') {
+                            $tableFieldValue->field_value = str_ireplace('；',';', $item[$j]);
+                        } else {
+                            $tableFieldValue->field_value = $item[$j];
+                        }
+                        $tableFieldValue->save();
+                    }
                 }
             }
 
             return Result::returnResult(Result::SUCCESS);
-        }
+        });
     }
 }

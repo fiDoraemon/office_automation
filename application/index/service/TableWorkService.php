@@ -25,7 +25,14 @@ use think\Session;
 
 class TableWorkService
 {
-    // 获取可见的工作表列表
+    /**
+     * 获取可见的工作表列表
+     * @param $sessionUserId
+     * @return false|\PDOStatement|string|Collection
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public static function getTableList($sessionUserId) {
         $tableWork = new TableWork();
         $tableList = $tableWork->where('status', 1)->alias('tw')->join('oa_table_user tu', "tu.table_id = tw.table_id and tu.user_id = $sessionUserId")->field('tw.table_id,table_name')->select();
@@ -36,7 +43,11 @@ class TableWorkService
         return $tableList;
     }
 
-    // 获取工作表条目标签列表
+    /**
+     * 获取工作表条目标签列表
+     * @param $itemId
+     * @return array
+     */
     public static function getItemLabelList($itemId) {
         $tableItemLabel = new TableItemLabel();
         $labelList = $tableItemLabel->where('item_id', $itemId)->alias('til')->join('oa_label l', 'til.label_id = l.label_id')->column('label_name');
@@ -139,7 +150,9 @@ class TableWorkService
         return $missionList;
     }
 
-    // 判断用户是否有权限查看条目
+    /*
+     * 判断用户是否有权限查看条目
+     */
     public static function isViewTavle($tableId) {
         $sessionUserId = Session::get("info")["user_id"];
         $tableUser = TableUser::get(['table_id' => $tableId, 'user_id' => $sessionUserId]);
@@ -152,7 +165,14 @@ class TableWorkService
         return true;
     }
 
-    // 获取条目最近处理信息
+    /**
+     * 获取条目最近处理信息
+     * @param $itemId
+     * @return mixed|string
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public static function getCurrentProcess($itemId) {
         $tableItemProcess = new TableItemProcess();
         $currentProcess = $tableItemProcess->where('item_id', $itemId)->order('process_id desc')->find();
@@ -160,7 +180,11 @@ class TableWorkService
         return $currentProcess? $currentProcess->process_note : '';
     }
 
-    // 获取工作表最大条目序号
+    /**
+     * 获取工作表最大条目序号
+     * @param $tableId
+     * @return mixed
+     */
     public static function getMaxItemSort($tableId) {
         $tableItem = new TableItem();
         $maxItemSort = $tableItem->where('table_id', $tableId)->max('sort');
@@ -168,17 +192,30 @@ class TableWorkService
         return $maxItemSort;
     }
 
-    // 获取工作表的可见人列表
+    /**
+     * 获取工作表的可见人列表
+     * @param $tableId
+     * @return false|\PDOStatement|string|Collection
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public static function getViewUserList($tableId) {
         $tableUser = new TableUser();
         $viewUserList = $tableUser->alias('tu')->where('table_id', $tableId)->join('oa_user u', 'u.user_id = tu.user_id')->field('tu.user_id,u.user_name')->select();
         return $viewUserList;
     }
 
-    // 处理条目标签
+    /**
+     * 处理条目标签
+     * @param $labelList
+     * @param $itemId
+     * @return bool
+     * @throws \think\exception\DbException
+     */
     public static function processItemlabel($labelList, $itemId) {
         $labelList = explode('；', $labelList);
-        $itemLabels = [];          // 目前的条目标签对应号列表
+        $itemLabels = [];          // 目前的条目标签号列表
         // 新增加的
         foreach ($labelList as $label) {
             $labelModel = Label::get(['label_name' => $label]);
@@ -199,6 +236,41 @@ class TableWorkService
         // 删除的
         $tableItemLabel = new TableItemLabel();
         $tableItemLabel->where('item_id', $itemId)->where('label_id', 'not in', $itemLabels)->delete();
+
+        return true;
+    }
+
+    /**
+     * 处理条目多选用户
+     * @param $users 以；分隔的名字字符串
+     * @param $itemId
+     * @param $fieldId
+     * @return bool
+     * @throws \think\exception\DbException
+     */
+    public static function processItemUsers($users, $itemId, $fieldId) {
+        $userList = explode('；', $users);            // 多选用户列表
+        $fiedlsUsers = [];          // 当前的条目多选用户号列表
+        // 新增加的
+        foreach ($userList as $user) {
+            if($user == '') {
+                continue;
+            }
+            $userModel = User::get(['user_name' => $user]);
+            $tableFieldUser = TableFieldUser::get(['item_id' => $itemId, 'field_id' => $fieldId, 'user_id' => $userModel->user_id]);
+            if(!$tableFieldUser) {
+                $tableFieldUser = new TableFieldUser();
+                $tableFieldUser->item_id = $itemId;
+                $tableFieldUser->field_id = $fieldId;
+                $tableFieldUser->user_id = $userModel->user_id;
+                $tableFieldUser->save();
+            }
+            array_push($fiedlsUsers, $userModel->user_id);
+        }
+        // 删除的
+        $tableFieldUser = new TableFieldUser();
+        $tableFieldUser->where('item_id', $itemId)->where('field_id', $fieldId)
+            ->where('user_id', 'not in', $fiedlsUsers)->delete();
 
         return true;
     }

@@ -10,7 +10,9 @@
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <link rel="stylesheet" href="../../css/common.css">
     <style>
-
+        body {
+            background-color: white;
+        }
         /* 上传附件 */
         .layui-upload-drag {
             margin-top: 10px;
@@ -157,7 +159,7 @@
                             <!--<input type="hidden" id="delete_list" name="delete_list">-->
                             <button type="button" class="layui-btn upload-btn" id="start_upload" onclick="stopPropagation()">开始上传</button>
                         </div>
-                        <div class="tip">提示：1.选择文件后请先点击“开始上传”按钮再提交；2.最多上传10个文件</div>
+                        <div class="tip">提示：1.选择文件后请先点击“开始上传”按钮再提交；2.最多上传10个文件；3.单个文件的大小最大为50M</div>
                     </div>
                     <div class="layui-col-sm8">
                         <div class="layui-upload-list">

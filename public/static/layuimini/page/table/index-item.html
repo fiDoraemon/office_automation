@@ -70,7 +70,8 @@
             <script type="text/html" id="toolbar">
                 <div class="layui-btn-container">
                     <button class="layui-btn layui-btn-primary layui-btn-sm" lay-event="add">新增条目</button>
-                    <button class="layui-btn layui-btn-sm" lay-event="import">批量导入更新</button>
+                    <button class="layui-btn layui-btn-sm" lay-event="batchUpdate">批量导入更新</button>
+                    <button class="layui-btn layui-btn-sm layui-hide" id="batchAdd" lay-event="batchAdd">批量新建条目</button>
                 </div>
             </script>
 
@@ -177,6 +178,10 @@
                     } else {
                         localStorage.setItem("pageLimit", $('.layui-laypage-limits select').val());
                     }
+                    // 判断是否是管理员
+                    if(isAdmin) {
+                        $('#batchAdd').removeClass("layui-hide");
+                    }
                 }
             });
         }
@@ -226,13 +231,14 @@
         // 获取信息
         var tableList;          // 工作表列表
         var radioUserList = [];          // 单选用户字段列表
+        var isAdmin = false;            // 是否是管理员
         var index = layer.load(2);
         $.get(
             "/office_automation/public/index/table_item_c/getTableList",
             function (res, status) {
                 if(res.code == 0) {
                     // 填充工作表下拉列表
-                    tableList = res.data;
+                    tableList = res.data.tableList;
                     if(tableList.length > 0) {
                         var element = '';
                         for(i in tableList) {
@@ -254,6 +260,7 @@
                         renderSelectInput(tableId);         // 填充筛选输入框
                         form.render('select', 'index-item');
                     }
+                    isAdmin = res.data.isAdmin;
                 }
                 layer.close(index);
             }
@@ -309,7 +316,7 @@
                     area: ['100%', '100%'],
                     content: 'add-item.html?v=1&tableId=' + $('#work-table').val(),
                 });
-            } else if(obj.event === 'import') {
+            } else if(obj.event === 'batchUpdate' || obj.event === 'batchAdd') {
                 if($('#work-table').val() == '') {
                     layer.msg('请先选择工作表！', {icon: 5});
                     return false;
@@ -339,9 +346,14 @@
                     }
                 });
                 var index;
+                if(obj.event === 'bacthUpdate') {
+                    var url = '/office_automation/public/index/table_item_c/updateItemByImportExcel?tableId=' + $('#work-table').val();
+                } else {
+                    var url = '/office_automation/public/index/table_item_c/addItemByImportExcel?tableId=' + $('#work-table').val();
+                }
                 upload.render({
                     elem: '#uploadExcel'
-                    ,url: '/office_automation/public/index/table_item_c/updateItemByImportExcel?tableId=' + $('#work-table').val()
+                    ,url: url
                     ,exts: 'xlsx|xls'
                     ,auto: false
                     ,bindAction: '#start-upload'

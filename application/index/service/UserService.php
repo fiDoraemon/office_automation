@@ -20,9 +20,12 @@ use app\index\model\UserRole;
  */
 class UserService
 {
-    /*
+    /**
      * 工号和名字相互转换
-     * 1：工号转名字，2：名字转工号
+     * @param $string
+     * @param $type 1 工号转名字，2 名字转工号
+     * @return mixed
+     * @throws \think\exception\DbException
      */
     public static function userIdToName($string, $type) {
         if($type == 1) {
@@ -34,7 +37,12 @@ class UserService
         }
     }
 
-    // 判断用户是否是管理员
+    /**
+     * 判断用户是否是管理员
+     * @param $userId
+     * @return bool
+     * @throws \think\exception\DbException
+     */
     public static function isAdmin($userId) {
         $role = Role::get(['role_name' => '管理员']);
         $userRole = UserRole::get(['user_id' => $userId, 'role_id' => $role->role_id]);
@@ -45,7 +53,12 @@ class UserService
         }
     }
 
-    // 判断名字是否合法
+    /**
+     * 判断名字是否合法
+     * @param $userName
+     * @return bool
+     * @throws \think\Exception
+     */
     public static function isRightName($userName) {
         $user = new User();
         $count = $user->where('user_name', $userName)->count();
