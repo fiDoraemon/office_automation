@@ -405,7 +405,11 @@
                                 select.append(`<option value="${values[k]}">${values[k]}</option>`);
                             }
                             input.find('.layui-input-block').append(select);
-                            fieldValues['field' + fields[j].field_id] = fields[j].field_value;           // 加入赋值数组
+                            if(fields[j].field_value == '') {
+                                fieldValues['field' + fields[j].field_id] = values[0];
+                            } else {
+                                fieldValues['field' + fields[j].field_id] = fields[j].field_value;           // 加入赋值数组
+                            }
                         } else if(fields[j].type == 'date') {
                             input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" autocomplete="off" class="layui-input" readonly>`);
                             dateList.push('field' + fields[j].field_id);

@@ -25,7 +25,6 @@ class dateUtil
         if($date == '') {
             $date = date('Y-m-d',time());
         }
-
         $first = date('Y-m-01', strtotime("$date +$offset months"));
         $last = date('Y-m-d',strtotime("$first +1 month -1 day"));
 

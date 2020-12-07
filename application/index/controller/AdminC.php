@@ -219,10 +219,10 @@ class AdminC
         $info = Session::get("info");
         $sessionUserId = $info["user_id"];
         //判断当前用户是否为管理员
-        $isAdmin = $this -> isAdmin($sessionUserId);
-        if(!$isAdmin){
-            return Result::returnResult(Result::NO_ACCESS);
-        }
+//        $isAdmin = $this -> isAdmin($sessionUserId);
+//        if(!$isAdmin){
+//            return Result::returnResult(Result::NO_ACCESS);
+//        }
         //判断员工id是否已经存在
         if($this -> checkHasUser($userId)){
             return Result::returnResult(Result::EXIST_USER);
