@@ -72,10 +72,8 @@
                     <div class="layui-input-inline">
                         <input type="text" name="table_name" class="layui-input" readonly>
                     </div>
-                </div>
-                <div class="layui-form-item">
                     <label class="layui-form-label required">标题</label>
-                    <div class="layui-input-block">
+                    <div class="layui-input-inline" style="width: 50%">
                         <input type="text" name="item_title" lay-verify="required" lay-reqtext="标题不能为空" autocomplete="off" placeholder="请输入标题" class="layui-input" readonly>
                     </div>
                 </div>
@@ -87,6 +85,11 @@
                     <label class="layui-form-label required">发起时间</label>
                     <div class="layui-input-inline">
                         <input type="text" name="create_time" autocomplete="off" class="layui-input" readonly>
+                    </div>
+                    <label class="layui-form-label">颜色选择</label>
+                    <div class="layui-input-inline">
+                        <input type="hidden" name="color">
+                        <span class="layui-btn layui-btn-primary select-color" style="padding:0 12px;min-width:45px"></span>
                     </div>
                 </div>
                 <div class="layui-form-item">
@@ -100,13 +103,6 @@
                         </select>
                     </div>
                     <div class="layui-form-mid layui-word-aux">标签与标签之间需用中文分号分隔(；)</div>
-                </div>
-                <div class="layui-form-item">
-                    <label class="layui-form-label">颜色选择</label>
-                    <div class="layui-input-block">
-                        <input type="hidden" name="color">
-                        <span class="layui-btn layui-btn-primary select-color" style="padding:0 12px;min-width:45px"></span>
-                    </div>
                 </div>
                 <!-- 字段 -->
                 <div id="fields"></div>

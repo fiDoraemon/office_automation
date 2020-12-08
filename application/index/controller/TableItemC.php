@@ -466,6 +466,10 @@ class TableItemC extends Controller
                 // 从第四列开始处理工作表字段
                 for ($j = 3; $j < count($cols) - 4; $j++) {
                     $tableField = $tableWork->partFields[$j - 3];            // 工作表字段对象
+                    // 如果是空值则不更新
+                    if(!$item[$j]) {
+                        continue;
+                    }
                     if($tableField->type == 'users') {
                         TableWorkService::processItemUsers($item[$j], $tableItem->item_id, $tableField->field_id);
                     } else {
@@ -483,7 +487,7 @@ class TableItemC extends Controller
                             }
                             $tableFieldValue->field_value = $userId;
                         } else if($tableField->type == 'checkbox') {
-                            $tableFieldValue->field_value = str_ireplace("；",";", $item[$j]);
+                            $tableFieldValue->field_value = str_ireplace('；',';', $item[$j]);
                         } else {
                             $tableFieldValue->field_value = $item[$j];
                         }
