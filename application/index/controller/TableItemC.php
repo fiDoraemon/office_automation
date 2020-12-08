@@ -595,20 +595,20 @@ class TableItemC extends Controller
                     }
                 }
             }
-            // 增加条目
-            $sessionUserId = Session::get('info')['user_id'];
-            $maxSort = TableWorkService::getMaxItemSort($tableId);
-            $tableItem = new TableItem([
-                'table_id' => $tableId,
-                'item_title' => $item[1],
-                'creator_id' => $sessionUserId,
-                'sort' => $maxSort + 1,
-                'create_time' => date('Y-m-d H:i:s', time())
-            ]);
-            $tableItem->save();
             // 增加条目信息
             for ($i = 1; $i < count($itemList); $i++) {
                 $item = $itemList[$i];          // 条目信息
+                // 增加条目
+                $sessionUserId = Session::get('info')['user_id'];
+                $maxSort = TableWorkService::getMaxItemSort($tableId);
+                $tableItem = new TableItem([
+                    'table_id' => $tableId,
+                    'item_title' => $item[1],
+                    'creator_id' => $sessionUserId,
+                    'sort' => $maxSort + 1,
+                    'create_time' => date('Y-m-d H:i:s', time())
+                ]);
+                $tableItem->save();
                 // 处理条目标签
                 TableWorkService::processItemlabel($item[count($item) - 3], $tableItem->item_id);
                 // 从第四列开始处理工作表字段
@@ -628,9 +628,13 @@ class TableItemC extends Controller
                             $tableFieldUser->save();
                         }
                     } else {
-                        $tableFieldValue = new TableFieldValue();
-                        $tableFieldValue->item_id = $tableItem->item_id;
-                        $tableFieldValue->field_id = $tableField->field_id;
+                        // 先获取字段值记录（防止重复新增记录）
+                        $tableFieldValue = TableFieldValue::get(['item_id' => $tableItem->item_id, 'field_id' => $tableField->field_id]);
+                        if(!$tableFieldValue) {
+                            $tableFieldValue = new TableFieldValue();
+                            $tableFieldValue->item_id = $tableItem->item_id;
+                            $tableFieldValue->field_id = $tableField->field_id;
+                        }
                         if($tableField->type == 'user') {
                             if ($item[$j] == '') {
                                 $userId = 0;

@@ -120,7 +120,7 @@
                                 <label class="layui-form-label">${fields[j].name}</label>
                                 <div class="layui-input-block"></div>
                             </div>`);
-                        } else if(fields[j].type == 'users'){
+                        } else if(fields[j].type == 'users') {
                             var input = $(`
                             <div class="layui-form-item">
                                 <label class="layui-form-label">${fields[j].name}</label>
@@ -142,7 +142,11 @@
                                 <option value=""></option>
                             </select>`);
                             for(var k in values) {
-                                select.append(`<option value="${values[k]}">${values[k]}</option>`);
+                                if(k == 0) {
+                                    select.append(`<option value="${values[k]}" selected>${values[k]}</option>`);           // 默认选中第一个
+                                } else {
+                                    select.append(`<option value="${values[k]}">${values[k]}</option>`);
+                                }
                             }
                             input.find('.layui-input-block').append(select);
                         } else if(fields[j].type == 'date') {
