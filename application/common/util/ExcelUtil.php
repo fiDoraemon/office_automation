@@ -27,7 +27,6 @@ class ExcelUtil
         // 创建表格对象
         $objPHPExcel = \PHPExcel_IOFactory::load($path);
         $sheet = $objPHPExcel->getSheet(0);            // 获取表格页面
-        $result = [];
         $highestRow = $sheet->getHighestRow();            // 取得总行数
         // 获取字母数组
         $letterArray = [];
@@ -35,11 +34,20 @@ class ExcelUtil
             $letterArray[$i] = chr(65 + $i);
         }
         // 从第1列开始获取信息
+        $result = [];
         for ($i = 1; $i <= $highestRow; $i++) {
+            $label = false;
+            $array = [];
             for ($j = 0; $j < $cols; $j++) {
                 $value = $sheet->getCell("$letterArray[$j]$i")->getValue();
                 $value = $value? $value : '';           // null 转为 ''
-                $result[$i - 1][$j] = $value;
+                if($value != '') {
+                    $label = true;
+                }
+                $array[$j] = $value;
+            }
+            if($label) {
+                $result[$i - 1] = $array;
             }
         }
 
