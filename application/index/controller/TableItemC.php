@@ -447,10 +447,12 @@ class TableItemC extends Controller
                             }
                         }
                     } else if($tableField->type == 'mission') {
-                        $result = $this->checkMission($item[$j]);
-                        if($result['code'] != 0) {
-                            $errorResult['msg'] = '第' . $i . '行条目' . $tableField->name . '中的任务不存在';
-                            return $errorResult;
+                        if($item[$j]) {
+                            $result = $this->checkMission($item[$j]);
+                            if($result['code'] != 0) {
+                                $errorResult['msg'] = '第' . $i . '行条目' . $tableField->name . '中的任务不存在';
+                                return $errorResult;
+                            }
                         }
                     }
                 }
@@ -579,10 +581,12 @@ class TableItemC extends Controller
                             }
                         }
                     } else if($tableField->type == 'mission') {
-                        $result = $this->checkMission($item[$j]);
-                        if($result['code'] != 0) {
-                            $errorResult['msg'] = '第' . $i . '行条目' . $tableField->name . '中的任务不存在';
-                            return $errorResult;
+                        if($item[$j]) {
+                            $result = $this->checkMission($item[$j]);
+                            if($result['code'] != 0) {
+                                $errorResult['msg'] = '第' . $i . '行条目' . $tableField->name . '中的任务不存在';
+                                return $errorResult;
+                            }
                         }
                     }
                 }
