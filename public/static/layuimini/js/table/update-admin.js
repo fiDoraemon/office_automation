@@ -205,7 +205,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                     fieldInfo += " <option value=\"select\" selected>自定义单选</option>";
                     break;
                 case "checkbox":
-                    fieldInfo += " <option value=\"checkbox\" selected>自定义单选</option>";
+                    fieldInfo += " <option value=\"checkbox\" selected>自定义多选</option>";
                     break;
                 case "user":
                     fieldInfo += " <option value=\"user\" selected>单选员工</option>";
