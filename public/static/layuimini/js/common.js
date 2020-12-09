@@ -230,7 +230,7 @@ function uploadAttachment() {
             ,url: '/office_automation/public/attachment'
             ,auto: false
             ,multiple: true
-            ,size: 51200            // 单位 KB，最大 50MB
+            ,size: 102400            // 单位 KB，最大 50MB
             ,accept: 'file'
             ,bindAction: '#start_upload'
             ,choose: function(obj){
