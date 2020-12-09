@@ -513,16 +513,16 @@ class AdminC
                         $newField -> status = $status;
                         $newField -> sort   = $sort;
                         $newField -> show   = $isShow;
-                        if($type == "select"){
-                            $newField -> value = $field["fieldValue"];;
+                        if($type == "select" || $type == "checkbox"){
+                            $newField -> value = $field["fieldValue"];
                         }
                         $newField -> save();
                     }
                     else{   //新字段
                         $tableField -> type = $type;
                         $tableField -> name = $name;
-                        if($type == "select"){
-                            $tableField -> value = $field["fieldValue"];;
+                        if($type == "select" || $type == "checkbox"){
+                            $tableField -> value = $field["fieldValue"];
                         }
                         $tableField -> table_id = $tableId;
                         $tableField -> sort = $sort;

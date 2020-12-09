@@ -235,7 +235,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
                 fieldInfo += "<input  type=\"checkbox\" lay-filter=\"switch\" name=\"isOpen\" lay-skin=\"switch\" lay-text=\"启用|禁用\" class=\"status\">\n" +
                     "          </div>";
             }
-            if(type === "select"){
+            if(type === "select" || type === "checkbox"){
                 fieldInfo += " <div class=\"layui-input-inline field-value\">" +
                     "      <input type=\"text\" style=\"width:500px\" name=\"fieldValue\" value=\"" + value + "\" class=\"layui-input fieldValue\">" +
                     "</div>";
@@ -296,7 +296,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','miniTab'], function () {
             let status       = $(this).find(".status").next().hasClass("layui-form-onswitch") ? 1 : 0;
             let isShow       = $(this).find(".show").next().hasClass("layui-form-onswitch") ? 1 : 0;
             let field = "";
-            if(fieldType === "select"){
+            if(fieldType === "select" || fieldType === "checkbox"){
                 field = {"sort": sort++, "id": id, "fieldType": fieldType,"fieldName": fieldName,"isShow":isShow,"fieldValue": fieldValue};
             }else{
                 field = {"sort": sort++, "id": id, "fieldType": fieldType,"fieldName": fieldName,"isShow":isShow};
