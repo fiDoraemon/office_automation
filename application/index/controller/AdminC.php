@@ -27,6 +27,7 @@ use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
 use think\exception\DbException;
 use think\migration\db\Table;
+use think\response\Json;
 use think\Session;
 
 class AdminC
@@ -194,8 +195,9 @@ class AdminC
     {
         // 获取所有用户 userid
         $res = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/getAllUserId');
-        if($res->code == 0) {
-            foreach ($res->data as $info) {
+        $result = json_decode($res);
+        if($result->code == 0) {
+            foreach ($result->data as $info) {
                 $user = User::getByUserName($info->name);
                 if($user && $user->dd_userid == '') {
                     $user->dd_userid = $info->userid;
@@ -210,63 +212,65 @@ class AdminC
      * 管理员添加用户
      */
     public function addUser(){
-        $userId       = $_POST["user_id"];
-        $userName     = $_POST["user_name"];
-        $departmentId = $_POST["department_id"];
-        $phone        = $_POST["phone"];
-        $email        = $_POST["email"];
-        $password     = EncryptionUtil::Md5Encryption("123",$userId);
-        $info = Session::get("info");
-        $sessionUserId = $info["user_id"];
-        //判断当前用户是否为管理员
+        return Db::transaction(function () {
+            $userId       = $_POST["user_id"];
+            $userName     = $_POST["user_name"];
+            $departmentId = $_POST["department_id"];
+            $phone        = $_POST["phone"];
+            $email        = $_POST["email"];
+            $password     = EncryptionUtil::Md5Encryption("123",$userId);
+            $info = Session::get("info");
+            $sessionUserId = $info["user_id"];
+            //判断当前用户是否为管理员
 //        $isAdmin = $this -> isAdmin($sessionUserId);
 //        if(!$isAdmin){
 //            return Result::returnResult(Result::NO_ACCESS);
 //        }
-        //判断员工id是否已经存在
-        if($this -> checkHasUser($userId)){
-            return Result::returnResult(Result::EXIST_USER);
-        }
-        //向数据库插入数据
-        $user = new User([
-            'user_id'        =>  $userId,
-            'user_name'      =>  $userName,
-            'password'       =>  $password,
-            'department_id'  =>  $departmentId,
-            'phone'          =>  $phone,
-            'email'          =>  $email,
-            'create_time'    =>  date('Y-m-d H:i:s', time())
-        ]);
-        $result = $user->save();
-        // 更新所有用户 userid
-        $this->updateUserid();
-        // 同步添加旧 OA 用户
-        $department = Department::get($departmentId);
-        $user = User::get(['user_id' => $userId]);
-        $password = 'XAPUHUECKGGSEXISXIPS';
-        $userInfo = new UserInfo();
-        $userInfo->data([
-            'Name'       => $userName,
-            'User_ID'    => $userId,
-            'Password'   => $password,
-            'email'      => $email,
-            'userid'     => $user->dd_userid,
-            'department' => $department->department_name
-        ]);
-        $userInfo->save();
-        // 同步添加阿里云数据库用户
-        $USDepartment = USDepartment::get(['department_name' => $department->department_name]);
-        $USUser = new USUser();
-        $USUser->user_id = $userId;
-        $USUser->user_name = $userName;
-        $USUser->department_id = $USDepartment->department_id;
-        $USUser->userid = $user->dd_userid;
-        $USUser->is_us = 0;             // 默认不能访问用服系统
-        $USUser->save();
-        if($result > 0){
-            return Result::returnResult(Result::SUCCESS);
-        }
-        return Result::returnResult(Result::ERROR);
+            //判断员工id是否已经存在
+            if($this -> checkHasUser($userId)){
+                return Result::returnResult(Result::EXIST_USER);
+            }
+            //向数据库插入数据
+            $user = new User([
+                'user_id'        =>  $userId,
+                'user_name'      =>  $userName,
+                'password'       =>  $password,
+                'department_id'  =>  $departmentId,
+                'phone'          =>  $phone,
+                'email'          =>  $email,
+                'create_time'    =>  date('Y-m-d H:i:s', time())
+            ]);
+            $result = $user->save();
+            // 更新所有用户 userid
+            $this->updateUserid();
+            // 同步添加旧 OA 用户
+            $department = Department::get($departmentId);
+            $user = User::get(['user_id' => $userId]);
+            $password = 'XAPUHUECKGGSEXISXIPS';
+            $userInfo = new UserInfo();
+            $userInfo->data([
+                'Name'       => $userName,
+                'User_ID'    => $userId,
+                'Password'   => $password,
+                'email'      => $email,
+                'userid'     => $user->dd_userid,
+                'department' => $department->department_name
+            ]);
+            $userInfo->save();
+            // 同步添加阿里云数据库用户
+            $USDepartment = USDepartment::get(['department_name' => $department->department_name]);
+            $USUser = new USUser();
+            $USUser->user_id = $userId;
+            $USUser->user_name = $userName;
+            $USUser->department_id = $USDepartment->department_id;
+            $USUser->userid = $user->dd_userid;
+            $USUser->is_us = 0;             // 默认不能访问用服系统
+            $USUser->save();
+            if($result > 0){
+                return Result::returnResult(Result::SUCCESS);
+            }
+            return Result::returnResult(Result::ERROR);
+        });
     }
 
     /**
