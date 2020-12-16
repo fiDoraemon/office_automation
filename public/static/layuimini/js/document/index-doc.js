@@ -37,29 +37,33 @@ layui.use(['form', 'table'], function () {
             url: '/office_automation/public/index.php/index/document_c/getAllDocFile',
             toolbar: '#toolbar',
             cols: [[
-                {title: '', width: '50', align: 'center',
-                    templet: function(d){
+                {
+                    title: '', width: '50', align: 'center',
+                    templet: function (d) {
                         return `<i class="layui-icon layui-icon-file-b"></i>`;
                     }
                 },
                 {field: 'file_code', title: '文档编码', width: '180'},
-                {field: 'source_name',title: '文件名', width: '180',
-                    templet: function(d){
+                {
+                    field: 'source_name', title: '文件名', width: '180',
+                    templet: function (d) {
                         return d.source_name;
                     }
                 },
-                {field: 'description', title: '文档说明', minWidth: '200'},
+                {field: 'description', title: '文档说明', width: '200'},
                 {field: 'uploader', title: '上传者', width: '100', align: 'center'},
                 {field: 'project_code', title: '所属项目', width: '100', align: 'center'},
                 {field: 'project_stage', title: '项目阶段', width: '100', align: 'center'},
                 {field: 'create_time', title: '归档时间', width: '180', sort: true, align: 'center'},
-                {field: 'version', title: '版本号', width: '100', align: 'center',
-                        templet: function (d) {
-                            return d.version + '.0';
-                        }
+                {
+                    field: 'version', title: '版本号', width: '100', align: 'center',
+                    templet: function (d) {
+                        return d.version + '.0';
+                    }
                 },
-                {title: '操作', minWidth: '200', align: 'center',
-                    templet: function(d) {
+                {
+                    title: '操作', minWidth: '200', align: 'center',
+                    templet: function (d) {
                         let item = '<a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="upgrade">升版</a>' +
                             '<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="history-version">历史版本</a>';
                         return item;

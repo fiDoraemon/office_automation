@@ -117,7 +117,17 @@
                     }
                 },
                 {field: 'reporter_name', width: '7%', title: '发起人', align: "center"},
-                {field: 'status', width: '7%', title: '任务状态', align: "center"},
+                {field: 'status', width: '7%', title: '任务状态', align: "center",
+                    templet: function (d) {
+                        if (d.status == '处理中') {
+                            return `<span style="color:#01AAED" >处理中</span>`;
+                        } else if (d.status == '已完成') {
+                            return `<span style="color:#009688" >已完成</span>`;
+                        } else {
+                            return `<span style="color:#FF5722" >未开始</span>`;
+                        }
+                    }
+                },
                 {field: 'priority', width: '10%', title: '优先级', sort: true, align: "center",
                     templet: function(d){
                         return '<div class="modify-priority"><i class="layui-icon layui-icon-subtraction" lay-event="reduce"></i> ' + d.priority + ' <i class="layui-icon layui-icon-addition" lay-event="add"></i></div>';
