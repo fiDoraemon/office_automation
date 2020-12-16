@@ -154,32 +154,32 @@ layui.use(['form', 'table'], function () {
     });
 
     // 我发起的会议按钮监听
-    table.on('toolbar(fileListFilter)', function (obj) {
-        if (obj.event === 'borrow') {
-            table.reload('fileList', {
-                url: '/office_automation/public/index.php/index/document_c/getMyBorrow',
-            }, 'data');
-            return false;
-        }else if(obj.event === 'approval'){
-            if(!isDocAdmin){
-                layer.msg("您没有审批权限！");
-                return;
-            }
-            var index = layer.open({
-                title: '待审批文档借阅',
-                type: 2,
-                shade: 0.2,
-                maxmin:true,
-                shadeClose: true,
-                area: ['100%', '100%'],
-                content: 'approval-doc.html',
-            });
-            $(window).on("resize", function () {
-                layer.full(index);
-            });
-            return false;
-        }
-    });
+    // table.on('toolbar(fileListFilter)', function (obj) {
+    //     if (obj.event === 'borrow') {
+    //         table.reload('fileList', {
+    //             url: '/office_automation/public/index.php/index/document_c/getMyBorrow',
+    //         }, 'data');
+    //         return false;
+    //     }else if(obj.event === 'approval'){
+    //         if(!isDocAdmin){
+    //             layer.msg("您没有审批权限！");
+    //             return;
+    //         }
+    //         var index = layer.open({
+    //             title: '待审批文档借阅',
+    //             type: 2,
+    //             shade: 0.2,
+    //             maxmin:true,
+    //             shadeClose: true,
+    //             area: ['100%', '100%'],
+    //             content: 'approval-doc.html',
+    //         });
+    //         $(window).on("resize", function () {
+    //             layer.full(index);
+    //         });
+    //         return false;
+    //     }
+    // });
 
     // 监听文档表格操作按钮
     var fileId;
@@ -258,7 +258,7 @@ layui.use(['form', 'table'], function () {
                             {field: 'source_name', title: '文件名', width: '20%',
                                 templet: function (d) {
                                     var attachment = d.attachment;
-                                    if(d.isBorrow || isDocAdmin) {
+                                    if(isDocAdmin || d.isUploader || d.isBorrow) {
                                         return `
                                         <a style="color:#009688" href="/Office_Automation/public/upload/${attachment.save_path}" download="${fileCode}-受控-${attachment.source_name}">
                                             <i class="layui-icon layui-icon-download-circle"></i> ${attachment.source_name}
@@ -273,8 +273,7 @@ layui.use(['form', 'table'], function () {
                             {title: '操作', width: '15%', align: 'center',
                                 templet: function(d) {
                                     var attachment = d.attachment;
-                                    console.log(fileCode);
-                                    if(d.isBorrow || isDocAdmin) {
+                                    if(isDocAdmin || d.isUploader || d.isBorrow) {
                                         return `<a class="layui-btn layui-btn-xs" href="/Office_Automation/public/upload/${attachment.save_path}" download="${fileCode}-受控-${attachment.source_name}">下载</a>`;
                                     } else {
                                         return  '<a class="layui-btn layui-btn-xs" lay-event="borrow">借阅</a>';
@@ -300,8 +299,8 @@ layui.use(['form', 'table'], function () {
             layer.confirm('确定借阅？', {icon: 3, title: '提示'}, function (index) {
                 layer.close(index);
                 $.ajax({
-                    url: "/office_automation/public/index.php/index/document_c/borrowDoc",
-                    type: 'get',
+                    url: "/office_automation/public/index.php/index/document_c/saveRequest",
+                    type: 'post',
                     data: {
                         fileId: fileId,
                         version: data.version

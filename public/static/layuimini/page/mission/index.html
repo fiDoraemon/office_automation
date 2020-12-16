@@ -334,6 +334,20 @@
                 area: ['100%', '100%']
             });
         });
+
+        // 监听任务号参数
+        if (localStorage.getItem('missionId')) {
+            layer.open({
+                title: '任务详情',
+                type: 2,
+                content: 'read.html?id=' + localStorage.getItem('missionId'),
+                shade: 0.2,
+                maxmin:true,
+                shadeClose: true,
+                area: ['100%', '100%']
+            });
+            localStorage.removeItem("missionId");
+        }
     });
 </script>
 

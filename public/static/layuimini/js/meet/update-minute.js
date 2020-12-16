@@ -7,17 +7,17 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         , table   = layui.table
         , tableSelect = layui.tableSelect;
 
-//已经需要到会的人员名单
+    //已经需要到会的人员名单
     var needAttendArray = [];
-//标记用户是否有权限修改会议信息
+    //标记用户是否有权限修改会议信息
     var modifyPermission = 1;  //1有权限，0没有
-//添加实际到会人员
+    //添加实际到会人员
     var attended = [];
-//添加应到会人员
+    //添加应到会人员
     var newAttended = [];
-//新增基本任务清单
+    //新增基本任务清单
     var newMission = [];
-//已上传文件
+    //已上传文件
     var uploadList = [];
 
     var departmentInfo = "";
@@ -32,7 +32,7 @@ layui.use(['form', 'layedit', 'laydate' ,'upload','table'], function () {
         if (r!=null) return unescape(r[2]); return null;    //返回参数值
     }
 
-//全局标识此次会议id
+    //全局标识此次会议id
     var minute_id = getUrlParam("minute_id");
 
     $("#minute-id").html(minute_id);

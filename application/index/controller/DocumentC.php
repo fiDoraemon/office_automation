@@ -305,9 +305,8 @@ class DocumentC
      * @return array
      * @throws \think\Exception
      */
-    public function getAllRequest($limit = 15,$page = 1, $type = 0){
+    public function getAllRequest($limit = 15,$page = 1, $type = 0, $personType = 0){
         $sessionUserId = Session::get("info")["user_id"];
-        $type = input('get.type');
         $projectCode = input('get.projectCode');
         $projectStage = input('get.projectStage');
         $keyword = input('get.keyword');
@@ -323,7 +322,11 @@ class DocumentC
             if($keyword) {          // 关键词
                 $docRequest->where("description", 'like', "%$keyword%");
             }
-            $docRequest->where("applicant_id", $sessionUserId);
+            if(!$personType) {          // 我处理的/我申请的分类
+                $docRequest->where("applicant_id", $sessionUserId);
+            } else {
+                $docRequest->where("approver_id", $sessionUserId);
+            }
             $count = $docRequest->count();
             // 获取申请条目
             if ($projectCode) {
@@ -335,7 +338,11 @@ class DocumentC
             if($keyword) {
                 $docRequest->where("description", 'like', "%$keyword%");
             }
-            $docRequest->where("applicant_id", $sessionUserId);
+            if(!$personType) {          // 我处理的/我申请的分类
+                $docRequest->where("applicant_id", $sessionUserId);
+            } else {
+                $docRequest->where("approver_id", $sessionUserId);
+            }
             $listRequest = $docRequest->field("request_id,applicant_id,approver_id,project_id,project_stage,description,request_time,status")
                 ->order("request_time", "desc")
                 ->page($page, $limit)
@@ -364,8 +371,12 @@ class DocumentC
             if($keyword) {
                 $docUpgradeRequest->where("dur.description", 'like', "%$keyword%");
             }
-            $count = $docUpgradeRequest->where('applicant_id', $sessionUserId)
-                ->join('oa_doc_file df', $condition)->count();
+            if(!$personType) {
+                $docUpgradeRequest->where("applicant_id", $sessionUserId);
+            } else {
+                $docUpgradeRequest->where("approver_id", $sessionUserId);
+            }
+            $count = $docUpgradeRequest->join('oa_doc_file df', $condition)->count();
             // 获取申请条目
             $docUpgradeRequest->alias('dur');
             $condition = 'df.file_id = dur.file_id';
@@ -378,8 +389,12 @@ class DocumentC
             if($keyword) {
                 $docUpgradeRequest->where("dur.description", 'like', "%$keyword%");
             }
-            $listRequest = $docUpgradeRequest->where('applicant_id', $sessionUserId)
-                ->join('oa_doc_file df', $condition)
+            if(!$personType) {
+                $docUpgradeRequest->where("applicant_id", $sessionUserId);
+            } else {
+                $docUpgradeRequest->where("approver_id", $sessionUserId);
+            }
+            $listRequest = $docUpgradeRequest->join('oa_doc_file df', $condition)
                 ->join('oa_project p', 'p.project_id = df.project_id')
                 ->join('oa_user u', 'u.user_id = dur.applicant_id')
                 ->join('oa_user u2', 'u2.user_id = dur.approver_id')
@@ -532,37 +547,37 @@ class DocumentC
      * @return array
      * @throws \think\Exception
      */
-    public function getRequestOfMyRequest($limit = 15, $page = 1){
-        $info = Session::get("info");
-        $userId = $info["user_id"];
-        $docRequest = new DocRequest();
-        $docRequest -> where("applicant_id", $userId);
-        $docRequest -> where("status", 0);
-        $count = $docRequest->count();  //获取条件符合的总人数
-        $docRequest -> where("applicant_id", $userId);
-        $docRequest -> where("status", 0);
-        try {
-            $listRequest = $docRequest -> field("request_id,applicant_id,approver_id,project_id,project_stage,description,request_time,status")
-                                       -> order("request_time","desc")
-                                       -> page($page, $limit)
-                                       -> select();
-            foreach ($listRequest as $req){
-                $req -> requestUser;
-                $req -> approverUser;
-                $req -> projectCode;
-                $req -> projectStage;
-                $req -> author_name = $req -> requestUser -> user_name;
-                $req -> approver_name = $req -> approverUser -> user_name;
-                $req -> project_code = $req -> projectCode -> project_code;
-//                $req -> project_stage = $req -> projectStage -> stage_name;
-                unset($req -> requestUser,$req -> approverUser,$req -> projectCode, $req -> projectStage);
-            }
-            return Result::returnResult(Result::SUCCESS,$listRequest,$count);
-        } catch (DataNotFoundException $e) {
-        } catch (ModelNotFoundException $e) {
-        } catch (DbException $e) {
-        }
-    }
+//    public function getRequestOfMyRequest($limit = 15, $page = 1){
+//        $info = Session::get("info");
+//        $userId = $info["user_id"];
+//        $docRequest = new DocRequest();
+//        $docRequest -> where("applicant_id", $userId);
+//        $docRequest -> where("status", 0);
+//        $count = $docRequest->count();  //获取条件符合的总人数
+//        $docRequest -> where("applicant_id", $userId);
+//        $docRequest -> where("status", 0);
+//        try {
+//            $listRequest = $docRequest -> field("request_id,applicant_id,approver_id,project_id,project_stage,description,request_time,status")
+//                                       -> order("request_time","desc")
+//                                       -> page($page, $limit)
+//                                       -> select();
+//            foreach ($listRequest as $req){
+//                $req -> requestUser;
+//                $req -> approverUser;
+//                $req -> projectCode;
+//                $req -> projectStage;
+//                $req -> author_name = $req -> requestUser -> user_name;
+//                $req -> approver_name = $req -> approverUser -> user_name;
+//                $req -> project_code = $req -> projectCode -> project_code;
+////                $req -> project_stage = $req -> projectStage -> stage_name;
+//                unset($req -> requestUser,$req -> approverUser,$req -> projectCode, $req -> projectStage);
+//            }
+//            return Result::returnResult(Result::SUCCESS,$listRequest,$count);
+//        } catch (DataNotFoundException $e) {
+//        } catch (ModelNotFoundException $e) {
+//        } catch (DbException $e) {
+//        }
+//    }
 
     /**
      * 需要我处理而又没有处理的申请
@@ -571,36 +586,36 @@ class DocumentC
      * @return array
      * @throws \think\Exception
      */
-    public function getRequestOfMyReview($limit = 15, $page = 1){
-        $sessionUserId = Session::get('info')['user_id'];
-        $docRequest = new DocRequest();
-        $docRequest -> where("approver_id", $sessionUserId);
-        $docRequest -> where("status", 0);
-        $count = $docRequest->count();  //获取条件符合的总人数
-        $docRequest -> where("approver_id", $sessionUserId);
-        $docRequest -> where("status", 0);
-        try {
-            $listRequest = $docRequest -> field("request_id,applicant_id,approver_id,project_id,stage,remark,request_time,status")
-                                       -> order("request_time","desc")
-                                       -> page($page, $limit)
-                                       -> select();
-            foreach ($listRequest as $req){
-                $req -> requestUser;
-                $req -> approverUser;
-                $req -> projectCode;
-                $req -> projectStage;
-                $req -> author_name = $req -> requestUser -> user_name;
-                $req -> approver_name = $req -> approverUser -> user_name;
-                $req -> project_code = $req -> projectCode -> project_code;
-//                $req -> project_stage = $req -> projectStage -> stage_name;
-                unset($req -> requestUser,$req -> approverUser,$req -> projectCode, $req -> projectStage);
-            }
-            return Result::returnResult(Result::SUCCESS,$listRequest,$count);
-        } catch (DataNotFoundException $e) {
-        } catch (ModelNotFoundException $e) {
-        } catch (DbException $e) {
-        }
-    }
+//    public function getRequestOfMyReview($limit = 15, $page = 1){
+//        $sessionUserId = Session::get('info')['user_id'];
+//        $docRequest = new DocRequest();
+//        $docRequest -> where("approver_id", $sessionUserId);
+//        $docRequest -> where("status", 0);
+//        $count = $docRequest->count();  //获取条件符合的总人数
+//        $docRequest -> where("approver_id", $sessionUserId);
+//        $docRequest -> where("status", 0);
+//        try {
+//            $listRequest = $docRequest -> field("request_id,applicant_id,approver_id,project_id,stage,remark,request_time,status")
+//                                       -> order("request_time","desc")
+//                                       -> page($page, $limit)
+//                                       -> select();
+//            foreach ($listRequest as $req){
+//                $req -> requestUser;
+//                $req -> approverUser;
+//                $req -> projectCode;
+//                $req -> projectStage;
+//                $req -> author_name = $req -> requestUser -> user_name;
+//                $req -> approver_name = $req -> approverUser -> user_name;
+//                $req -> project_code = $req -> projectCode -> project_code;
+////                $req -> project_stage = $req -> projectStage -> stage_name;
+//                unset($req -> requestUser,$req -> approverUser,$req -> projectCode, $req -> projectStage);
+//            }
+//            return Result::returnResult(Result::SUCCESS,$listRequest,$count);
+//        } catch (DataNotFoundException $e) {
+//        } catch (ModelNotFoundException $e) {
+//        } catch (DbException $e) {
+//        }
+//    }
 
     /**
      * 保存请求
@@ -662,6 +677,36 @@ class DocumentC
                 $message = '◉ ' . '您有新的文档升版申请(#' . $docUpgradeRequest->request_id . ')需要处理！' . "\n" . $templet;
                 $data['data']['content'] = $message;
                 $result = curlUtil::post($postUrl, $data);
+            } else {
+                $docBorrowRequest = new DocBorrowRequest();
+                $returnResult = Result::returnResult(Result::ERROR);
+                $today = date('Y-m-d H:i:s', time());
+                //查询是否有已经提交过的借阅申请
+                $borrowRequest = $docBorrowRequest->where('status', 0)
+                    ->where("applicant_id", $sessionUserId)
+                    ->where("file_id", $fields['fileId'])
+                    ->where("version", $fields['version'])
+                    ->order('request_time desc')
+                    ->find();
+                // 判断
+                if ($borrowRequest) {
+                    if($borrowRequest->effective_time == null) {            // 有效时间为空
+                        $returnResult['msg'] = '已经提交过申请';
+                        return $returnResult;
+                    } else if($borrowRequest->effective_time > $today) {            // 有效时间大于现在
+                        $returnResult['msg'] = '已经借阅过当前版本文档';
+                        return $returnResult;
+                    }
+                }
+                // 增加借阅信息
+                $docBorrowRequest->data([
+                    'file_id' => $fields['fileId'],
+                    'version' => $fields['version'],
+                    'applicant_id' => $sessionUserId
+                ]);
+                $docBorrowRequest->save();
+                // 发送钉钉消息
+                $this->sendBorrowMessage($docBorrowRequest->request_id);
             }
 
             return Result::returnResult(Result::SUCCESS);
@@ -699,14 +744,13 @@ class DocumentC
                 // 增加新的归档文件
                 $docFile = new DocFile();
                 $docFile->data([
-                    'request_id' => $requestId,
+//                    'request_id' => $requestId,
                     'file_code' => $docCode,            // 文件编码自动生成
                     'description' => $docRequest->description,
 //                    'save_name' => $file->storage_name,
 //                    'source_name' => $file->source_name,
 //                    'path' => $newPath . "/" . $file->storage_name,
 //                    'size' => $file->file_size,
-                    'status' => 1,
                     'project_id' => $docRequest->project_id,
                     'project_stage' => $docRequest->project_stage,
                     'create_time' => date('Y-m-d H:i:s', time()),
@@ -766,7 +810,7 @@ class DocumentC
             $approver = User::get(['user_id' => $sessionUserId]);
             $applicant = User::get(['user_id' => $docUpgradeRequest->applicant_id]);
             $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-            $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestId=' . $docUpgradeRequest->request_id;
+            $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestType=1&requestId=' . $docUpgradeRequest->request_id;
             $data = DataEnum::$msgData;
             $data['userList'] = $applicant->dd_userid;
             $templet = '▪ 处理人：' . $approver->user_name . "\n";
@@ -967,51 +1011,6 @@ class DocumentC
     }
 
     /**
-     * 借阅文档
-     * @param $fileId
-     * @param $version
-     * @return array
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
-     */
-    public function borrowDoc($fileId, $version)
-    {
-        $sessionUserId = Session::get('info')['user_id'];
-        $docBorrowRequest = new DocBorrowRequest();
-        $returnResult = Result::returnResult(Result::ERROR);
-        $today = date('Y-m-d H:i:s', time());
-
-        //查询是否有已经提交过的借阅申请
-        $borrowRequest = $docBorrowRequest->where('status', 0)
-            ->where("applicant_id", $sessionUserId)
-            ->where("file_id", $fileId)
-            ->where("version", $version)
-            ->order('request_time desc')
-            ->find();
-        // 判断
-        if ($borrowRequest) {
-            if($borrowRequest->effective_time == null) {            // 有效时间为空
-                $returnResult['msg'] = '已经提交过申请';
-                return $returnResult;
-            } else if($borrowRequest->effective_time > $today) {            // 有效时间大于现在
-                $returnResult['msg'] = '已经借阅过当前版本文档';
-                return $returnResult;
-            }
-        }
-        // 增加借阅信息
-        $docBorrowRequest->data([
-            'file_id' => $fileId,
-            'version' => $version,
-            'applicant_id' => $sessionUserId
-        ]);
-        $docBorrowRequest->save();
-        // 发送钉钉消息
-        $this->sendBorrowMessage($docBorrowRequest->request_id);
-        return Result::returnResult(Result::SUCCESS);
-    }
-
-    /**
      * 查询我借阅的文档
      */
     public function getMyBorrow(){
@@ -1201,7 +1200,7 @@ class DocumentC
             $fileList = implode('，', $fileList);
         }
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestId=' . $req->request_id;
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestType=0&requestId=' . $req->request_id;
         $applicant = $req->requestUser->user_name;
         $description = $req->description;
         $requestId = $req->request_id;
@@ -1235,7 +1234,7 @@ class DocumentC
             $fileList = implode('，', $fileList);
         }
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestId=' . $req->request_id;
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestType=0&requestId=' . $req->request_id;
         $approverName = $req->approverUser->user_name;
         $opinion = $req->process_opinion;
         $requestId = $req->request_id;
@@ -1268,7 +1267,7 @@ class DocumentC
             $fileList = implode('，',$fileList);
         }
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestId=' . $req -> request_id;
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestType=0&requestId=' . $req -> request_id;
         $approverName = $req -> approverUser -> user_name;
         $opinion = $req -> process_opinion;
         $requestId =  $req -> request_id;
@@ -1293,7 +1292,7 @@ class DocumentC
         $DDidList = User::where('user_id','in',$userIdList) -> column('dd_userid');
         $DDidList = implode(',',$DDidList);
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?borrowId=' . $borrowId;
+        $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestType=2&requestId=' . $borrowId;
         $data = DataEnum::$msgData;
         $data['userList'] = $DDidList;
         $requestName = Session::get("info")["user_name"];
@@ -1367,6 +1366,7 @@ class DocumentC
      * 获取文档版本信息
      */
     public function getFileVersion($fileId) {
+        $sessionUserId = Session::get('info')['user_id'];
         $docFile = DocFile::get($fileId);
         $docFileVersion = new DocFileVersion();
         $fileVersionList = $docFileVersion->where('file_id', $fileId)
@@ -1378,6 +1378,7 @@ class DocumentC
             $fileVersion->attachment;
             $fileVersion->uploader = UserService::userIdToName($fileVersion->uploader_id);
             $fileVersion->isBorrow = DocumentService::isBorrow($fileVersion->id);
+            $fileVersion->isUploader = ($fileVersion->uploader_id == $sessionUserId)? 1 : 0;
             unset($fileVersion->id, $fileVersion->attachment_id, $fileVersion->uploader_id);
         }
         $data = [

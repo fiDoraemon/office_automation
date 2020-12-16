@@ -236,22 +236,24 @@
 
         // 根据任务号打开任务详情
         if(getQueryVariable('missionId')) {
-            miniTab.openNewTabByIframe({
-                href: "page/mission/read.html?id=" + getQueryVariable('missionId'),
-                title: "任务详情"
-            });
+            localStorage.setItem("missionId", getQueryVariable('missionId'));
+            // miniTab.openNewTabByIframe({
+            //     href: "page/mission/index.html",
+            //     title: "我的任务"
+            // });
         } else if(getQueryVariable('minuteId')) {
+            localStorage.setItem("minuteId", getQueryVariable('minuteId'));
             miniTab.openNewTabByIframe({
-                href: "page/meet/update-minute.html?minute_id=" + getQueryVariable('minuteId'),
-                title: "会议详情"
+                href: "page/meet/minutes.html",
+                title: "纪要列表"
             });
         } else if(getQueryVariable('requestId') && getQueryVariable('requestType')){
             var docRequest = {type: getQueryVariable('requestType'), requestId: getQueryVariable('requestId')};
-            localStorage.setItem("docRequest", docRequest);
-            // miniTab.openNewTabByIframe({
-            //     href: "page/document/review-doc.html?requestId= " + getQueryVariable('requestId'),
-            //     title: "待处理申请"
-            // });
+            localStorage.setItem("docRequest", JSON.stringify(docRequest));
+            miniTab.openNewTabByIframe({
+                href: "page/document/index-request.html",
+                title: "待处理申请"
+            });
         }
     });
 

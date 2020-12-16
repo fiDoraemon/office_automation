@@ -236,12 +236,19 @@
             }
         });
 
-
-        //点击链接直接查看信息
-        // var minuteId = getUrlParam("minuteId");
-        // if(minuteId != null && minuteId != ''){
-        //     themeToUpdate(minuteId);
-        // }
+        // 监听会议号参数
+        if (localStorage.getItem('minuteId') != null) {
+            layer.open({
+                title: '会议详情',
+                type: 2,
+                content: 'update-minute.html?minute_id=' + localStorage.getItem('minuteId'),
+                shade: 0.2,
+                maxmin:true,
+                shadeClose: true,
+                area: ['100%', '100%']
+            });
+            localStorage.removeItem("minuteId");
+        }
     });
 </script>
 
