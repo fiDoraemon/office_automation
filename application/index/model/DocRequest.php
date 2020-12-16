@@ -18,7 +18,7 @@ class DocRequest extends Model
      * @return \think\model\relation\HasOne
      */
     public function requestUser(){
-        return $this->hasOne('User',"user_id","author_id")->field('user_name');
+        return $this->hasOne('User',"user_id","applicant_id")->field('user_name');
     }
 
     /**
@@ -42,7 +42,7 @@ class DocRequest extends Model
      * @return \think\model\relation\HasOne
      */
     public function projectStage(){
-        return $this->hasOne('ProjectStage',"id","stage")->field('stage_name');
+        return $this->hasOne('ProjectStage',"id","project_stage")->field('stage_name');
     }
 
     /**

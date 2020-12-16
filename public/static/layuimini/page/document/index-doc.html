@@ -12,7 +12,6 @@
 <body>
 <div class="layuimini-container">
     <div class="layuimini-main">
-
         <fieldset class="table-search-fieldset">
             <legend>文档搜索</legend>
             <div style="margin: 10px 10px 10px 10px">
@@ -25,7 +24,6 @@
                                 </select>
                             </div>
                         </div>
-
                         <div class="layui-inline">
                             <label class="layui-form-label">项目阶段</label>
                             <div class="layui-input-inline">
@@ -33,43 +31,38 @@
                                 </select>
                             </div>
                         </div>
-
                         <div class="layui-inline">
                             <label class="layui-form-label">上传者</label>
                             <div class="layui-input-inline">
-                                <select class="authorSelect" name="author_select" lay-filter="author" id="authorSelect">
+                                <select class="authorSelect" name="author_select" id="authorSelect" lay-filter="uploader">
                                 </select>
                             </div>
                         </div>
-
                         <div class="layui-inline">
                             <label class="layui-form-label">关键字</label>
                             <div class="layui-input-inline">
                                 <input type="text" id="searchContext" name="keyword" autocomplete="off" class="layui-input">
                             </div>
                         </div>
-
                         <div class="layui-inline">
                             <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
                         </div>
-
                     </div>
                 </form>
             </div>
         </fieldset>
-
         <script type="text/html" id="toolbar">
             <div class="layui-btn-container">
-                <button class="layui-btn layui-btn-sm" lay-event="borrow" id="borrow"> 我的借阅 </button>
-                <button class="layui-btn layui-btn-sm" lay-event="approval" id="approval"> 审批借阅 </button>
+                <!--<button class="layui-btn layui-btn-sm" lay-event="borrow" id="borrow"> 我的借阅 </button>-->
+                <!--<button class="layui-btn layui-btn-sm" lay-event="approval" id="approval"> 审批借阅 </button>-->
             </div>
         </script>
-
         <table class="layui-hide" id="fileList" lay-filter="fileListFilter"></table>
 
     </div>
 </div>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
-<script src="../../js/document/index-doc.js" charset="utf-8"></script>
+<script src="../../js/common.js" charset="utf-8"></script>
+<script src="../../js/document/index-doc.js?v=8" charset="utf-8"></script>
 </body>
 </html>

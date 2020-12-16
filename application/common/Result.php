@@ -84,7 +84,7 @@ class Result
     ];
 
     // 返回结果
-    public static function returnResult($code, $data = [], $count = 0) {
+    public static function returnResult($code, $data = null, $count = 0) {
         $result = [
             'code' => $code,
             'msg' => self::$resultMsg[$code],

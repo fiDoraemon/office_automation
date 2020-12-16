@@ -18,6 +18,6 @@ class DocFile extends Model
      * @return \think\model\relation\HasOne
      */
     public function request(){
-        return $this -> hasOne('DocRequest',"request_id","request_id") -> field('author_id,project_id,stage,remark,controlled');
+        return $this -> hasOne('DocRequest',"request_id","request_id") -> field('applicant_id,project_id,project_stage,description,controlled');
     }
 }

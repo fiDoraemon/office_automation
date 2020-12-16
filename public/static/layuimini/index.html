@@ -245,16 +245,13 @@
                 href: "page/meet/update-minute.html?minute_id=" + getQueryVariable('minuteId'),
                 title: "会议详情"
             });
-        } else if(getQueryVariable('requestId')){
-            miniTab.openNewTabByIframe({
-                href: "page/document/review-doc.html?requestId= " + getQueryVariable('requestId'),
-                title: "待处理申请"
-            });
-        } else if(getQueryVariable('borrowId')) {
-            miniTab.openNewTabByIframe({
-                href: "page/document/approval-doc.html?borrowId= " + getQueryVariable('borrowId'),
-                title: "待处理借阅申请"
-            });
+        } else if(getQueryVariable('requestId') && getQueryVariable('requestType')){
+            var docRequest = {type: getQueryVariable('requestType'), requestId: getQueryVariable('requestId')};
+            localStorage.setItem("docRequest", docRequest);
+            // miniTab.openNewTabByIframe({
+            //     href: "page/document/review-doc.html?requestId= " + getQueryVariable('requestId'),
+            //     title: "待处理申请"
+            // });
         }
     });
 

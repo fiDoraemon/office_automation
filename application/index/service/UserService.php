@@ -27,7 +27,7 @@ class UserService
      * @return mixed
      * @throws \think\exception\DbException
      */
-    public static function userIdToName($string, $type) {
+    public static function userIdToName($string, $type = 1) {
         if($type == 1) {
             $user = User::get(['user_id' => $string]);
             return $user->user_name;

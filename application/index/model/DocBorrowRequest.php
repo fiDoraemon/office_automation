@@ -11,15 +11,15 @@ namespace app\index\model;
 
 use think\Model;
 
-class DocBorrow extends Model
+class DocBorrowRequest extends Model
 {
     /**
      * 与文档文件一对一对应
      * @return \think\model\relation\HasOne
      */
     public function docFile(){
-        return $this -> hasOne('DocFile',"request_id","request_id")
-                      -> field("file_code,source_name");
+        return $this -> hasOne('DocFile',"file_id","file_id")
+                      -> field("file_code");
     }
 
     /**
@@ -27,7 +27,7 @@ class DocBorrow extends Model
      * @return \think\model\relation\HasOne
      */
     public function user(){
-        return $this -> hasOne('User',"user_id","user_id")
+        return $this -> hasOne('User',"user_id","applicant_id")
                       -> field("user_name");
     }
 }

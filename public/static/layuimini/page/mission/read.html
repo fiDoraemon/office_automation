@@ -10,9 +10,6 @@
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <link rel="stylesheet" href="../../css/common.css">
     <style>
-        body {
-            background-color: white;
-        }
         /* 上传附件 */
         .layui-upload-drag {
             margin-top: 10px;
@@ -27,218 +24,220 @@
             font-size: 10px;
             padding-top: 10px;
         }
-
     </style>
 </head>
 <body>
-
-    <div class="layui-form layuimini-form" lay-filter="setValue">
-        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
-            <legend>任务信息</legend>
-        </fieldset>
-        <div class="layui-form-item">
-            <label class="layui-form-label required">任务号</label>
-            <div class="layui-input-inline">
-                <input type="text" name="mission_id" id="mission_id" class="layui-input" readonly>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <div class="layui-form layuimini-form" lay-filter="setValue">
+            <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+                <legend>任务信息</legend>
+            </fieldset>
+            <div class="layui-form-item">
+                <label class="layui-form-label required">任务号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="mission_id" id="mission_id" class="layui-input" readonly>
+                </div>
             </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label required">任务标题</label>
-            <div class="layui-input-block">
-                <input type="text" name="mission_title" id="mission_title" lay-verify="required" lay-reqtext="任务标题不能为空" autocomplete="off" placeholder="请输入任务标题" class="layui-input" readonly>
+            <div class="layui-form-item">
+                <label class="layui-form-label required">任务标题</label>
+                <div class="layui-input-block">
+                    <input type="text" name="mission_title" id="mission_title" lay-verify="required" lay-reqtext="任务标题不能为空" autocomplete="off" placeholder="请输入任务标题" class="layui-input" readonly>
+                </div>
             </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label required">发起人</label>
-            <div class="layui-input-inline">
-                <input type="text" name="reporter_name" class="layui-input" readonly>
+            <div class="layui-form-item">
+                <label class="layui-form-label required">发起人</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="reporter_name" class="layui-input" readonly>
+                </div>
+                <label class="layui-form-label required">当前处理人</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="current_assignee_name" class="layui-input" readonly>
+                </div>
             </div>
-            <label class="layui-form-label required">当前处理人</label>
-            <div class="layui-input-inline">
-                <input type="text" name="current_assignee_name" class="layui-input" readonly>
+            <div class="layui-form-item">
+                <label class="layui-form-label required">开始日期</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="start_date" id="start_date" lay-verify="date" placeholder="请选择日期" autocomplete="off" class="layui-input" id="start_date">
+                </div>
+                <label class="layui-form-label required">截止日期</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="finish_date" id="finish_date" lay-verify="date" placeholder="请选择日期" autocomplete="off" class="layui-input" id="finish_date">
+                </div>
             </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label required">开始日期</label>
-            <div class="layui-input-inline">
-                <input type="text" name="start_date" id="start_date" lay-verify="date" placeholder="请选择日期" autocomplete="off" class="layui-input" id="start_date">
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label required">任务描述</label>
+                <div class="layui-input-block">
+                    <textarea name="description" class="layui-textarea" lay-verify="required" lay-reqtext="任务描述不能为空" placeholder="请输入任务描述"></textarea>
+                </div>
             </div>
-            <label class="layui-form-label required">截止日期</label>
-            <div class="layui-input-inline">
-                <input type="text" name="finish_date" id="finish_date" lay-verify="date" placeholder="请选择日期" autocomplete="off" class="layui-input" id="finish_date">
+            <div class="layui-form-item">
+                <label class="layui-form-label">关联项目</label>
+                <div class="layui-input-inline">
+                    <select name="project_id" id="project_id">
+                        <option value="0">请选择</option>
+                    </select>
+                </div>
+                <label class="layui-form-label">优先级</label>
+                <div class="layui-input-inline">
+                    <input type="number" name="priority" class="layui-input" min="0" max="5" value="0">
+                </div>
             </div>
-        </div>
-        <div class="layui-form-item layui-form-text">
-            <label class="layui-form-label required">任务描述</label>
-            <div class="layui-input-block">
-                <textarea name="description" class="layui-textarea" lay-verify="required" lay-reqtext="任务描述不能为空" placeholder="请输入任务描述"></textarea>
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">完成标准</label>
+                <div class="layui-input-block">
+                    <textarea name="finish_standard" class="layui-textarea" placeholder="请输入完成标准"></textarea>
+                </div>
             </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">关联项目</label>
-            <div class="layui-input-inline">
-                <select name="project_id" id="project_id">
-                    <option value="0">请选择</option>
-                </select>
+            <div class="layui-form-item">
+                <label class="layui-form-label">邀请关注</label>
+                <div class="layui-input-inline">
+                    <select class="select-department" select-user="interest" lay-filter="multipleSelect-department">
+                        <option value="">请选择部门</option>
+                    </select>
+                </div>
+                <div class="layui-input-inline">
+                    <select id="interest" lay-filter="multipleSelect-user">
+                        <option value="">请选择用户</option>
+                    </select>
+                </div>
+                <div id="interest-userList" class="multipleSelect"></div>
+                <!--<div class="layui-input-block">-->
+                    <!--<input type="text" name="invite_follow" id="invite_follow" autocomplete="off" placeholder="请选择要邀请关注任务的人" class="layui-input" readonly>-->
+                <!--</div>-->
             </div>
-            <label class="layui-form-label">优先级</label>
-            <div class="layui-input-inline">
-                <input type="number" name="priority" class="layui-input" min="0" max="5" value="0">
+            <div class="layui-form-item">
+                <label class="layui-form-label">任务标签</label>
+                <div class="layui-input-inline" style="width: 30%">
+                    <input type="text" name="label_list" id="label-list" class="layui-input" placeholder="请选择或输入任务标签">
+                </div>
+                <div class="layui-input-inline">
+                    <select name="label-serach" id="label-serach" lay-filter="label-serach" lay-search>
+                        <option value="">直接选择或搜索选择</option>
+                    </select>
+                </div>
+                <div class="layui-form-mid layui-word-aux">标签与标签之间需用中文分号分隔(；)</div>
             </div>
-        </div>
-        <div class="layui-form-item layui-form-text">
-            <label class="layui-form-label">完成标准</label>
-            <div class="layui-input-block">
-                <textarea name="finish_standard" class="layui-textarea" placeholder="请输入完成标准"></textarea>
+            <div class="layui-form-item">
+                <label class="layui-form-label">父任务号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="parent_mission_id" id="parent_mission_id" class="layui-input" autocomplete="off" placeholder="请选择父任务号" readonly>
+                </div>
+                <label class="layui-form-label">设为根任务</label>
+                <div class="layui-input-inline">
+                    <input type="checkbox" name="is_root" lay-skin="switch" lay-text="是|否" lay-filter="is-root">
+                </div>
             </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">邀请关注</label>
-            <div class="layui-input-inline">
-                <select class="select-department" select-user="interest" lay-filter="multipleSelect-department">
-                    <option value="">请选择部门</option>
-                </select>
+            <div class="layui-form-item">
+                <label class="layui-form-label">关联会议号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="minute_id" id="minute_id" class="layui-input" autocomplete="off" placeholder="请选择会议号" readonly>
+                </div>
+                <label class="layui-form-label">关联需求号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="requirement_id" class="layui-input" autocomplete="off" placeholder="请选择需求号" readonly>
+                </div>
+                <label class="layui-form-label">关联故障专题号</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="problem_id" class="layui-input" autocomplete="off" placeholder="请输入故障专题号" readonly>
+                </div>
             </div>
-            <div class="layui-input-inline">
-                <select id="interest" lay-filter="multipleSelect-user">
-                    <option value="">请选择用户</option>
-                </select>
-            </div>
-            <div id="interest-userList" class="multipleSelect"></div>
-            <!--<div class="layui-input-block">-->
-                <!--<input type="text" name="invite_follow" id="invite_follow" autocomplete="off" placeholder="请选择要邀请关注任务的人" class="layui-input" readonly>-->
-            <!--</div>-->
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">任务标签</label>
-            <div class="layui-input-inline" style="width: 30%">
-                <input type="text" name="label_list" id="label-list" class="layui-input" placeholder="请选择或输入任务标签">
-            </div>
-            <div class="layui-input-inline">
-                <select name="label-serach" id="label-serach" lay-filter="label-serach" lay-search>
-                    <option value="">直接选择或搜索选择</option>
-                </select>
-            </div>
-            <div class="layui-form-mid layui-word-aux">标签与标签之间需用中文分号分隔(；)</div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">父任务号</label>
-            <div class="layui-input-inline">
-                <input type="text" name="parent_mission_id" id="parent_mission_id" class="layui-input" autocomplete="off" placeholder="请选择父任务号" readonly>
-            </div>
-            <label class="layui-form-label">设为根任务</label>
-            <div class="layui-input-inline">
-                <input type="checkbox" name="is_root" lay-skin="switch" lay-text="是|否" lay-filter="is-root">
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <label class="layui-form-label">关联会议号</label>
-            <div class="layui-input-inline">
-                <input type="text" name="minute_id" id="minute_id" class="layui-input" autocomplete="off" placeholder="请选择会议号" readonly>
-            </div>
-            <label class="layui-form-label">关联需求号</label>
-            <div class="layui-input-inline">
-                <input type="text" name="requirement_id" class="layui-input" autocomplete="off" placeholder="请选择需求号" readonly>
-            </div>
-            <label class="layui-form-label">关联故障专题号</label>
-            <div class="layui-input-inline">
-                <input type="text" name="problem_id" class="layui-input" autocomplete="off" placeholder="请输入故障专题号" readonly>
-            </div>
-        </div>
-        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
-            <legend>上传附件</legend>
-        </fieldset>
-        <div class="layui-form-item">
-            <div class="layui-fluid">
-                <div class="layui-row">
-                    <div class="layui-col-sm3 layui-col-sm-offset1">
-                        <div class="layui-upload-drag" id="attachment">
-                            <i class="layui-icon"></i>
-                            <p>点击上传，或将文件拖拽到此处</p>
-                            <input type="hidden" id="attachment_list" name="attachment_list">
-                            <!--<input type="hidden" id="delete_list" name="delete_list">-->
-                            <button type="button" class="layui-btn upload-btn" id="start_upload" onclick="stopPropagation()">开始上传</button>
+            <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+                <legend>上传附件</legend>
+            </fieldset>
+            <div class="layui-form-item">
+                <div class="layui-fluid">
+                    <div class="layui-row">
+                        <div class="layui-col-sm3 layui-col-sm-offset1">
+                            <div class="layui-upload-drag" id="attachment">
+                                <i class="layui-icon"></i>
+                                <p>点击上传，或将文件拖拽到此处</p>
+                                <input type="hidden" id="attachment_list" name="attachment_list">
+                                <!--<input type="hidden" id="delete_list" name="delete_list">-->
+                                <button type="button" class="layui-btn upload-btn" id="start_upload" onclick="stopPropagation()">开始上传</button>
+                            </div>
+                            <div class="tip">提示：1.选择文件后请先点击“开始上传”按钮再提交；2.最多上传10个文件；3.单个文件的大小最大为100M</div>
                         </div>
-                        <div class="tip">提示：1.选择文件后请先点击“开始上传”按钮再提交；2.最多上传10个文件；3.单个文件的大小最大为100M</div>
-                    </div>
-                    <div class="layui-col-sm8">
-                        <div class="layui-upload-list">
-                            <table class="layui-table" id="">
-                                <thead>
-                                <tr>
-                                    <th>文件名</th>
-                                    <th>大小</th>
-                                    <th>状态</th>
-                                    <th>操作</th>
-                                </tr></thead>
-                                <tbody id="fileList"></tbody>
-                            </table>
+                        <div class="layui-col-sm8">
+                            <div class="layui-upload-list">
+                                <table class="layui-table" id="">
+                                    <thead>
+                                    <tr>
+                                        <th>文件名</th>
+                                        <th>大小</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr></thead>
+                                    <tbody id="fileList"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
-            <legend>任务处理</legend>
-        </fieldset>
-        <div class="layui-form-item">
-            <label class="layui-form-label">任务状态</label>
-            <div class="layui-input-inline">
-                <select name="status" id="status">
-                    <option value=""></option>
-                </select>
+            <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+                <legend>任务处理</legend>
+            </fieldset>
+            <div class="layui-form-item">
+                <label class="layui-form-label">任务状态</label>
+                <div class="layui-input-inline">
+                    <select name="status" id="status">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <label class="layui-form-label required">后续处理人</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="assignee_name" id="assignee_name" lay-verify="required" lay-reqtext="未选择后续处理人" autocomplete="off" placeholder="请选择后续处理人" class="layui-input" readonly>
+                </div>
             </div>
-            <label class="layui-form-label required">后续处理人</label>
-            <div class="layui-input-inline">
-                <input type="text" name="assignee_name" id="assignee_name" lay-verify="required" lay-reqtext="未选择后续处理人" autocomplete="off" placeholder="请选择后续处理人" class="layui-input" readonly>
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">处理意见</label>
+                <div class="layui-input-block">
+                    <textarea name="process_note" id="process_note" class="layui-textarea" placeholder="请输入任务处理意见"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn layui-btn-normal return-btn" lay-submit lay-filter="saveBtn" style="margin: 40px 0;">提交</button>
+                    <button class="layui-btn" id="child-tree">子任务树</button>
+                    <button class="layui-btn layui-btn-primary" id="root-tree">根任务树</button>
+                </div>
             </div>
         </div>
-        <div class="layui-form-item layui-form-text">
-            <label class="layui-form-label">处理意见</label>
-            <div class="layui-input-block">
-                <textarea name="process_note" id="process_note" class="layui-textarea" placeholder="请输入任务处理意见"></textarea>
-            </div>
-        </div>
-        <div class="layui-form-item">
-            <div class="layui-input-block">
-                <button class="layui-btn layui-btn-normal return-btn" lay-submit lay-filter="saveBtn" style="margin: 40px 0;">提交</button>
-                <button class="layui-btn" id="child-tree">子任务树</button>
-                <button class="layui-btn layui-btn-primary" id="root-tree">根任务树</button>
-            </div>
-        </div>
-    </div>
 
-    <div class="layui-fluid">
-        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
-            <legend>任务处理历史信息</legend>
-        </fieldset>
-        <div class="layui-row">
-            <div class="layui-col-sm11 layui-col-sm-offset1">
-                <table class="layui-table">
-                    <colgroup>
-                        <col width="8%">
-                        <col width="8%">
-                        <col width="10%">
-                        <col width="15%">
-                        <col width="10%">
-                        <col width="51%">
-                    </colgroup>
-                    <thead>
-                    <tr>
-                        <th>序号</th>
-                        <th>处理人</th>
-                        <th>处理后状态</th>
-                        <th>处理时间</th>
-                        <th>截止日期</th>
-                        <th>处理意见及附件</th>
-                    </tr>
-                    </thead>
-                    <tbody id="mission-process">
-                    </tbody>
-                </table>
+        <div class="layui-fluid">
+            <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
+                <legend>任务处理历史信息</legend>
+            </fieldset>
+            <div class="layui-row">
+                <div class="layui-col-sm11 layui-col-sm-offset1">
+                    <table class="layui-table">
+                        <colgroup>
+                            <col width="8%">
+                            <col width="8%">
+                            <col width="10%">
+                            <col width="15%">
+                            <col width="10%">
+                            <col width="51%">
+                        </colgroup>
+                        <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>处理人</th>
+                            <th>处理后状态</th>
+                            <th>处理时间</th>
+                            <th>截止日期</th>
+                            <th>处理意见及附件</th>
+                        </tr>
+                        </thead>
+                        <tbody id="mission-process">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>

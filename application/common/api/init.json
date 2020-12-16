@@ -93,7 +93,7 @@
             },
             {
               "title": "待处理申请",
-              "href": "page/document/appending-doc.html",
+              "href": "page/document/index-request.html",
               "icon": "fa fa-list",
               "target": "_self"
             }

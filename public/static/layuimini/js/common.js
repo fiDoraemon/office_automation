@@ -96,7 +96,7 @@ function stopPropagation(e) {
     }
 }
 
-//设置cookie
+// 设置cookie
 function setCookie(cname,cvalue,exdays)
 {
     var d = new Date();
@@ -105,7 +105,7 @@ function setCookie(cname,cvalue,exdays)
     document.cookie = cname + "=" + cvalue + "; " + expires;
 }
 
-//获取cookie
+// 获取cookie
 function getCookie(cname)
 {
     var name = cname + "=";
@@ -126,6 +126,42 @@ function removeFromArray (arr, val) {
     }
 
     return arr;
+}
+
+/**
+ * 计算文件大小(保留两位小数)
+ * @param size 字节大小
+ * @returns {string}
+ */
+function getfilesize(size) {
+    if (!size)
+        return "";
+    var num = 1024.00; //byte
+    if (size < num)
+        return size + "B";
+    if (size < Math.pow(num, 2))
+        return (size / num).toFixed(2) + "K"; //kb
+    if (size < Math.pow(num, 3))
+        return (size / Math.pow(num, 2)).toFixed(2) + "M"; //M
+    if (size < Math.pow(num, 4))
+        return (size / Math.pow(num, 3)).toFixed(2) + "G"; //G
+    return (size / Math.pow(num, 4)).toFixed(2) + "T"; //T
+}
+
+/**
+ * 将dom元素转为字符串
+ * @param node
+ * @returns {string}
+ */
+function nodeToString(node) {
+    //createElement()返回一个Element对象
+    var tmpNode = document.createElement("div");
+    //appendChild()  参数Node对象   返回Node对象  Element方法
+    //cloneNode()  参数布尔类型  返回Node对象   Element方法
+    tmpNode.appendChild(node.cloneNode(true));
+    var str = tmpNode.innerHTML;
+    tmpNode = node = null; // prevent memory leaks in IE
+    return str;
 }
 
 // 填充部门下拉列表
@@ -223,14 +259,13 @@ function uploadAttachment() {
     layui.use(['upload'], function () {
         var $ = layui.$,
             upload = layui.upload;
-
         var fileListView = $('#fileList')
             ,uploadListIns = upload.render({
             elem: '#attachment'
             ,url: '/office_automation/public/attachment'
             ,auto: false
             ,multiple: true
-            ,size: 102400            // 单位 KB，最大 50MB
+            ,size: 102400            // 单位 KB，最大 100MB
             ,accept: 'file'
             ,bindAction: '#start_upload'
             ,choose: function(obj){
@@ -266,7 +301,6 @@ function uploadAttachment() {
                             $("#start_upload").attr("disabled", true);
                         }
                     });
-
                     fileListView.append(tr);
                 });
             }
