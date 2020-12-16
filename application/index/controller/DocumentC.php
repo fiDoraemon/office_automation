@@ -87,15 +87,15 @@ class DocumentC
     public function getAllDocFile($limit = 15, $page = 1)
     {
         $docFile = new DocFile();
-        $projectId = input('get.projectId');
+        $projectCode = input('get.projectCode');
         $projectStage = input('get.projectStage');
         $uploader = input('get.uploader');
         $keyword = input('get.keyword');
         // 查询文件总数
         $docFile->alias('df')->where("status", 1);
         // 项目代号
-        if($projectId) {
-            $docFile->where('project_id', $projectId);
+        if($projectCode) {
+            $docFile->where('df.project_id', $projectCode);
         }
         // 项目阶段
         if($projectStage) {
@@ -115,8 +115,8 @@ class DocumentC
             ->join('oa_attachment a', $condition2)->count();
         // 查询文件条目
         $docFile->alias('df')->where("status", 1);
-        if($projectId) {
-          $docFile->where('project_id', $projectId);
+        if($projectCode) {
+          $docFile->where('df.project_id', $projectCode);
         }
         if($projectStage) {
             $docFile->where("project_stage", "like", "$projectStage%");
@@ -667,7 +667,7 @@ class DocumentC
                 $approver = User::get(['user_id' => $fields['approver']]);
                 $applicant = User::get(['user_id' => $sessionUserId]);
                 $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-                $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestId=' . $docUpgradeRequest->request_id;
+                $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestType=1&requestId=' . $docUpgradeRequest->request_id;
                 $data = DataEnum::$msgData;
                 $data['userList'] = $approver->dd_userid;
                 $templet = '▪ 申请人：' . $applicant->user_name . "\n";
@@ -872,10 +872,10 @@ class DocumentC
             $attachment = $attachmentModel->where('attachment_type', 'doc_upgrade')
                 ->where('related_id', $docUpgradeRequest->request_id)->find();
             // 发送钉钉消息
-            $approver = User::get($sessionUserId);
-            $applicant = User::get($docUpgradeRequest->applicant_id);
+            $approver = User::get(['user_id' => $sessionUserId]);
+            $applicant = User::get(['user_id' => $docUpgradeRequest->applicant_id]);
             $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-            $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestId=' . $docUpgradeRequest->request_id;
+            $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestType=1&requestId=' . $docUpgradeRequest->request_id;
             $data = DataEnum::$msgData;
             $data['userList'] = $applicant->dd_userid;
             $templet = '▪ 处理人：' . $approver->user_name . "\n";
@@ -1013,45 +1013,45 @@ class DocumentC
     /**
      * 查询我借阅的文档
      */
-    public function getMyBorrow(){
-        $info   = Session::get("info");
-        $userId = $info["user_id"];
-        $docBorrow = new DocBorrow();
-        $requsetIdList = $docBorrow -> where("user_id",$userId)
-                                 -> where("effective_time", ">" , date('Y-m-d H:i:s', time()))
-                                 -> column("request_id");
-        $docFile = new DocFile();
-        $fileList = $docFile -> where("status", 1)
-                             -> where("request_id" ,"in", $requsetIdList)
-                             -> field("request_id,file_code,save_name,source_name,upload_time,path")
-                             -> order("upload_time","desc")
-                             -> select();
-        foreach ($fileList as $file){
-            $file -> author = $file -> request -> requestUser -> user_name;
-            $file -> project = $file -> request -> projectCode -> project_code;
-            $file -> stage = $file -> request -> stage;
-            $file -> remark = $file -> request -> remark;
-            unset($file -> request);
-        }
-        return Result::returnResult(Result::SUCCESS,$fileList);
-    }
+//    public function getMyBorrow(){
+//        $info   = Session::get("info");
+//        $userId = $info["user_id"];
+//        $docBorrow = new DocBorrow();
+//        $requsetIdList = $docBorrow -> where("user_id",$userId)
+//                                 -> where("effective_time", ">" , date('Y-m-d H:i:s', time()))
+//                                 -> column("request_id");
+//        $docFile = new DocFile();
+//        $fileList = $docFile -> where("status", 1)
+//                             -> where("request_id" ,"in", $requsetIdList)
+//                             -> field("request_id,file_code,save_name,source_name,upload_time,path")
+//                             -> order("upload_time","desc")
+//                             -> select();
+//        foreach ($fileList as $file){
+//            $file -> author = $file -> request -> requestUser -> user_name;
+//            $file -> project = $file -> request -> projectCode -> project_code;
+//            $file -> stage = $file -> request -> stage;
+//            $file -> remark = $file -> request -> remark;
+//            unset($file -> request);
+//        }
+//        return Result::returnResult(Result::SUCCESS,$fileList);
+//    }
 
     /**
      * 获取所有的文档审批申请
      */
-    public function getAllApproval(){
-        $docBorrow = new DocBorrow();
-        $approvalList = $docBorrow -> where("effective_time", null)
-                                   -> field("id,request_id,user_id,request_time")
-                                   -> select();
-        foreach ($approvalList as $approval){
-            $approval -> code      = $approval -> docFile -> file_code;
-            $approval -> name      = $approval -> docFile -> source_name;
-            $approval -> user_name = $approval -> user    -> user_name;
-            unset( $approval -> docFile, $approval -> user);
-        }
-        return Result::returnResult(Result::SUCCESS,$approvalList);
-    }
+//    public function getAllApproval(){
+//        $docBorrow = new DocBorrow();
+//        $approvalList = $docBorrow -> where("effective_time", null)
+//                                   -> field("id,request_id,user_id,request_time")
+//                                   -> select();
+//        foreach ($approvalList as $approval){
+//            $approval -> code      = $approval -> docFile -> file_code;
+//            $approval -> name      = $approval -> docFile -> source_name;
+//            $approval -> user_name = $approval -> user    -> user_name;
+//            unset( $approval -> docFile, $approval -> user);
+//        }
+//        return Result::returnResult(Result::SUCCESS,$approvalList);
+//    }
 
     /**
      * 获取所有的审批人
