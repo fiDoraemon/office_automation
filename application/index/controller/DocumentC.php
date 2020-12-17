@@ -301,7 +301,8 @@ class DocumentC
             $data = [
                 'requestDetail' => $requestDetail,
                 'isApprover' => $isApprover,
-                'secondApproverList' => $secondApproverList
+                'secondApproverList' => $secondApproverList,
+                'isFirstApprover' =>  DocumentService::isFirstApprover($docUpgradeRequest->applicant_id)
             ];
         } else {
             // 获取借阅申请详情
@@ -322,7 +323,6 @@ class DocumentC
             $data = [
                 'requestDetail' => $requestDetail,
                 'isDocAdmin' => $this->isDocAdmin(),         // 判断当前用户是否是文控
-                'isFirstApprover' =>  DocumentService::isFirstApprover($requestDetail->applicant_id)
             ];
         }
 
