@@ -1298,7 +1298,7 @@ class DocumentC
         $requestName = Session::get("info")["user_name"];
         $templet  = '▪ 申请人：'   . $requestName . "\n";
         $templet .= '▪ 借阅文档编码：' .  $docBorrowRequest -> docFile -> file_code . "\n";
-        $templet .= '▪ 借阅文档名称：' .  DocumentService::getFileName($docBorrowRequest->file_id, $docBorrowRequest->version) . '(第' . $docBorrowRequest->version . '版)' . "\n";
+        $templet .= '▪ 借阅文档名称：' .  DocumentService::getFileAttachment($docBorrowRequest->file_id, $docBorrowRequest->version) . '(第' . $docBorrowRequest->version . '版)' . "\n";
         $templet .= '▪ 链接：' . $url;
         $message  = '◉ ' . '您有文档借阅申请(#' . $borrowId . ')待处理！' . "\n" . $templet;
         $data['data']['content'] = $message;
@@ -1319,7 +1319,7 @@ class DocumentC
         $requestName = Session::get("info")["user_name"];
         $templet = '▪ 审批人：' . $requestName . "\n";
         $templet .= '▪ 借阅文档编码：' . $docBorrowRequest->docFile->file_code . "\n";
-        $templet .= '▪ 借阅文档名称：' . DocumentService::getFileName($docBorrowRequest->file_id, $docBorrowRequest->version) . '(第' . $docBorrowRequest->version . '版)' . "\n";
+        $templet .= '▪ 借阅文档名称：' . DocumentService::getFileAttachment($docBorrowRequest->file_id, $docBorrowRequest->version) . '(第' . $docBorrowRequest->version . '版)' . "\n";
         $message = '◉ ' . '您的文档借阅申请(#' . $borrowId . ')已通过！' . "\n" . $templet;
         $data['data']['content'] = $message;
         $result = curlUtil::post($postUrl, $data);
