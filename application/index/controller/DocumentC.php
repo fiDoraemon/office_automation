@@ -1312,7 +1312,7 @@ class DocumentC
     private function passBorrowMsg($borrowId)
     {
         $docBorrowRequest = DocBorrowRequest::get($borrowId);
-        $userDDid = User::where('user_id', $docBorrowRequest->user_id)->value('dd_userid');
+        $userDDid = User::where('user_id', $docBorrowRequest->applicant_id)->value('dd_userid');
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
         $data = DataEnum::$msgData;
         $data['userList'] = $userDDid;
@@ -1331,7 +1331,7 @@ class DocumentC
      */
     private function noPassBorrowMsg($borrowId){
         $docBorrowRequest = DocBorrowRequest::get($borrowId);
-        $userDDid = User::where('user_id',$docBorrowRequest -> user_id) -> value('dd_userid');
+        $userDDid = User::where('user_id',$docBorrowRequest -> applicant_id) -> value('dd_userid');
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
         $data = DataEnum::$msgData;
         $data['userList'] = $userDDid;
