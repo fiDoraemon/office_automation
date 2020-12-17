@@ -403,10 +403,6 @@ class DocumentC
                 ->field('dur.request_id,u.user_name as applicant,u2.user_name as approver,dur.description,dur.version,dur.request_time,dur.status,p.project_code,df.project_stage')
                 ->select();
         } else {
-            // 如果不是文控
-            if(!$this->isDocAdmin()) {
-                return Result::returnResult(Result::SUCCESS, []);
-            }
             $docBorrowRequest = new DocBorrowRequest();
             // 获取总数
             $condition = 'df.file_id = dbr.file_id';
@@ -418,6 +414,15 @@ class DocumentC
             }
             if($keyword) {
                 $condition .= " and df.description like '%$keyword%'";
+            }
+            if(!$personType) {
+                $docBorrowRequest->where("applicant_id", $sessionUserId);
+            } else {
+                $docBorrowRequest->where("approver_id", $sessionUserId);
+                // 如果是文控
+                if($this->isDocAdmin()) {
+                    $docBorrowRequest->whereOr("approver_id", '');
+                }
             }
             $count = $docBorrowRequest->alias('dbr')->join('oa_doc_file df', $condition)->count();
             // 获取申请条目
@@ -431,14 +436,31 @@ class DocumentC
             if($keyword) {
                 $condition .= " and df.description like '%$keyword%'";
             }
+            if(!$personType) {
+                $docBorrowRequest->where("applicant_id", $sessionUserId);
+            } else {
+                $docBorrowRequest->where("approver_id", $sessionUserId);
+                // 如果是文控
+                if($this->isDocAdmin()) {
+                    $docBorrowRequest->whereOr("approver_id", '');
+                }
+            }
             $listRequest = $docBorrowRequest->alias('dbr')->join('oa_doc_file df', $condition)
                 ->join('oa_project p', 'p.project_id = df.project_id')
                 ->join('oa_user u', 'u.user_id = dbr.applicant_id')
-                ->join('oa_user u2', 'u2.user_id = dbr.approver_id')
+//                ->join('oa_user u2', 'u2.user_id = dbr.approver_id')          审批人可以为空
                 ->order('request_time', 'desc')
                 ->page($page, $limit)
-                ->field('dbr.request_id,u.user_name as applicant,u2.user_name as approver,df.description,dbr.version,dbr.request_time,dbr.status,p.project_code,df.project_stage')
+                ->field('dbr.request_id,u.user_name as applicant,dbr.approver_id,df.description,dbr.version,dbr.request_time,dbr.status,p.project_code,df.project_stage')
                 ->select();
+            foreach ($listRequest as $request) {
+                if($request->approver_id == '') {
+                    $request->approver = '';
+                } else {
+                    $request->approver = UserService::userIdToName($request->approver_id);
+                }
+                unset($request->approver_id);
+            }
         }
 
         return Result::returnResult(Result::SUCCESS, $listRequest, $count);
