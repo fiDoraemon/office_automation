@@ -1310,6 +1310,7 @@ class DocumentC
      */
     private function sendBorrowMessage($borrowId){
         $docBorrowRequest = DocBorrowRequest::get($borrowId);
+        $attachment = DocumentService::getFileAttachment($docBorrowRequest->file_id, $docBorrowRequest->version);
         $userIdList = UserRole::where('role_id',1) -> column('user_id');
         $DDidList = User::where('user_id','in',$userIdList) -> column('dd_userid');
         $DDidList = implode(',',$DDidList);
@@ -1320,7 +1321,7 @@ class DocumentC
         $requestName = Session::get("info")["user_name"];
         $templet  = '▪ 申请人：'   . $requestName . "\n";
         $templet .= '▪ 借阅文档编码：' .  $docBorrowRequest -> docFile -> file_code . "\n";
-        $templet .= '▪ 借阅文档名称：' .  DocumentService::getFileAttachment($docBorrowRequest->file_id, $docBorrowRequest->version) . '(第' . $docBorrowRequest->version . '版)' . "\n";
+        $templet .= '▪ 借阅文档名称：' .  $attachment->source_name . '(第' . $docBorrowRequest->version . '版)' . "\n";
         $templet .= '▪ 链接：' . $url;
         $message  = '◉ ' . '您有文档借阅申请(#' . $borrowId . ')待处理！' . "\n" . $templet;
         $data['data']['content'] = $message;
@@ -1334,6 +1335,7 @@ class DocumentC
     private function passBorrowMsg($borrowId)
     {
         $docBorrowRequest = DocBorrowRequest::get($borrowId);
+        $attachment = DocumentService::getFileAttachment($docBorrowRequest->file_id, $docBorrowRequest->version);
         $userDDid = User::where('user_id', $docBorrowRequest->applicant_id)->value('dd_userid');
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
         $data = DataEnum::$msgData;
@@ -1341,7 +1343,7 @@ class DocumentC
         $requestName = Session::get("info")["user_name"];
         $templet = '▪ 审批人：' . $requestName . "\n";
         $templet .= '▪ 借阅文档编码：' . $docBorrowRequest->docFile->file_code . "\n";
-        $templet .= '▪ 借阅文档名称：' . DocumentService::getFileAttachment($docBorrowRequest->file_id, $docBorrowRequest->version) . '(第' . $docBorrowRequest->version . '版)' . "\n";
+        $templet .= '▪ 借阅文档名称：' . $attachment->source_name . '(第' . $docBorrowRequest->version . '版)' . "\n";
         $message = '◉ ' . '您的文档借阅申请(#' . $borrowId . ')已通过！' . "\n" . $templet;
         $data['data']['content'] = $message;
         $result = curlUtil::post($postUrl, $data);
@@ -1353,6 +1355,7 @@ class DocumentC
      */
     private function noPassBorrowMsg($borrowId){
         $docBorrowRequest = DocBorrowRequest::get($borrowId);
+        $attachment = DocumentService::getFileAttachment($docBorrowRequest->file_id, $docBorrowRequest->version);
         $userDDid = User::where('user_id',$docBorrowRequest -> applicant_id) -> value('dd_userid');
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
         $data = DataEnum::$msgData;
@@ -1360,7 +1363,7 @@ class DocumentC
         $requestName = Session::get("info")["user_name"];
         $templet  = '▪ 审批人：'   . $requestName . "\n";
         $templet .= '▪ 借阅文档编码：' .  $docBorrowRequest -> docFile -> file_code . "\n";
-        $templet .= '▪ 借阅文档名称：' . DocumentService::getFileAttachment($docBorrowRequest->file_id, $docBorrowRequest->version) . '(第' . $docBorrowRequest->version . '版)' . "\n";
+        $templet .= '▪ 借阅文档名称：' . $attachment->source_name . '(第' . $docBorrowRequest->version . '版)' . "\n";
         $message  = '◉ ' . '您的文档借阅申请(#' . $borrowId . ')已被驳回！' . "\n" . $templet;
         $data['data']['content'] = $message;
         $result = curlUtil::post($postUrl, $data);
