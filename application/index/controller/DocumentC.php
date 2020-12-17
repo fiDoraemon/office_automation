@@ -1424,10 +1424,14 @@ class DocumentC
      * 获取升版申请页面所需信息
      */
     public function createUpVersion($fileId) {
+        $sessionUserId = Session::get('info')['user_id'];
         $docFile = DocFile::get($fileId);
-        // 获取文档审批人列表
-        $userRole = new UserRole();
-        $approverList = $userRole->alias('ur')->where('role_id', 2)->join('oa_user u', 'u.user_id = ur.user_id')->field('u.user_id,u.user_name')->select();
+        // 如果当前用户是一级审批人
+        if(DocumentService::isFirstApprover($sessionUserId) || DocumentService::isSecondApprover($sessionUserId)) {
+            $approverList = DocumentService::getAllSecondApprover();
+        } else {
+            $approverList = DocumentService::getAllFirstApprover();
+        }
 
         $data = [
             'approverList' => $approverList,

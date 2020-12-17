@@ -10,6 +10,7 @@ namespace app\index\service;
 
 use app\common\util\curlUtil;
 use app\index\common\DataEnum;
+use app\index\model\Attachment;
 use app\index\model\DocBorrowRequest;
 use app\index\model\DocFile;
 use app\index\model\DocFileVersion;
@@ -196,7 +197,7 @@ class DocumentService
             $data['userList'] = $applicant->dd_userid;
             $templet = '▪ 处理人：' . $approver->user_name . "\n";
             $templet .= '▪ 处理意见：' . $docUpgradeRequest->process_opinion . "\n";
-            $templet .= '▪ 文档名称：' . $sourceName . '(第' . $docUpgradeRequest->version . '版)' . "\n";
+            $templet .= '▪ 文档名称：' . $attachment->source_name . '(第' . $docUpgradeRequest->version . '版)' . "\n";
             $templet .= '▪ 链接：' . $url;
             $message = '◉ ' . '您的文档升版申请(#' . $docUpgradeRequest->request_id . ')被驳回' . "\n" . $templet;
             $data['data']['content'] = $message;
