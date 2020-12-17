@@ -98,9 +98,17 @@
                 <legend>审批</legend>
             </fieldset>
             <div class="layui-form-item layui-form-text">
-                <label class="layui-form-label required">审批意见</label>
+                <label class="layui-form-label">审批意见</label>
                 <div class="layui-input-block">
-                    <textarea name="process_opinion" id="process_opinion" lay-verify="required" placeholder="请输入意见" class="layui-textarea"></textarea>
+                    <textarea name="process_opinion" id="process_opinion" placeholder="请输入处理意见" class="layui-textarea"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item" id="next-approver">
+                <label class="layui-form-label required">二级审批人</label>
+                <div class="layui-input-inline">
+                    <select name="next_approver" id="next_approver">
+                        <option value="">--请选择审批人--</option>
+                    </select>
                 </div>
             </div>
             <div class="layui-form-item" id="approver-time">
@@ -114,7 +122,7 @@
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label">审批状态</label>
+                <label class="layui-form-label">当前状态</label>
                 <div class="layui-input-block" id="status"></div>
             </div>
             <div class="layui-form-item" id="form-btn" style="margin: 50px 0 50px 150px;">
@@ -148,21 +156,30 @@
                 },
                 success: function(res){
                     if(res.code == 0){
-                        var data = res.data;
+                        var requestDetail = res.data.requestDetail;
+                        var secondApproverList = res.data.secondApproverList;
+                        // 填充二级审批人下拉列表
+                        var element = '';
+                        for (var i in secondApproverList) {
+                            element += `<option value="${secondApproverList[i]['user_id']}">${secondApproverList[i]['user_name']}</option>`
+                        }
+                        $('#next_approver').append(element);
+                        form.render('select');
                         if(type == 0) {
+                            var isFirstApprover = res.data.isFirstApprover;
                             form.val("setValue", {
-                                "project_code": data.project_code,
-                                "project_stage": data.project_stage,
-                                "applicant": data.applicant_name,
-                                "approver": data.approver_name,
-                                "request_time": data.request_time,
-                                "description": data.description,
+                                "project_code": requestDetail.project_code,
+                                "project_stage": requestDetail.project_stage,
+                                "applicant": requestDetail.applicant_name,
+                                "approver": requestDetail.approver_name,
+                                "request_time": requestDetail.request_time,
+                                "description": requestDetail.description,
                                 'version': '1.0',
-                                "process_opinion": data.process_opinion,
-                                "process_time": data.process_time,
+                                "process_opinion": requestDetail.process_opinion,
+                                "process_time": requestDetail.process_time,
                             });
                             // 填充附件列表
-                            var attachmentList = data.attachments;
+                            var attachmentList = requestDetail.attachments;
                             var element = '';
                             for (i in attachmentList) {
                                 var size = getfilesize(attachmentList[i].file_size);
@@ -177,25 +194,35 @@
                             </tr>`;
                             }
                             $('#fileList').append(element);
-                            if (data.status == 0) {
-                                $("#status").append('<span style=\"color:#01AAED;font-size: 25px\">待审批</span>');
-                                $("#approver-time").hide();
-                                if (data.isAuthor == 0) {
-                                    $("#form-btn").remove();
+                            // 根据请求状态反应
+                            if (requestDetail.status == 0) {
+                                $("#status").append('<span style=\"font-size: 25px\">待审批</span>');
+                                $("#approver-time").hide();         // 移除审批人及审批时间显示
+                                if(isFirstApprover) {
+                                    $('#next-approver').hide();         // 移除二级下拉选择
+                                } else {
+                                    $('#next_approver').attr('lay-verify', 'required');         // 增加二级选择框必需参数
                                 }
-                            } else if (data.status == 1) {
+                            } else if (requestDetail.status == 1) {
+                                $("#status").append('<span style=\"color:#01AAED;font-size: 25px\">一级通过</span>');
+                                $('#next-approver').hide();
+                                $("#approver-time").hide();
+                            } else if (requestDetail.status == 2) {
                                 $("#status").append('<span style="color:#009688;font-size: 25px">已通过</span>');
+                                $('#next-approver').hide();
+                                $(".download-btn").remove();            // 移除文档下载按钮
+                                $("#form-btn").remove();            // 移除提交按钮
+                                $("#process_opinion").attr("disabled", true);           // 禁用意见输入框
                             } else {
                                 $("#status").append('<span style="color:#FF5722;font-size: 25px">已驳回</span>');
-                            }
-                            if(data.status != 0) {
+                                $('#next-approver').hide();
                                 $(".download-btn").remove();
-                                $("#process_opinion").attr("disabled", true);
                                 $("#form-btn").remove();
+                                $("#process_opinion").attr("disabled", true);
                             }
                         } else if(type == 1) {
-                            var requestDetail= res.data.requestDetail;
                             var isApprover = res.data.isApprover;
+                            var isFirstApprover = res.data.isFirstApprover;
                             form.val("setValue", {
                                 "project_code": requestDetail.project_code,
                                 "project_stage": requestDetail.project_stage,
@@ -220,24 +247,33 @@
                                 </td>
                             </tr>`;
                             $('#fileList').append(element);
+                            // 根据请求状态反应
                             if (requestDetail.status == 0) {
-                                $("#status").append('<span style=\"color:#01AAED;font-size: 25px\" >待审批</span>');
-                                $("#approver-time").hide();
-                                if (isApprover == 0) {
-                                    $("#form-btn").remove();
+                                $("#status").append('<span style=\"font-size: 25px\">待审批</span>');
+                                $("#approver-time").hide();         // 移除审批人及审批时间显示
+                                if(isFirstApprover) {
+                                    $('#next-approver').hide();         // 移除二级下拉选择
+                                } else {
+                                    $('#next_approver').attr('lay-verify', 'required');         // 增加二级选择框必需参数
                                 }
                             } else if (requestDetail.status == 1) {
-                                $("#status").append('<span style="color:#009688;font-size: 25px" >已通过</span>');
+                                $("#status").append('<span style=\"color:#01AAED;font-size: 25px\">一级通过</span>');
+                                $('#next-approver').hide();         // 移除二级下拉选择
+                                $("#approver-time").hide();
+                            } else if (requestDetail.status == 2) {
+                                $("#status").append('<span style="color:#009688;font-size: 25px">已通过</span>');
+                                $('#next-approver').hide();
+                                $(".download-btn").remove();            // 移除文档下载按钮
+                                $("#form-btn").remove();            // 移除提交按钮
+                                $("#process_opinion").attr("disabled", true);           // 禁用意见输入框
                             } else {
-                                $("#status").append('<span style="color:#FF5722;font-size: 25px" >已驳回</span>');
-                            }
-                            if(requestDetail.status != 0) {
+                                $("#status").append('<span style="color:#FF5722;font-size: 25px">已驳回</span>');
+                                $('#next-approver').hide();
                                 $(".download-btn").remove();
-                                $("#process_opinion").attr("disabled", true);
                                 $("#form-btn").remove();
+                                $("#process_opinion").attr("disabled", true);
                             }
                         } else {
-                            var requestDetail= res.data.requestDetail;
                             var isDocAdmin = res.data.isDocAdmin;
                             form.val("setValue", {
                                 "project_code": requestDetail.project_code,
@@ -266,20 +302,36 @@
                             if (requestDetail.status == 0) {
                                 $("#status").append('<span style=\"color:#01AAED;font-size: 25px\" >待审批</span>');
                                 $("#approver-time").hide();
-                                if (isDocAdmin == false) {
-                                    $("#form-btn").remove();
-                                }
+                                // if (isDocAdmin == false) {
+                                //     $("#form-btn").remove();
+                                // }
                             } else if (requestDetail.status == 1) {
                                 $("#status").append('<span style="color:#009688;font-size: 25px" >已通过</span>');
+                                $(".download-btn").remove();
+                                $("#process_opinion").attr("disabled", true);
+                                $("#form-btn").remove();
                             } else {
                                 $("#status").append('<span style="color:#FF5722;font-size: 25px" >已驳回</span>');
-                            }
-                            if(requestDetail.status != 0) {
                                 $(".download-btn").remove();
                                 $("#process_opinion").attr("disabled", true);
                                 $("#form-btn").remove();
                             }
+                            $('#next-approver').hide();         // 移除二级下拉选择
                         }
+                    } else {
+                        layer.open({
+                            type: 0,
+                            title: '提示',
+                            content: res.msg,
+                            icon: 5,
+                            anim: 6,
+                            yes: function(index, layero){
+                                return false;
+                            },
+                            cancel: function(index, layero){
+                                return false;
+                            }
+                        });
                     }
                     layer.close(index);
                 }
@@ -298,7 +350,8 @@
                     data: {
                         requestId: requestId,
                         type: type,
-                        processOpinion: result.process_opinion
+                        processOpinion: result.process_opinion,
+                        nextApprover: result.next_approver
                     },
                     success: function (res) {
                         layer.close(index);

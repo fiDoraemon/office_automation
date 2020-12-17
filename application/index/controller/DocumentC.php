@@ -40,19 +40,29 @@ use think\Session;
 class DocumentC
 {
     /**
-     * 查询所有所属项目、审批人
+     * 查询所有项目代号、审批人
      * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
-    public function getProCodeAndReviewer(){
-        //查询项目代号类型
-        $listCodes = $this -> getProjectCode();
-        //查询所有评审人
-        $listReviewer =  $this ->getAllReviewer();
-        $resultArray = [
-            "projectCodes"   => $listCodes,          //项目类型
-            "reviewer"       => $listReviewer          //审批人
+    public function createDocRequest()
+    {
+        $sessionUserId = Session::get('info')['user_id'];
+        // 查询所有项目代号
+        $listCodes = $this->getProjectCode();
+        // 如果当前用户是一级审批人
+        if(DocumentService::isFirstApprover($sessionUserId) || DocumentService::isSecondApprover($sessionUserId)) {
+            $listApprover = DocumentService::getAllSecondApprover();
+        } else {
+            $listApprover = DocumentService::getAllFirstApprover();
+        }
+        $data = [
+            "projectCodes" => $listCodes,          //项目类型
+            "approvers" => $listApprover          //审批人
         ];
-        return Result::returnResult(Result::SUCCESS,$resultArray);
+
+        return Result::returnResult(Result::SUCCESS, $data);
     }
 
     /**
@@ -226,39 +236,55 @@ class DocumentC
     /**
      * 查询发起的申请信息
      * @param $requestId
-     * @param $type 0归档申请，1升版申请，2借阅申请
+     * @param $type
      * @return array
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
+     * @throws \think\Exception
      */
     public function getRequestInfo($requestId, $type){
         $sessionUserId = Session::get("info")["user_id"];
-        if($type == 0) {
+        if ($type == 0) {
             $docRequest = new DocRequest();
-            $req = $docRequest -> where("request_id", $requestId)
-                -> field("request_id,applicant_id,approver_id,project_id,project_stage,description,process_opinion,request_time,process_time,status")
-                -> find();
-            $req -> requestUser;
-            $req -> approverUser;
-            $req -> projectCode;
-            $req -> projectStage;
-            $req -> applicant_name = $req -> requestUser -> user_name;
-            $req -> approver_name = $req -> approverUser -> user_name;
-            $req -> project_code = $req -> projectCode -> project_code;
+
+            $req = $docRequest->where("request_id", $requestId)
+                ->field("request_id,applicant_id,approver_id,project_id,project_stage,description,process_opinion,request_time,process_time,status")
+                ->find();
+
+            if($sessionUserId != $req->applicant_id && $sessionUserId != $req->approver_id) {
+                return Result::returnResult(Result::NO_ACCESS);
+            }
+            $req->requestUser;
+            $req->approverUser;
+            $req->projectCode;
+            $req->projectStage;
+            $req->applicant_name = $req->requestUser->user_name;
+            $req->approver_name = $req->approverUser->user_name;
+            $req->project_code = $req->projectCode->project_code;
 //        $req -> project_stage = $req -> projectStage -> stage_name;
             //关联多个附件
-            $req -> attachments;
-            if(($sessionUserId === $req -> approver_id) && ($req -> status === 0) ){
-                $req -> isAuthor = 1;
-            }else{
-                $req -> isAuthor = 0;
-            }
-            unset($req -> requestUser,$req -> approverUser,$req -> projectCode, $req -> projectStage,$req -> approver_id);
-            return Result::returnResult(Result::SUCCESS, $req);
+            $req->attachments;
+//            if (($sessionUserId === $req->approver_id) && ($req->status === 0)) {
+//                $req->isAuthor = 1;
+//            } else {
+//                $req->isAuthor = 0;
+//            }
+            $req->isApprover = ($sessionUserId == $req->approver_id)? 1 : 0;
+            unset($req->requestUser, $req->approverUser, $req->projectCode, $req->projectStage, $req->approver_id);
+            // 获取所有二级审批人
+            $secondApproverList = DocumentService::getAllSecondApprover();
+            $data = [
+                'requestDetail' => $req,
+                'secondApproverList' => $secondApproverList,
+                'isFirstApprover' =>  DocumentService::isFirstApprover($req->applicant_id)
+            ];
         } else if($type == 1){
             // 获取升版申请详情
             $docUpgradeRequest = DocUpgradeRequest::get($requestId);
+            if($sessionUserId != $docUpgradeRequest->applicant_id && $sessionUserId != $docUpgradeRequest->approver_id) {
+                return Result::returnResult(Result::NO_ACCESS);
+            }
             // 获取项目代号和项目阶段
             $docFile = new DocFile();
             $file = $docFile->alias('df')->where('file_id', $docUpgradeRequest->file_id)->join('oa_project p', 'p.project_id = df.project_id')->field('project_code,project_stage')->find();
@@ -270,15 +296,19 @@ class DocumentC
             $requestDetail = $docUpgradeRequest->hidden(['file_id','applicant_id','approver_id'])->toArray();
             // 判断当前用户是否是升版审批人
             $isApprover = ($docUpgradeRequest->approver_id == $sessionUserId)? 1 : 0;
+            // 获取所有二级审批人
+            $secondApproverList = DocumentService::getAllSecondApprover();
             $data = [
                 'requestDetail' => $requestDetail,
-                'isApprover' => $isApprover
+                'isApprover' => $isApprover,
+                'secondApproverList' => $secondApproverList
             ];
-
-            return Result::returnResult(Result::SUCCESS, $data);
         } else {
             // 获取借阅申请详情
             $docBorrowRequest = DocBorrowRequest::get($requestId);
+            if($sessionUserId != $docBorrowRequest->applicant_id && !DocumentService::isDocAdmin()) {
+                return Result::returnResult(Result::NO_ACCESS);
+            }
             // 获取项目代号和项目阶段
             $docFile = new DocFile();
             $file = $docFile->alias('df')->where('file_id', $docBorrowRequest->file_id)->join('oa_project p', 'p.project_id = df.project_id')->field('df.description,project_code,project_stage')->find();
@@ -291,11 +321,12 @@ class DocumentC
             $requestDetail = $docBorrowRequest->hidden(['file_id','applicant_id','approver_id'])->toArray();
             $data = [
                 'requestDetail' => $requestDetail,
-                'isDocAdmin' => $this->isDocAdmin()         // 判断当前用户是否是文控
+                'isDocAdmin' => $this->isDocAdmin(),         // 判断当前用户是否是文控
+                'isFirstApprover' =>  DocumentService::isFirstApprover($requestDetail->applicant_id)
             ];
-
-            return Result::returnResult(Result::SUCCESS, $data);
         }
+
+        return Result::returnResult(Result::SUCCESS, $data);
     }
 
     /**
@@ -678,6 +709,7 @@ class DocumentC
                     'file_id' => $fields['fileId'],
                     'version' => $docFile->version + 1,
                     'description' => $fields['description'],
+                    'request_time' => date('Y-m-d H:i:s', time())
                 ]);
                 $docUpgradeRequest->save();
                 // 关联附件
@@ -744,6 +776,7 @@ class DocumentC
         $requestId = input('post.requestId');
         $type = input('post.type');
         $processOpinion = input('post.processOpinion');
+        $nextApprover = input('post.nextApprover');
 
         if($type == 0) {
             $docRequest = DocRequest::get($requestId);
@@ -752,10 +785,20 @@ class DocumentC
                 return Result::returnResult(Result::NOT_MODIFY_PERMISSION);
             }
             // 修改申请信息
-            $docRequest->process_opinion = $processOpinion;
-            $docRequest->process_time = date('Y-m-d H:i:s', time());
-            $docRequest->status = 1;
-            $docRequest->save();
+            // 如果状态为待审批且不是一级审批人的话则需要二级审批
+            if($docRequest->status == 0 && !DocumentService::isFirstApprover($docRequest->applicant_id)) {
+                    $docRequest->approver_id = $nextApprover;
+                    $docRequest->status = 1;
+                    $docRequest->process_opinion = $processOpinion;
+                    $docRequest->save();
+                    // 发送钉钉消息给新的审批人
+                    $this->sendRequestMessage($docRequest);
+                    return Result::returnResult(Result::SUCCESS);
+            } else {
+                $docRequest->process_opinion = $processOpinion;
+                $docRequest->status = 2;
+                $docRequest->save();
+            }
             // 处理附件列表
             $fileList = $docRequest->attachments;
             foreach ($fileList as $file) {
@@ -799,15 +842,24 @@ class DocumentC
         } else if($type == 1){
             $docUpgradeRequest = DocUpgradeRequest::get($requestId);
             $docFile = DocFile::get($docUpgradeRequest->file_id);
+            // 修改申请信息
+            if($docUpgradeRequest->status == 0 && !DocumentService::isFirstApprover($docUpgradeRequest->applicant_id)) {
+                $docUpgradeRequest->approver_id = $nextApprover;
+                $docUpgradeRequest->status = 1;
+                $docUpgradeRequest->process_opinion = $processOpinion;
+                $docUpgradeRequest->save();
+                // 发送钉钉消息给新的审批人
+                DocumentService::sendUpgradeResultMessage(0, $docUpgradeRequest);
+                return Result::returnResult(Result::SUCCESS);
+            } else {
+                $docUpgradeRequest->status = 2;
+                $docUpgradeRequest->process_opinion = $processOpinion;
+                $docUpgradeRequest->save();
+            }
             // 查询附件
             $attachmentModel = new Attachment();
             $attachment = $attachmentModel->where('attachment_type', 'doc_upgrade')
                 ->where('related_id', $docUpgradeRequest->request_id)->find();
-            // 修改申请信息
-            $docUpgradeRequest->status = 1;
-            $docUpgradeRequest->process_opinion = $processOpinion;
-            $docUpgradeRequest->process_time = date('Y-m-d H:i:s', time());
-            $docUpgradeRequest->save();
             // 增加文档版本信息
             $docFileVersion = new DocFileVersion();
             $docFileVersion->data([
@@ -829,25 +881,26 @@ class DocumentC
             $attachment->save_path = $newPath;
             $attachment->save();
             // 发送钉钉消息
-            $approver = User::get(['user_id' => $sessionUserId]);
-            $applicant = User::get(['user_id' => $docUpgradeRequest->applicant_id]);
-            $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-            $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestType=1&requestId=' . $docUpgradeRequest->request_id;
-            $data = DataEnum::$msgData;
-            $data['userList'] = $applicant->dd_userid;
-            $templet = '▪ 处理人：' . $approver->user_name . "\n";
-            $templet .= '▪ 处理意见：' . $processOpinion . "\n";
-            $templet .= '▪ 文档名称：' . $attachment->source_name . '(第' . $docUpgradeRequest->version . '版)' . "\n";
-            $templet .= '▪ 链接：' . $url;
-            $message = '◉ ' . '您的文档升版申请(#' . $docUpgradeRequest->request_id . ')已通过' . "\n" . $templet;
-            $data['data']['content'] = $message;
-            $result = curlUtil::post($postUrl, $data);
+            DocumentService::sendUpgradeResultMessage(0, $docUpgradeRequest);
+//            $approver = User::get(['user_id' => $sessionUserId]);
+//            $applicant = User::get(['user_id' => $docUpgradeRequest->applicant_id]);
+//            $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
+//            $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestType=1&requestId=' . $docUpgradeRequest->request_id;
+//            $data = DataEnum::$msgData;
+//            $data['userList'] = $applicant->dd_userid;
+//            $templet = '▪ 处理人：' . $approver->user_name . "\n";
+//            $templet .= '▪ 处理意见：' . $processOpinion . "\n";
+//            $templet .= '▪ 文档名称：' . $attachment->source_name . '(第' . $docUpgradeRequest->version . '版)' . "\n";
+//            $templet .= '▪ 链接：' . $url;
+//            $message = '◉ ' . '您的文档升版申请(#' . $docUpgradeRequest->request_id . ')已通过' . "\n" . $templet;
+//            $data['data']['content'] = $message;
+//            $result = curlUtil::post($postUrl, $data);
         } else {
             // 修改申请信息
             $docBorrowRequest = DocBorrowRequest::get($requestId);
             $docBorrowRequest->data([
                 'approver_id' => $sessionUserId,
-                'status' => 1,
+                'status' => -1,
                 'process_opinion' => $processOpinion,
                 'process_time' => date('Y-m-d H:i:s', time()),
                 'effective_time' => date('Y-m-d H:i:s', time() + 3600 * 24 * 30)   // 借阅有效期一个月
@@ -878,7 +931,7 @@ class DocumentC
             }
             // 修改申请信息
             $docRequest->process_opinion = $processOpinion;
-            $docRequest->status = 2;
+            $docRequest->status = -1;
             $docRequest->process_time = date('y-m-d H:i:s', time());
             $docRequest->save();
             // 发送钉钉消息
@@ -886,27 +939,24 @@ class DocumentC
         } else if ($type == 1) {
             $docUpgradeRequest = DocUpgradeRequest::get($requestId);
             $docUpgradeRequest->process_opinion = $processOpinion;
-            $docUpgradeRequest->status = 2;
+            $docUpgradeRequest->status = -1;
             $docUpgradeRequest->process_time = date('y-m-d H:i:s', time());
             $docUpgradeRequest->save();
-            // 查询附件
-            $attachmentModel = new Attachment();
-            $attachment = $attachmentModel->where('attachment_type', 'doc_upgrade')
-                ->where('related_id', $docUpgradeRequest->request_id)->find();
             // 发送钉钉消息
-            $approver = User::get(['user_id' => $sessionUserId]);
-            $applicant = User::get(['user_id' => $docUpgradeRequest->applicant_id]);
-            $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
-            $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestType=1&requestId=' . $docUpgradeRequest->request_id;
-            $data = DataEnum::$msgData;
-            $data['userList'] = $applicant->dd_userid;
-            $templet = '▪ 处理人：' . $approver->user_name . "\n";
-            $templet .= '▪ 处理意见：' . $processOpinion . "\n";
-            $templet .= '▪ 文档名称：' . $attachment->source_name . '(第' . $docUpgradeRequest->version . '版)' . "\n";
-            $templet .= '▪ 链接：' . $url;
-            $message = '◉ ' . '您的文档升版申请(#' . $docUpgradeRequest->request_id . ')被驳回' . "\n" . $templet;
-            $data['data']['content'] = $message;
-            $result = curlUtil::post($postUrl, $data);
+            DocumentService::sendUpgradeResultMessage(1, $docUpgradeRequest);
+//            $approver = User::get(['user_id' => $sessionUserId]);
+//            $applicant = User::get(['user_id' => $docUpgradeRequest->applicant_id]);
+//            $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
+//            $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestType=1&requestId=' . $docUpgradeRequest->request_id;
+//            $data = DataEnum::$msgData;
+//            $data['userList'] = $applicant->dd_userid;
+//            $templet = '▪ 处理人：' . $approver->user_name . "\n";
+//            $templet .= '▪ 处理意见：' . $processOpinion . "\n";
+//            $templet .= '▪ 文档名称：' . $attachment->source_name . '(第' . $docUpgradeRequest->version . '版)' . "\n";
+//            $templet .= '▪ 链接：' . $url;
+//            $message = '◉ ' . '您的文档升版申请(#' . $docUpgradeRequest->request_id . ')被驳回' . "\n" . $templet;
+//            $data['data']['content'] = $message;
+//            $result = curlUtil::post($postUrl, $data);
         } else {
             // 修改申请信息
             $docBorrowRequest = DocBorrowRequest::get($requestId);
@@ -1078,24 +1128,24 @@ class DocumentC
     /**
      * 获取所有的审批人
      */
-    private function getAllReviewer()
-    {
-        $userRole = new UserRole();
-        try {
-            $listReviewer = $userRole->where("role_id", 2)
-                ->select();
-            foreach ($listReviewer as $review) {
-                $review->user_name = $review->user->user_name;
-                unset($review->user);
-            }
-            return $listReviewer;
-        } catch (DataNotFoundException $e) {
-        } catch (ModelNotFoundException $e) {
-        } catch (DbException $e) {
-        }
-        return null;
-
-    }
+//    private function getAllReviewer()
+//    {
+//        $userRole = new UserRole();
+//        try {
+//            $listReviewer = $userRole->where("role_id", 2)
+//                ->select();
+//            foreach ($listReviewer as $review) {
+//                $review->user_name = $review->user->user_name;
+//                unset($review->user);
+//            }
+//            return $listReviewer;
+//        } catch (DataNotFoundException $e) {
+//        } catch (ModelNotFoundException $e) {
+//        } catch (DbException $e) {
+//        }
+//        return null;
+//
+//    }
 
     /**
      * 查询所有作者信息

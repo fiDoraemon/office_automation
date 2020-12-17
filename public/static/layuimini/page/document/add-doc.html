@@ -128,27 +128,25 @@
         // 渲染上传文件
         uploadAttachment();
 
-        // 获取所需要的查询条件信息
+        // 获取发起归档页面所需信息
         $.ajax({
-            url: "/office_automation/public/index.php/index/document_c/getProCodeAndReviewer",
+            url: "/office_automation/public/index/document_c/createDocRequest",
             type: 'get',
             success: function (res) {
+                // 填充项目代号和一级审批人下拉选择
                 var projectCodes = res.data.projectCodes;
-                var reviewers = res.data.reviewer;
-                var $projectCodes = "";
-                var $reviewers = "";
+                var approvers = res.data.approvers;
+                var element = '';
                 for (var i = 0; i < projectCodes.length; i++) {
-                    $projectCodes += "<option value='" + projectCodes[i]["project_id"] + "'>" + projectCodes[i]["project_code"] + "</option>";
+                    element += "<option value='" + projectCodes[i]["project_id"] + "'>" + projectCodes[i]["project_code"] + "</option>";
                 }
-                for (var i = 0; i < reviewers.length; i++) {
-                    $reviewers += "<option value='" + reviewers[i]["user_id"] + "'>" + reviewers[i]["user_name"] + "</option>";
+                $("#projectSelect").append(element);
+                element = '';
+                for (var i = 0; i < approvers.length; i++) {
+                    element += "<option value='" + approvers[i]["user_id"] + "'>" + approvers[i]["user_name"] + "</option>";
                 }
-                $("#projectSelect").append($projectCodes);
-                $("#reviewerSelect").append($reviewers);
-                //需要重新加载
+                $("#reviewerSelect").append(element);
                 form.render('select');
-            },
-            error: function (res) {
             }
         });
 
