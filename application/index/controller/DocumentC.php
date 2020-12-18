@@ -243,7 +243,8 @@ class DocumentC
      * @throws ModelNotFoundException
      * @throws \think\Exception
      */
-    public function getRequestInfo($requestId, $type){
+    public function getRequestInfo($requestId, $type)
+    {
         $sessionUserId = Session::get("info")["user_id"];
         if ($type == 0) {
             $docRequest = new DocRequest();
@@ -252,7 +253,7 @@ class DocumentC
                 ->field("request_id,applicant_id,approver_id,project_id,project_stage,description,process_opinion,request_time,process_time,status")
                 ->find();
 
-            if($sessionUserId != $req->applicant_id && $sessionUserId != $req->approver_id) {
+            if ($sessionUserId != $req->applicant_id && $sessionUserId != $req->approver_id) {
                 return Result::returnResult(Result::NO_ACCESS);
             }
             $req->requestUser;
@@ -270,19 +271,19 @@ class DocumentC
 //            } else {
 //                $req->isAuthor = 0;
 //            }
-            $req->isApprover = ($sessionUserId == $req->approver_id)? 1 : 0;
+            $req->isApprover = ($sessionUserId == $req->approver_id) ? 1 : 0;
             unset($req->requestUser, $req->approverUser, $req->projectCode, $req->projectStage, $req->approver_id);
             // 获取所有二级审批人
             $secondApproverList = DocumentService::getAllSecondApprover();
             $data = [
                 'requestDetail' => $req,
                 'secondApproverList' => $secondApproverList,
-                'isFirstApprover' =>  DocumentService::isFirstApprover($req->applicant_id)
+                'isFirstApprover' => DocumentService::isFirstApprover($req->applicant_id)
             ];
-        } else if($type == 1){
+        } else if ($type == 1) {
             // 获取升版申请详情
             $docUpgradeRequest = DocUpgradeRequest::get($requestId);
-            if($sessionUserId != $docUpgradeRequest->applicant_id && $sessionUserId != $docUpgradeRequest->approver_id) {
+            if ($sessionUserId != $docUpgradeRequest->applicant_id && $sessionUserId != $docUpgradeRequest->approver_id) {
                 return Result::returnResult(Result::NO_ACCESS);
             }
             // 获取项目代号和项目阶段
@@ -293,21 +294,21 @@ class DocumentC
             $docUpgradeRequest->approver = UserService::userIdToName($docUpgradeRequest->approver_id);
             $docUpgradeRequest->applicant = UserService::userIdToName($docUpgradeRequest->applicant_id);
             $docUpgradeRequest->attachment;
-            $requestDetail = $docUpgradeRequest->hidden(['file_id','applicant_id','approver_id'])->toArray();
+            $requestDetail = $docUpgradeRequest->hidden(['file_id', 'applicant_id', 'approver_id'])->toArray();
             // 判断当前用户是否是升版审批人
-            $isApprover = ($docUpgradeRequest->approver_id == $sessionUserId)? 1 : 0;
+            $isApprover = ($docUpgradeRequest->approver_id == $sessionUserId) ? 1 : 0;
             // 获取所有二级审批人
             $secondApproverList = DocumentService::getAllSecondApprover();
             $data = [
                 'requestDetail' => $requestDetail,
                 'isApprover' => $isApprover,
                 'secondApproverList' => $secondApproverList,
-                'isFirstApprover' =>  DocumentService::isFirstApprover($docUpgradeRequest->applicant_id)
+                'isFirstApprover' => DocumentService::isFirstApprover($docUpgradeRequest->applicant_id)
             ];
         } else {
             // 获取借阅申请详情
             $docBorrowRequest = DocBorrowRequest::get($requestId);
-            if($sessionUserId != $docBorrowRequest->applicant_id && !DocumentService::isDocAdmin()) {
+            if ($sessionUserId != $docBorrowRequest->applicant_id && !DocumentService::isDocAdmin()) {
                 return Result::returnResult(Result::NO_ACCESS);
             }
             // 获取项目代号和项目阶段
@@ -316,10 +317,10 @@ class DocumentC
             $docBorrowRequest->project_code = $file->project_code;
             $docBorrowRequest->project_stage = $file->project_stage;
             $docBorrowRequest->description = $file->description;
-            $docBorrowRequest->approver = $docBorrowRequest->approver_id? UserService::userIdToName($docBorrowRequest->approver_id) : '';
+            $docBorrowRequest->approver = $docBorrowRequest->approver_id ? UserService::userIdToName($docBorrowRequest->approver_id) : '';
             $docBorrowRequest->applicant = UserService::userIdToName($docBorrowRequest->applicant_id);
             $docBorrowRequest->attachment = DocumentService::getFileAttachment($docBorrowRequest->file_id, $docBorrowRequest->version);
-            $requestDetail = $docBorrowRequest->hidden(['file_id','applicant_id','approver_id'])->toArray();
+            $requestDetail = $docBorrowRequest->hidden(['file_id', 'applicant_id', 'approver_id'])->toArray();
             $data = [
                 'requestDetail' => $requestDetail,
                 'isDocAdmin' => $this->isDocAdmin(),         // 判断当前用户是否是文控
@@ -785,15 +786,16 @@ class DocumentC
                 return Result::returnResult(Result::NOT_MODIFY_PERMISSION);
             }
             // 修改申请信息
-            // 如果状态为待审批且不是一级审批人的话则需要二级审批
-            if($docRequest->status == 0 && !DocumentService::isFirstApprover($docRequest->applicant_id)) {
-                    $docRequest->approver_id = $nextApprover;
-                    $docRequest->status = 1;
-                    $docRequest->process_opinion = $processOpinion;
-                    $docRequest->save();
-                    // 发送钉钉消息给新的审批人
-                    $this->sendRequestMessage($docRequest);
-                    return Result::returnResult(Result::SUCCESS);
+            // 如果状态为待审批且不是一二级审批人的话则需要二级审批
+            if ($docRequest->status == 0 && !DocumentService::isFirstApprover($docRequest->applicant_id)
+                && !DocumentService::isSecondApprover($docRequest->applicant_id)) {
+                $docRequest->approver_id = $nextApprover;
+                $docRequest->status = 1;
+                $docRequest->process_opinion = $processOpinion;
+                $docRequest->save();
+                // 发送钉钉消息给新的审批人
+                $this->sendRequestMessage($docRequest);
+                return Result::returnResult(Result::SUCCESS);
             } else {
                 $docRequest->process_opinion = $processOpinion;
                 $docRequest->status = 2;
@@ -843,7 +845,8 @@ class DocumentC
             $docUpgradeRequest = DocUpgradeRequest::get($requestId);
             $docFile = DocFile::get($docUpgradeRequest->file_id);
             // 修改申请信息
-            if($docUpgradeRequest->status == 0 && !DocumentService::isFirstApprover($docUpgradeRequest->applicant_id)) {
+            if ($docUpgradeRequest->status == 0 && !DocumentService::isFirstApprover($docUpgradeRequest->applicant_id)
+                && !DocumentService::isSecondApprover($docUpgradeRequest->applicant_id)) {
                 $docUpgradeRequest->approver_id = $nextApprover;
                 $docUpgradeRequest->status = 1;
                 $docUpgradeRequest->process_opinion = $processOpinion;
@@ -1231,14 +1234,14 @@ class DocumentC
      * @param $keyword
      * @return array
      */
-    private function getFileIdOfCodeOrName($keyword){
-        $docFile = new DocFile();
-        $fileIdList = $docFile -> where("status",1)
-                               -> where("file_code","like", "%$keyword%")
-                               -> whereOr("source_name","like", "%$keyword%")
-                               -> column("id");
-        return $fileIdList;
-    }
+//    private function getFileIdOfCodeOrName($keyword){
+//        $docFile = new DocFile();
+//        $fileIdList = $docFile -> where("status",1)
+//                               -> where("file_code","like", "%$keyword%")
+//                               -> whereOr("source_name","like", "%$keyword%")
+//                               -> column("id");
+//        return $fileIdList;
+//    }
 
     /**
      * 判断是否为文件管理员（文控）
