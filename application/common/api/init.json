@@ -121,45 +121,21 @@
         },
         {
           "title": "工作表",
-          "href": "",
+          "href": "page/table/index-item.html",
           "icon": "fa fa-table",
-          "target": "_self",
-          "child": [
-            {
-              "title": "我的工作表",
-              "href": "page/table/index-item.html",
-              "icon": "fa fa-tasks",
-              "target": "_self"
-            }
-          ]
+          "target": "_self"
         },
         {
           "title": "ERP",
-          "href": "",
+          "href": "http://192.168.0.249/ERP_system/ERP.php",
           "icon": "fa fa-superpowers",
-          "target": "_self",
-          "child": [
-            {
-              "title": "ERP系统",
-              "href": "/ERP_system/ERP.php",
-              "icon": "fa fa-cog",
-              "target": "_self"
-            }
-          ]
+          "target": "_self"
         },
         {
           "title": "样机配置",
-          "href": "",
-          "icon": "fa fa-superpowers",
-          "target": "_self",
-          "child": [
-            {
-              "title": "样机配置系统",
-              "href": "http://192.168.0.249/configuration_system/configuration_portal.php",
-              "icon": "fa fa-cog",
-              "target": "_self"
-            }
-          ]
+          "href": "http://192.168.0.249/configuration_system/configuration_portal.php",
+          "icon": "fa fa-cog",
+          "target": "_self"
         },
         {
           "title": "百宝箱",

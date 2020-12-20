@@ -145,7 +145,12 @@ class MissionService
         return $interestList;
     }
 
-    // 发送钉钉消息
+    /**
+     * 发送钉钉消息
+     * @param $missionId
+     * @return bool
+     * @throws \think\exception\DbException
+     */
     public static function sendMessge($missionId) {
         $sessionUserId = Session::get("info")["user_id"];
         $mission = Mission::get($missionId);

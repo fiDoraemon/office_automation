@@ -6,27 +6,88 @@
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <link rel="stylesheet" href="../../lib/font-awesome-4.7.0/css/font-awesome.min.css" media="all">
-    <link rel="stylesheet" href="../../css/table/add-admin.css" media="all">
+    <style>
+        .input-title{
+            font-weight: bold;
+        }
+
+        .not-input{
+            color: #999999;
+        }
+
+        #table-name{
+            width: 400px;
+        }
+
+        #userList{
+            width: 600px;
+            height: 38px;
+            line-height: 1.3;
+            line-height: 38px\9;
+            border: none;
+            background-color: #fff;
+            border-radius: 2px;
+        }
+
+        .multiSelect a {
+            padding: 2px 5px;
+            background: #908e8e;
+            border-radius: 2px;
+            color: #fff;
+            display: block;
+            line-height: 20px;
+            height: 20px;
+            margin: 7px 4px 3px 2px;
+            float: left;
+        }
+
+        .multiSelect i {
+            margin-left: 4px;
+        }
+
+        .multiSelect a:link {
+            color:#fff;
+        }
+
+        a:-webkit-any-link {
+            color: -webkit-link;
+            cursor: pointer;
+        }
+
+        .icon-btn{
+            margin-top: 8px;
+        }
+
+        ul li{
+            height:40px;
+            margin-bottom: 10px;
+        }
+
+        .down,.up{
+            color: #6E6E6E ;
+        }
+
+        /*上下移动行*/
+        .sortablelist{position:relative;}
+        .sortableitem{position:relative;}
+    </style>
 </head>
 <body>
 <div class="layuimini-container">
     <div class="layuimini-main">
         <form class="layui-form layuimini-form">
-
             <div class="layui-form-item">
                 <label class="layui-form-label required input-title">工作表名：</label>
                 <div class="layui-input-inline">
                     <input type="text" id="table-name" name="tableName" lay-verify="required" autocomplete="off" placeholder="请输入表名称" class="layui-input">
                 </div>
             </div>
-
             <div class="layui-form-item">
                 <label class="layui-form-label input-title">描述：</label>
                 <div class="layui-input-block">
                     <textarea placeholder="请输入工作表描述" name="description" id="description" class="layui-textarea" rows="3"></textarea>
                 </div>
             </div>
-
             <div class="layui-form-item ">
                 <label class="layui-form-label required input-title">表字段：</label>
                 <div class="layui-inline">
@@ -66,7 +127,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="layui-form-item">
                 <label class="layui-form-label input-title required">可见人：</label>
                 <div class="layui-inline">
@@ -86,27 +146,230 @@
                     </div>
                 </div>
             </div>
-
-            <div class="layui-form-item">
-                <div class="layui-container">
-                    <div class="layui-row layui-col-space10">
-                        <div class="layui-col-md4"></div>
-                        <div class="layui-col-md4">
-                            <button class="layui-btn" lay-submit id="save" lay-filter="save">生成工作表</button>
-                            <button type="reset" class="layui-btn layui-btn-primary" id="refresh">重置</button>
-                        </div>
-                        <div class="layui-col-md4"></div>
-                    </div>
-                </div>
+            <hr>
+            <div class="layui-form-item" style="margin:50px 0 50px 150px;">
+                <button class="layui-btn" lay-submit id="save" lay-filter="save">生成</button>
+                <button type="reset" class="layui-btn layui-btn-primary" id="refresh">重置</button>
             </div>
         </form>
     </div>
 </div>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
-<script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
 <script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
 <script src="../../js/common.js" charset="utf-8"></script>
-<script src="../../js/jquery.clickSort.js" charset="utf-8"></script>
-<script src="../../js/table/add-admin.js" charset="utf-8"></script>
+<script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+<script src="../../lib/jq-module/jquery.clickSort.js" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'layedit', 'laydate', 'upload', 'miniTab'], function () {
+        var form = layui.form
+            , layer = layui.layer
+            , miniTab = layui.miniTab
+            , $ = layui.$;
+
+        $('.sortablelist').clickSort();         // 使用移动动画
+        var userIdList = [];            // 已经选择的应到会议员工id数组
+        var fieldCount = 1;         // 当前已经有多少个字段
+
+        // 获取所有部门信息
+        $.ajax({
+            url: "/office_automation/public/index.php/index/user_c/getAllDepartment",
+            type: "get",
+            data: {},
+            success: function (res) {
+                let departmentArray = res.data;
+                let departmentInfo = "";
+                for (var i = 0; i < departmentArray.length; i++) {
+                    departmentInfo += "<option value='" + departmentArray[i]["department_id"] + "'>" + departmentArray[i]["department_name"] + "</option>";
+                }
+                $("#select-department").append(departmentInfo);
+                form.render();
+            }
+        });
+
+        // 选择部门
+        form.on('select(select-department)', function (data) {
+            $("#select-user").empty();
+            $.ajax({
+                url: "/office_automation/public/index.php/index/user_c/getUserOfDepartment",
+                type: 'get',
+                data: {departmentId: data.value},
+                success: function (res) {
+                    let userArr = res.data;
+                    let $userList = "<option value='0'></option>";
+                    for (let i = 0; i < userArr.length; i++) {
+                        $userList += "<option value='" + userArr[i].user_id + "'>" + userArr[i].user_name + "</option>";
+                    }
+                    $("#select-user").append($userList);
+                    //需要重新加载
+                    form.render('select');
+                }
+            });
+            return false;
+        });
+
+        //选择用户
+        form.on('select(select-user)', function (data) {
+            let userName = data.elem[data.elem.selectedIndex].text;
+            let userId = data.value;
+            let userInfo = ' <a href="javascript:;" class="test">' +
+                ' <span lay-value="' + userId + '">' + userName + '(' + userId + ')' + '</span>' +
+                ' <i class="layui-icon layui-icon-close"></i>' +
+                ' </a>';
+            if ($.inArray(userId, userIdList) === -1) {
+                userIdList.push(userId);
+                $("#userList").append(userInfo);
+            }
+            var $element = $("#select-user .layui-form-selected dl");
+            $element.addClass("test")
+            return false;
+        });
+
+        var fieldValue = `<input type="text" style="width:500px" name="fieldValue" lay-verify="required" placeholder="以中文逗号'，'隔开" class="layui-input fieldValue">`;
+        //选择字段类型监听
+        form.on('select(select-field-type)', function (data) {
+            let fieldType = data.value;
+            var thisDom = $(data.elem);         //DOM对象转jq对象
+            // 添加单行文本框
+            if (fieldType == "select" || fieldType == "checkbox" || fieldType == "mission") {
+                thisDom.parent().next().next().next().html(fieldValue);
+            } else {
+                thisDom.parent().next().next().next().html("");
+            }
+        });
+
+        //删除一行
+        $("ul").on("click", "li .field-btn .delete", function () {
+            if (fieldCount < 2) {
+                layer.msg("表中必须有字段！");
+            } else {
+                $(this).hide({
+                    duration: 300,
+                    complete: function () {
+                        fieldCount--;
+                        $(this).parent().parent().remove();
+                    }
+                })
+            }
+        });
+
+        //添加一行
+        $("ul").on("click", "li .field-btn .add", function () {
+            if (fieldCount < 25) {
+                fieldCount++;
+                $(this).parent().parent().after(newField);
+                form.render();
+            } else {
+                layer.msg("一个表最多只能25个字段！");
+            }
+        });
+
+        //在数组中删除某一个元素
+        var removeFromArray = function (arr, val) {
+            var index = $.inArray(val, arr);
+            if (index >= 0)
+                arr.splice(index, 1);
+            return arr;
+        };
+
+        //删除应到会人员
+        $(".multiSelect").on("click", "i", function () {
+            var userId = $(this).prev('span').attr("lay-value");
+            removeFromArray(userIdList, userId);
+            $(this).parent().remove();
+        });
+
+        var newField = `
+        <li class="sortableitem">
+            <div class="layui-input-inline">
+                <select name="fieldType" style="float: left;" class="fieldType" lay-filter="select-field-type" lay-verify="required">
+                    <option value="">--字段类型--</option>
+                    <option value="text" selected>单行文本</option>
+                    <option value="textarea">多行文本</option>
+                    <option value="select">自定义单选</option>
+                    <option value="checkbox">自定义多选</option>
+                    <option value="user">单选员工</option>
+                    <option value="users">多选员工</option>
+                    <option value="date">日期</option>
+                    <option value="mission">任务</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <input type="text" style="float: left;" name="fieldName" lay-verify="required" placeholder="请输入字段名" class="layui-input fieldName">
+            </div>
+            <div class="layui-input-inline field-btn">
+                <a class="layui-btn-xs data-count-edit icon-btn down movedown" lay-event="down"><i class="fa fa-arrow-down" aria-hidden="true"></i></a>
+                <a class="layui-btn-xs data-count-edit icon-btn up moveup" lay-event="up"><i class="fa fa-arrow-up" aria-hidden="true"></i></a>
+                <a class="layui-btn layui-btn-xs layui-btn-danger icon-btn delete" lay-event="delete"><i class="layui-icon layui-icon-subtraction"></i></a>
+                <a class="layui-btn layui-btn-xs data-count-edit icon-btn add" lay-event="add"><i class="layui-icon layui-icon-addition"></i></a>
+                <input type="checkbox" lay-filter="switch" name="isShow" lay-skin="switch" lay-text="ON|OFF" class="item-show">
+            </div>
+            <div class="layui-input-inline field-value"></div>
+        </li>`;
+
+        // 获取字段数据
+        function getFieldList() {
+            var fieldInfos = [];
+            $('ul li').each(function () {
+                let fieldType = $(this).find(".fieldType").val();
+                let fieldName = $(this).find(".fieldName").val();
+                let fieldValue = $(this).find(".fieldValue").val();
+                let isShow = $(this).find(".item-show").next().hasClass("layui-form-onswitch") ? 1 : 0;
+                let field = "";
+                if (fieldType == "select" || fieldType == "checkbox" || fieldType == "mission") {
+                    field = {
+                        "fieldType": fieldType,
+                        "fieldName": fieldName,
+                        "isShow": isShow,
+                        "fieldValue": fieldValue
+                    };
+                } else {
+                    field = {"fieldType": fieldType, "fieldName": fieldName, "isShow": isShow};
+                }
+                fieldInfos.push(field);
+            });
+            return fieldInfos;
+        }
+
+        // 监听提交
+        form.on('submit(save)', function (data) {
+            var result = data.field;
+            layer.confirm('确定生成工作表？', {icon: 3, title: '提示'}, function (index) {
+                layer.close(index);
+                var loadingIndex = layer.load(2);
+                let fieldList = getFieldList();
+                $.ajax({
+                    url: "/office_automation/public/index.php/index/admin_c/addWorkTable",
+                    type: 'post',
+                    data: {
+                        tableName: result.tableName,
+                        description: result.description,
+                        fieldList: fieldList,
+                        userList: userIdList
+                    },
+                    success: function (res) {
+                        layer.close(loadingIndex);
+                        if (res.code === 0) {
+                            var index = layer.alert("发起成功", {
+                                title: '提示'
+                            }, function () {
+                                layer.close(index);
+                                location.reload();
+                                miniTab.openNewTabByIframe({
+                                    href: "page/table/index-admin.html",
+                                    title: "工作表搜索",
+                                });
+                            });
+                        } else {
+                            var index = layer.alert("生成失败！", {
+                                title: '提示'
+                            });
+                        }
+                    }
+                });
+            });
+            return false;
+        });
+    });
+</script>
 </body>
 </html>

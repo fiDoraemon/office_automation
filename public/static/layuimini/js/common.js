@@ -154,13 +154,11 @@ function getfilesize(size) {
  * @returns {string}
  */
 function nodeToString(node) {
-    //createElement()返回一个Element对象
     var tmpNode = document.createElement("div");
-    //appendChild()  参数Node对象   返回Node对象  Element方法
-    //cloneNode()  参数布尔类型  返回Node对象   Element方法
     tmpNode.appendChild(node.cloneNode(true));
     var str = tmpNode.innerHTML;
-    tmpNode = node = null; // prevent memory leaks in IE
+    tmpNode = node = null;
+
     return str;
 }
 

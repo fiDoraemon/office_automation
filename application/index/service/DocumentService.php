@@ -201,7 +201,7 @@ class DocumentService
             $templet .= '▪ 链接：' . $url;
             $message = '◉ ' . '您的文档升版申请(#' . $docUpgradeRequest->request_id . ')被驳回' . "\n" . $templet;
             $data['data']['content'] = $message;
-            $result = curlUtil::post($postUrl, $data);
+            return curlUtil::post($postUrl, $data);
         }
     }
 

@@ -196,10 +196,10 @@ class AdminC
         // 获取所有用户 userid
         $res = curlUtil::post('http://www.bjzzdr.top/us_service/public/other/ding_ding_c/getAllUserId');
         $result = json_decode($res);
-        if($result->code == 0) {
+        if ($result->code == 0) {
             foreach ($result->data as $info) {
                 $user = User::getByUserName($info->name);
-                if($user && $user->dd_userid == '') {
+                if ($user && $user->dd_userid == '') {
                     $user->dd_userid = $info->userid;
                     $user->save();
                 }
@@ -375,46 +375,48 @@ class AdminC
     /**
      * 添加工作表
      */
-    public function addWorkTable(){
-        Db::transaction(function () {
-            $tableName   = $_POST["tableName"];
+    public function addWorkTable()
+    {
+        return Db::transaction(function () {
+            $tableName = $_POST["tableName"];
             $description = $_POST["description"];
-            $fieldList   = input('post.fieldList/a');
-            $userList    = input('post.userList/a');
-            $userId      = Session::get("info")["user_id"];
+            $fieldList = input('post.fieldList/a');
+            $userList = input('post.userList/a');
+            $userId = Session::get("info")["user_id"];
+
             $table = new TableWork([
-                'table_name'   => $tableName,
-                'creator_id'  => $userId,
+                'table_name' => $tableName,
+                'creator_id' => $userId,
                 'create_time' => date('Y-m-d H:i:s', time()),
                 'description' => $description
             ]);
-            $resCount = $table -> save();
-            if(is_array($fieldList)){
-                foreach ($fieldList as $field){
+            $table->save();
+            if (is_array($fieldList)) {
+                foreach ($fieldList as $field) {
                     $tableField = new TableField();
                     $type = $field["fieldType"];
-                    $tableField -> type  = $field["fieldType"];
-                    $tableField -> name  = $field["fieldName"];
-                    $tableField -> show  = $field["isShow"];
-                    if($type == "select"){
-                        $tableField -> value = $field["fieldValue"];
+                    $tableField->type = $field["fieldType"];
+                    $tableField->name = $field["fieldName"];
+                    $tableField->show = $field["isShow"];
+                    if ($type == "select" || $type == 'checkbox' || $type == 'mission') {
+                        $tableField->value = $field["fieldValue"];
                     }
-                    $tableField -> table_id = $table -> table_id;
-                    $tableField -> save();
+                    $tableField->table_id = $table->table_id;
+                    $tableField->save();
                 }
             }
-            if(is_array($userList)){
-                foreach ($userList as $uId){
+            if (is_array($userList)) {
+                foreach ($userList as $uId) {
                     $tableUser = new TableUser([
-                        'user_id'  => $uId,
-                        'table_id' => $table -> table_id
+                        'user_id' => $uId,
+                        'table_id' => $table->table_id
                     ]);
-                    $tableUser -> save();
+                    $tableUser->save();
                 }
             }
+
             return Result::returnResult(Result::SUCCESS);
         });
-        return Result::returnResult(Result::SUCCESS);
     }
 
     /**
@@ -471,66 +473,66 @@ class AdminC
     /**
      * 更新工作表
      */
-    public function updateTable(){
+    public function updateTable()
+    {
         Db::transaction(function () {
-            $tableId     = $_POST["tableId"];
-            $tableName   = $_POST["tableName"];
+            $tableId = $_POST["tableId"];
+            $tableName = $_POST["tableName"];
             $tableStatus = $_POST["status"];
             $description = $_POST["description"];
             $newUserList = input('post.newUserList/a');
             $delUserList = input('post.delUserList/a');
-            $fieldList   = input("post.fieldList/a");
+            $fieldList = input("post.fieldList/a");
             $table = new TableWork();
-            $table -> where('table_id', $tableId)
-                   -> update( ['table_name'  => $tableName,
-                               'status'      => $tableStatus,
-                               'description' => $description] );
+            $table->where('table_id', $tableId)
+                ->update(['table_name' => $tableName,
+                    'status' => $tableStatus,
+                    'description' => $description]);
             //添加新可见人员
             $tableUser = new TableUser();
             $newUser = [];
-            if(is_array($newUserList)){
-                foreach ($newUserList as $uId){
-                    $newUser[] =  ['table_id' => $tableId, 'user_id' => $uId];
+            if (is_array($newUserList)) {
+                foreach ($newUserList as $uId) {
+                    $newUser[] = ['table_id' => $tableId, 'user_id' => $uId];
                 }
-                $tableUser -> saveAll($newUser);
+                $tableUser->saveAll($newUser);
             }
             //删除可见人员
-            if(is_array($delUserList)){
-                foreach ($delUserList as $uId){
+            if (is_array($delUserList)) {
+                foreach ($delUserList as $uId) {
                     $tableUser = new TableUser();
-                    $tableUser -> where(["table_id" => $tableId, "user_id" => $uId]) -> delete();
+                    $tableUser->where(["table_id" => $tableId, "user_id" => $uId])->delete();
                 }
             }
             //更改字段,添加字段
-            if(is_array($fieldList)){
-                foreach ($fieldList as $field){
-                    $id     = $field["id"];
-                    $type   = $field["fieldType"];
-                    $name   = $field["fieldName"];
-                    $sort   = $field["sort"];
+            if (is_array($fieldList)) {
+                foreach ($fieldList as $field) {
+                    $id = $field["id"];
+                    $type = $field["fieldType"];
+                    $name = $field["fieldName"];
+                    $sort = $field["sort"];
                     $isShow = $field["isShow"];
                     $tableField = new TableField();
-                    if($id != ""){   //旧字段
+                    if ($id != "") {   //旧字段
                         $status = $field["status"];
-                        $newField = $tableField -> where("field_id", $id) -> find();
-                        $newField -> name   = $name;
-                        $newField -> status = $status;
-                        $newField -> sort   = $sort;
-                        $newField -> show   = $isShow;
-                        if($type == "select" || $type == "checkbox"){
-                            $newField -> value = $field["fieldValue"];
+                        $newField = $tableField->where("field_id", $id)->find();
+                        $newField->name = $name;
+                        $newField->status = $status;
+                        $newField->sort = $sort;
+                        $newField->show = $isShow;
+                        if ($type == "select" || $type == "checkbox" || $type == "mission") {
+                            $newField->value = $field["fieldValue"];
                         }
-                        $newField -> save();
-                    }
-                    else{   //新字段
-                        $tableField -> type = $type;
-                        $tableField -> name = $name;
-                        if($type == "select" || $type == "checkbox"){
-                            $tableField -> value = $field["fieldValue"];
+                        $newField->save();
+                    } else {   //新字段
+                        $tableField->type = $type;
+                        $tableField->name = $name;
+                        if ($type == "select" || $type == "checkbox" || $type == "mission") {
+                            $tableField->value = $field["fieldValue"];
                         }
-                        $tableField -> table_id = $tableId;
-                        $tableField -> sort = $sort;
-                        $tableField -> save();
+                        $tableField->table_id = $tableId;
+                        $tableField->sort = $sort;
+                        $tableField->save();
                     }
                 }
             };

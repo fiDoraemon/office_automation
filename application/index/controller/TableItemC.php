@@ -655,4 +655,55 @@ class TableItemC extends Controller
             return Result::returnResult(Result::SUCCESS);
         });
     }
+
+    /**
+     * 添加任务字段预定义任务
+     */
+    public function addFieldMission()
+    {
+        return Db::transaction(function () {
+            $sessionUserId = Session::get("info")["user_id"];
+            $fields = input('post.');
+            $tableItem = TableItem::get($fields['itemId']);
+            $tableWork = TableWork::get($tableItem->table_id);
+            $tableField = TableField::get($fields['fieldId']);
+            $today = date('Y-m-d', time());
+
+            foreach ($fields['missionTitles'] as $missionTitle) {
+                // 如果任务标题为空或者任务已存在
+                if ($missionTitle == '' || Mission::get(['mission_title' => $missionTitle])) {
+                    continue;
+                }
+                $description = '对应' . $tableWork->table_name . '-' . $tableItem->item_title . '条目' . '-' . $tableField->name . '字段';
+                $mission = new Mission();
+                $mission->data([
+                    'mission_title' => $missionTitle,
+                    'reporter_id' => $sessionUserId,
+                    'assignee_id' => $sessionUserId,
+                    'description' => $description,
+                    'start_date' => $today,
+                    'finish_date' => $today
+                ]);
+                $mission->save();
+                // 发送钉钉消息
+                MissionService::sendMessge($mission->mission_id);
+                // 任务关联工作表条目字段
+                $tableFieldValue = TableFieldValue::get(['item_id' => $fields['itemId'], 'field_id' => $fields['fieldId']]);
+                if (!$tableFieldValue) {
+                    $tableFieldValue = new TableFieldValue();
+                    $tableFieldValue->item_id = $fields['itemId'];
+                    $tableFieldValue->field_id = $fields['fieldId'];
+                    $tableFieldValue->save();
+                }
+                if ($tableFieldValue->field_value) {
+                    $tableFieldValue->field_value = $tableFieldValue->field_value . '；' . $mission->mission_id;
+                } else {
+                    $tableFieldValue->field_value = $mission->mission_id;
+                }
+                $tableFieldValue->save();
+            }
+
+            return Result::returnResult(Result::SUCCESS);
+        });
+    }
 }

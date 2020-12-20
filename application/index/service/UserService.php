@@ -44,7 +44,7 @@ class UserService
      * @throws \think\exception\DbException
      */
     public static function isAdmin($userId) {
-        $role = Role::get(['role_name' => '管理员']);
+        $role = Role::get(['role_name' => 'admin']);
         $userRole = UserRole::get(['user_id' => $userId, 'role_id' => $role->role_id]);
         if($userRole) {
             return true;

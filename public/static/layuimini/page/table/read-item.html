@@ -74,7 +74,7 @@
                     </div>
                     <label class="layui-form-label required">标题</label>
                     <div class="layui-input-inline" style="width: 50%">
-                        <input type="text" name="item_title" lay-verify="required" lay-reqtext="标题不能为空" autocomplete="off" placeholder="请输入标题" class="layui-input" readonly>
+                        <input type="text" name="item_title" id="item_title" lay-verify="required" lay-reqtext="标题不能为空" autocomplete="off" placeholder="请输入标题" class="layui-input" readonly>
                     </div>
                 </div>
                 <div class="layui-form-item">
@@ -244,7 +244,7 @@
             ,bindAction: '#start_upload'
             ,choose: function(obj){
                 if($('#fileList').children().length > 9) {
-                    return layer.msg('最多上传试9个附件！');
+                    return layer.msg('最多上传试10个附件！');
                 }
                 var files = this.files = obj.pushFile();         // 将每次选择的文件追加到文件队列
 
@@ -322,6 +322,7 @@
         // 获取条目详情
         var radioUserList = [];          // 单选用户字段列表
         var checkUserList = [];          // 多选用户字段列表
+        var fields;         // 工作表字段
         var index = layer.load(2);
         $.get(
             "/office_automation/public/item/" + getQueryVariable('itemId'),
@@ -354,7 +355,7 @@
                         $('input[name="color"]').val('#' + obj.hex);
                     });
                     // 填充条目字段
-                    var fields = itemDetail.fields;
+                    fields = itemDetail.fields;
                     var fieldValues = {};           // 工作表字段值
                     userIdsList = [];            // 多选用户列表数组
                     var dateList = [];          // 日期字段列表
@@ -377,7 +378,8 @@
                             <div class="layui-form-item">
                                 <label class="layui-form-label">${fields[j].name}</label>
                                 <div class="layui-input-inline"></div>
-                                <div class="layui-inline" style="width: 70%;"></div>
+                                <button type="button" class="layui-btn layui-btn-primary layui-btn-sm add-field-mission" field-index="${j}"><i class="layui-icon"></i></button>
+                                <div class="layui-inline" style="width: 60%;"></div>
                             </div>`);
                         } else {
                             var input = $(`
@@ -386,7 +388,6 @@
                                 <div class="layui-input-block"></div>
                             </div>`);
                         }
-
                         // 判断字段类型
                         if(fields[j].type == 'textarea') {
                             input.find('.layui-input-block').append(`<textarea name="field${fields[j].field_id}" class="layui-textarea"></textarea>`);
@@ -454,7 +455,7 @@
                                 fieldValues['field' + fields[j].field_id + '[' + array[i] + ']'] = true;
                             }
                         } else if(fields[j].type == 'mission') {
-                            input.find('.layui-input-inline').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input">`);
+                            input.find('.layui-input-inline').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" autocomplete="off">`);
                             missionList.push('field' + fields[j].field_id);
                             fieldValues['field' + fields[j].field_id] = fields[j].field_value;
                             for(var i in fields[j].missionList) {
@@ -501,8 +502,7 @@
                             <td>${processList[i].process_time}</td>
                             <td><textarea class="layui-textarea" style="min-height: 80px" readonly>${processList[i].process_note}</textarea></td>
                             <td>${attachmentList.join('，')}</td>
-                        </tr>
-                        `;
+                        </tr>`;
                     }
                     $('#item-process').append(element);
                     // 填充条目任务列表
@@ -585,10 +585,65 @@
             });
             num ++;
         });
-
         // 删除任务
         $('body').on('click', '.delete-mission', function () {
             $(this).parent().parent().remove();
+        });
+        // 添加字段任务
+        var clicked = false;            // 标示是否已经点击
+        $('body').on('click', '.add-field-mission', function () {
+            var fieldIndex = $(this).attr('field-index');
+            var valueList = fields[fieldIndex].value.split('，');
+            var element = $(`<div style="padding: 20px 20px 0 0"></div>`);
+            for(var i in valueList) {
+                element.append(`
+                <div class="layui-form-item"></div>
+                    <label class="layui-form-label">任务${(Number(i) + 1)}</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="mission_title[]" autocomplete="off" placeholder="请输入标题" class="layui-input" value="${valueList[i]}">
+                    </div>
+                </div>`);
+            }
+            layer.open({
+                type: 0,
+                title: '添加预定义任务',
+                content: nodeToString(element[0]),
+                btn: ['提交', '加标题'],
+                skin: 'layui-layer-lan',
+                area: ['40%', '80%'],
+                shadeClose: true,
+                anim: 1,
+                yes: function(index, layero){
+                    layer.close(index);
+                    // 获取任务标题输入框的值数组
+                    var missionTitles = $("input[name='mission_title[]']").map(function () {
+                        return $(this).val().trim();
+                    }).get();
+                    $.post(
+                        '/office_automation/public/index/table_item_c/addFieldMission',
+                        {
+                            itemId: getQueryVariable('itemId'),
+                            fieldId: fields[fieldIndex].field_id,
+                            missionTitles: missionTitles
+                        },
+                        function(res){
+                            if(res.code == 0) {
+                                layer.msg('添加成功', {icon: 6});
+                            } else {
+                                layer.msg('添加失败', {icon: 5});
+                            }
+                        }
+                    );
+                },
+                btn2: function(index, layero){
+                    if(!clicked) {
+                        var value = $('#item_title').val() + '-' + $("input[name='mission_title[]']").val();
+                        $("input[name='mission_title[]']").val(value);
+                        clicked = true;
+                    }
+                    return false;
+                }
+            });
         });
 
         //监听提交
@@ -606,12 +661,9 @@
                 }
             }
             if(checkUserList.length > 0) {
-                result.checkUserList = checkUserList.join(';');
                 for (i in checkUserList) {
                     result[checkUserList[i]] = userIdsList[checkUserList[i]].join(';');
                 }
-            } else {
-                result.checkUserList = '';
             }
             // 处理新增任务信息
             var missionCount = $('#mission-info').children().length;

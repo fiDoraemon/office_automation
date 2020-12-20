@@ -304,9 +304,9 @@
                         //     </tr>`);
                         // }
                         var element = `
-                    <div style="padding: 20px 20px">
-                        <table class="layui-hide" id="version-list" lay-filter="version-list"></table>
-                    </div>`;
+                        <div style="padding: 20px 20px">
+                            <table class="layui-hide" id="version-list" lay-filter="version-list"></table>
+                        </div>`;
                         layer.open({
                             type: 1,
                             title: '历史版本',
@@ -364,7 +364,6 @@
         // 监听版本表格操作按钮
         table.on('tool(version-list)', function (obj) {
             var data = obj.data;
-            console.log(data);
             if (obj.event == 'borrow') {
                 layer.confirm('确定借阅？', {icon: 3, title: '提示'}, function (index) {
                     layer.close(index);
