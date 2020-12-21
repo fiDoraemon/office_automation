@@ -628,7 +628,9 @@
                         },
                         function(res){
                             if(res.code == 0) {
-                                layer.msg('添加成功', {icon: 6});
+                                layer.msg('添加成功', {icon: 6}, function () {
+                                    location.reload();
+                                });
                             } else {
                                 layer.msg('添加失败', {icon: 5});
                             }

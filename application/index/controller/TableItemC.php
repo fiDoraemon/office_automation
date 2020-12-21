@@ -270,7 +270,7 @@ class TableItemC extends Controller
             $tableItem->color = $fields['color'];
             $tableItem->save();
             // 更新条目字段信息
-            $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
+//            $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
             foreach ($fields as $key => $value) {
                 if(substr($key,0, 5) == 'field') {
                     $fieldId = substr($key,5);
