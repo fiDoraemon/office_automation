@@ -590,8 +590,8 @@
             $(this).parent().parent().remove();
         });
         // 添加字段任务
-        var clicked = false;            // 标示是否已经点击
         $('body').on('click', '.add-field-mission', function () {
+            var clicked = false;            // 标示是否已经点击
             var fieldIndex = $(this).attr('field-index');
             var valueList = fields[fieldIndex].value.split('，');
             var element = $(`<div style="padding: 20px 20px 0 0"></div>`);
@@ -639,8 +639,10 @@
                 },
                 btn2: function(index, layero){
                     if(!clicked) {
-                        var value = $('#item_title').val() + '-' + $("input[name='mission_title[]']").val();
-                        $("input[name='mission_title[]']").val(value);
+                        $("input[name='mission_title[]']").map(function () {
+                            var value = $('#item_title').val() + '-' + $(this).val();
+                            $(this).val(value);
+                        });
                         clicked = true;
                     }
                     return false;
