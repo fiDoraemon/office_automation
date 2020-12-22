@@ -382,7 +382,7 @@ class DocumentC
                 ->join('oa_user u', 'u.user_id = dr.applicant_id')
                 ->join('oa_user u2', 'u2.user_id = dr.approver_id')
                 ->join('oa_project p', 'p.project_id = dr.project_id')
-                ->field("request_id,applicant_id as applicant,approver_id as approver,project_code,project_stage,request_time,status")
+                ->field("request_id,applicant_id as applicant,approver_id as approver,project_code,request_time,status")
                 ->order("request_time", "desc")
                 ->page($page, $limit)
                 ->select();

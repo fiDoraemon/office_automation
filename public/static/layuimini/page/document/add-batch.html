@@ -102,8 +102,8 @@
                                 <colgroup>
                                     <col width="20%">
                                     <col width="10%">
-                                    <col width="30%">
-                                    <col width="30%">
+                                    <col width="35%">
+                                    <col width="25%">
                                     <col width="10%">
                                 </colgroup>
                                 <thead>
@@ -170,19 +170,19 @@
                         <td>${file.name}</td>
                         <td>等待上传</td>
                         <td>
-                            <div class="layui-inline" style="width: 150px">
+                            <div class="layui-inline" style="width: 160px">
                                 <select class="project-stage" name="project_stage[]" lay-verify="required" lay-filter="project-stage" related-select="">
                                     <option value="">--请选择项目阶段--</option>
                                 </select>
                             </div>
-                            <div class="layui-inline" style="width: 150px">
+                            <div class="layui-inline" style="width: 160px">
                                 <select class="project-stage-fix" name="project_stage_fix[]">
                                     <option value="">--请选择--</option>
                                 </select>
                             </div>
                         </td>
                         <td>
-                            <input name="description[]" lay-verify="required" placeholder="请输入文档说明" class="layui-input">
+                            <textarea class="layui-textarea" name="description[]" placeholder="请输入文档说明" style="min-height: 50px;"></textarea>
                         </td>
                         <td>
                             <button class="layui-btn layui-btn-xs layui-hide reload">重传</button>
