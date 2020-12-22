@@ -909,7 +909,7 @@ class DocumentC
             $docBorrowRequest = DocBorrowRequest::get($requestId);
             $docBorrowRequest->data([
                 'approver_id' => $sessionUserId,
-                'status' => -1,
+                'status' => 1,
                 'process_opinion' => $processOpinion,
                 'process_time' => date('Y-m-d H:i:s', time()),
                 'effective_time' => date('Y-m-d H:i:s', time() + 3600 * 24 * 30)   // 借阅有效期一个月
@@ -971,7 +971,7 @@ class DocumentC
             $docBorrowRequest = DocBorrowRequest::get($requestId);
             $docBorrowRequest->data([
                 'approver_id' => $sessionUserId,
-                'status' => 2,
+                'status' => -1,
                 'process_opinion' => $processOpinion,
                 'process_time' => date('Y-m-d H:i:s', time())
             ]);
