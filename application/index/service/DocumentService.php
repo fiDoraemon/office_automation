@@ -14,6 +14,7 @@ use app\index\model\Attachment;
 use app\index\model\DocBorrowRequest;
 use app\index\model\DocFile;
 use app\index\model\DocFileVersion;
+use app\index\model\User;
 use app\index\model\UserRole;
 use think\Session;
 

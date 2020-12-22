@@ -27,12 +27,13 @@
             font-size: 10px;
             padding-top: 10px;
         }
-        .input-title{
+        /* 标签 */
+        .layui-form-label {
             font-weight: bold;
         }
-        .not-input{
-            color: #999999;
-        }
+        /*.not-input{*/
+            /*color: #999999;*/
+        /*}*/
     </style>
 </head>
 <body>
@@ -40,7 +41,7 @@
     <div class="layuimini-main">
         <div class="layui-form layuimini-form">
             <div class="layui-form-item">
-                <label class="layui-form-label required input-title">所属项目</label>
+                <label class="layui-form-label required">所属项目</label>
                 <div class="layui-input-inline">
                     <select class="" name="project_id" lay-verify="required" id="projectSelect" lay-filter="selectCode">
                         <option value="">--请选择所属项目--</option>
@@ -48,7 +49,7 @@
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label required input-title">项目阶段</label>
+                <label class="layui-form-label required">项目阶段</label>
                 <div class="layui-input-inline">
                     <select class="" name="project_stage" lay-verify="required" id="stageSelect" lay-filter="selectStagePre">
                         <option value="">--请选择项目阶段--</option>
@@ -61,7 +62,7 @@
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label required input-title">审批人</label>
+                <label class="layui-form-label required">审批人</label>
                 <div class="layui-input-inline">
                     <select class="" name="approver" lay-verify="required" id="reviewerSelect" lay-filter="">
                         <option value="">--请选择审批人--</option>
@@ -69,7 +70,7 @@
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label required input-title">文档说明</label>
+                <label class="layui-form-label required">文档说明</label>
                 <div class="layui-input-block">
                     <textarea placeholder="请输入文档说明" name="description" id="minute-context" class="layui-textarea"></textarea>
                 </div>
@@ -109,6 +110,7 @@
             <div class="layui-form-item" style="margin:50px 0 50px 150px;">
                 <button class="layui-btn" lay-submit id="save" lay-filter="save">发起评审</button>
                 <button type="reset" class="layui-btn layui-btn-primary" id="refresh">重置</button>
+                <a href="add-batch.html" class="layui-btn layui-btn-primary" style="float: right;margin-right: 50px">批量发起</a>
             </div>
         </div>
     </div>

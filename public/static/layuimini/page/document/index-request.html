@@ -9,8 +9,14 @@
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <style>
-        /* 分类 */
-        .person-type{}
+        /* 链接 */
+        .url {
+            color: #1E9FFF;
+        }
+        .url:hover {
+            color: #0567b0;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -71,10 +77,6 @@
         </script>
 
         <table class="layui-hide" id="requestList" lay-filter="requestList"></table>
-
-        <script type="text/html" id="operate">
-            <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="read">详情</a>
-        </script>
     </div>
 </div>
 <script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
@@ -85,18 +87,19 @@
             table = layui.table;
 
         // 获取所需要的查询条件信息
+        var isSecondApprover;           // 是否二级审批人
         $.ajax({
-            url: "/office_automation/public/index.php/index/document_c/getProjectCode",
+            url: "/office_automation/public/index.php/index/document_c/indexDocRequest",
             type: 'get',
             success: function (res) {
-                var projectCodes = res;
+                var projectCodes = res.data.projectCodes;
                 var $projectCodes = "";
                 for (var i = 0; i < projectCodes.length; i++) {
                     $projectCodes += "<option value='" + projectCodes[i]["project_id"] + "'>" + projectCodes[i]["project_code"] + "</option>";
                 }
                 $("#projectSelect").append($projectCodes);
-                //需要重新加载
                 form.render('select');
+                isSecondApprover = res.data.isSecondApprover;
             }
         });
 
@@ -107,7 +110,11 @@
             toolbar: '#toolbar',
             defaultToolbar: ['filter', 'exports', 'print'],
             cols: [[
-                {field: 'request_id', title: '编号', width: '5%', align: 'center'},
+                {field: 'request_id', title: '编号', width: '5%', align: 'center',
+                    templet: function(d){
+                        return `<a class="url" lay-event="read">${d.request_id}</a>`;
+                    }
+                },
                 {field: 'applicant', title: '申请人', width: '8%', align: 'center'},
                 {field: 'approver', title: '审批人', width: '8%', align: 'center'},
                 {field: 'project_code', title: '所属项目', width: '9%', align: 'center'},
@@ -123,7 +130,7 @@
                         }
                     }
                 },
-                {field: 'request_time', title: '发起日期', width: '15%', align: 'center', sort: true},
+                {field: 'request_time', title: '发起日期', width: '12%', align: 'center', sort: true},
                 {
                     field: 'status', title: '评审状态', width: '10%', align: 'center',
                     templet: function (d) {
@@ -148,7 +155,23 @@
                         }
                     }
                 },
-                {title: '操作', toolbar: '#operate', width: '10%', align: "center"}
+                {title: '操作', width: '13%', align: "center",
+                    templet: function (d) {
+                        var element = '';
+                        if(type == 2) {
+                            if(d.status == 0) {
+                                element = `<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="agree">通过</a>
+                                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="refuse">驳回</a>`;
+                            }
+                        } else {
+                            if((d.status == 0 && isSecondApprover) || d.status == 1) {
+                                element = `<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="agree">通过</a>
+                                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="refuse">驳回</a>`;
+                            }
+                        }
+                        return element;
+                    }
+                }
             ]],
             id: 'requestList',
             limits: [10, 15, 20, 25, 50, 100],
@@ -162,7 +185,6 @@
         form.on('select(request-type)', function (data) {
             if (data.value != type) {
                 table.reload('requestList', {
-                    url: '/office_automation/public/index/document_c/getAllRequest',
                     page: {
                         curr: 1
                     },
@@ -261,9 +283,80 @@
                     maxmin: true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: 'read-request.html?type=' + type + '&requestId=' + data.request_id,
+                    content: 'read-request.html?v=2&type=' + type + '&requestId=' + data.request_id,
+                });
+            } else if(obj.event == 'agree') {
+                layer.confirm('确定通过？', {icon: 3, title: '提示'}, function (index) {
+                    layer.close(index);
+                    var index = layer.load(2);
+                    $.ajax({
+                        url: "/office_automation/public/index/document_c/passRequest",
+                        type: 'post',
+                        data: {
+                            requestId: data.request_id,
+                            type: type,
+                            processOpinion: data.process_opinion,
+                        },
+                        success: function (res) {
+                            layer.close(index);
+                            if (res.code == 0) {
+                                layer.alert("已通过", {title: '提示'}, function (index) {
+                                    layer.close(index);
+                                    // 重载表格
+                                    table.reload('requestList', {
+                                        page: {
+                                            curr: 1
+                                        },
+                                        where: {
+                                            type: data.value,
+                                            projectCode: $("#projectSelect").val(),
+                                            projectStage: $("#stageSelect").val(),
+                                        }
+                                    }, 'data');
+                                });
+                            } else {
+                                layer.msg("通过失败", {icon: 5});
+                            }
+                        }
+                    });
+                });
+            } else if(obj.event == 'refuse') {
+                layer.confirm('确定驳回？', {icon: 3, title: '提示'}, function (index) {
+                    layer.close(index);
+                    var index = layer.load(2);
+                    $.ajax({
+                        url: "/office_automation/public/index/document_c/noPassRequest",
+                        type: 'post',
+                        data: {
+                            requestId: data.request_id,
+                            type: type,
+                            processOpinion: data.process_opinion
+                        },
+                        success: function (res) {
+                            layer.close(index);
+                            if (res.code == 0) {
+                                layer.alert("已驳回", {title: '提示'}, function (index) {
+                                    layer.close(index);
+                                    // 重载表格
+                                    table.reload('requestList', {
+                                        page: {
+                                            curr: 1
+                                        },
+                                        where: {
+                                            type: data.value,
+                                            projectCode: $("#projectSelect").val(),
+                                            projectStage: $("#stageSelect").val(),
+                                        }
+                                    }, 'data');
+                                });
+                            } else {
+                                layer.msg("驳回失败", {icon: 5});
+                            }
+                        }
+                    });
                 });
             }
+            return false;
         });
 
         // 监听分类单选按钮

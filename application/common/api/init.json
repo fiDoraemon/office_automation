@@ -87,7 +87,7 @@
             },
             {
               "title": "发起归档",
-              "href": "page/document/add-doc.html",
+              "href": "page/document/add-batch.html",
               "icon": "fa fa-plus",
               "target": "_self"
             },
@@ -106,13 +106,13 @@
           "target": "_self",
           "child": [
             {
-              "title": "IQC缺陷浏览",
+              "title": "缺陷浏览",
               "href": "page/iqc/index-iqc.html",
               "icon": "fa fa-search",
               "target": "_self"
             },
             {
-              "title": "IQC缺陷提交",
+              "title": "缺陷提交",
               "href": "page/iqc/add-iqc.html",
               "icon": "fa fa-plus",
               "target": "_self"

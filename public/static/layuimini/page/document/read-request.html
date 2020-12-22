@@ -51,9 +51,13 @@
                 <div class="layui-input-inline">
                     <input type="text" name="project_code" class="layui-input" disabled>
                 </div>
-                <label class="layui-form-label">项目阶段</label>
+                <!--<label class="layui-form-label">项目阶段</label>-->
+                <!--<div class="layui-input-inline">-->
+                    <!--<input type="text" name="project_stage" class="layui-input" disabled>-->
+                <!--</div>-->
+                <label class="layui-form-label">版本号</label>
                 <div class="layui-input-inline">
-                    <input type="text" name="project_stage" class="layui-input" disabled>
+                    <input type="text" name="version" class="layui-input" disabled>
                 </div>
             </div>
             <div class="layui-form-item">
@@ -66,32 +70,38 @@
                     <input type="text" name="request_time" class="layui-input" disabled>
                 </div>
             </div>
-            <div class="layui-form-item layui-form-text">
-                <label class="layui-form-label">文档说明</label>
-                <div class="layui-input-block">
-                    <textarea name="description" class="layui-textarea" disabled></textarea>
-                </div>
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">版本号</label>
-                <div class="layui-input-inline">
-                    <input type="text" name="version" class="layui-input" disabled>
-                </div>
-            </div>
+            <!--<div class="layui-form-item layui-form-text">-->
+                <!--<label class="layui-form-label">文档说明</label>-->
+                <!--<div class="layui-input-block">-->
+                    <!--<textarea name="description" class="layui-textarea" disabled></textarea>-->
+                <!--</div>-->
+            <!--</div>-->
             <div class="layui-form-item">
                 <label class="layui-form-label">文件列表</label>
-                <div class="layui-input-block">
-                    <table class="layui-table">
-                        <thead>
-                            <tr>
-                                <th>文件名</th>
-                                <th>大小</th>
-                                <th>状态</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="fileList"></tbody>
-                    </table>
+                <div class="layui-fluid">
+                    <div class="layui-row">
+                        <div class="layui-col-sm11 layui-col-sm-offset1">
+                            <table class="layui-table">
+                                <colgroup>
+                                    <col width="30%">
+                                    <col width="10%">
+                                    <col width="20%">
+                                    <col width="30%">
+                                    <col width="10%">
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>文件名</th>
+                                        <th>大小</th>
+                                        <th>项目阶段</th>
+                                        <th>文档说明</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fileList"></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
             <fieldset class="layui-elem-field layui-field-title">
@@ -169,17 +179,18 @@
                             var isFirstApprover = res.data.isFirstApprover;
                             form.val("setValue", {
                                 "project_code": requestDetail.project_code,
-                                "project_stage": requestDetail.project_stage,
-                                "applicant": requestDetail.applicant_name,
-                                "approver": requestDetail.approver_name,
+                                // "project_stage": requestDetail.project_stage,
+                                "applicant": requestDetail.applicant,
+                                "approver": requestDetail.approver,
                                 "request_time": requestDetail.request_time,
-                                "description": requestDetail.description,
+                                // "description": requestDetail.description,
                                 'version': '1.0',
                                 "process_opinion": requestDetail.process_opinion,
                                 "process_time": requestDetail.process_time,
                             });
                             // 填充附件列表
                             var attachmentList = requestDetail.attachments;
+                            var files = requestDetail.files;
                             var element = '';
                             for (i in attachmentList) {
                                 var size = getfilesize(attachmentList[i].file_size);
@@ -187,7 +198,10 @@
                             <tr>
                                 <td>${attachmentList[i].source_name}</td>
                                 <td>${size}</td>
-                                <td>已上传</td>
+                                <td>${files[i].project_stage}</td>
+                                <td>
+                                    <textarea class="layui-textarea" style="min-height: 50px;" disabled>${files[i].description}</textarea>
+                                </td>
                                 <td>
                                     <a class="layui-btn layui-btn-xs download-btn" href="/Office_Automation/public/upload/${attachmentList[i].save_path}" download="${attachmentList[i].source_name}">下载</a>
                                 </td>
@@ -225,10 +239,10 @@
                             var isFirstApprover = res.data.isFirstApprover;
                             form.val("setValue", {
                                 "project_code": requestDetail.project_code,
-                                "project_stage": requestDetail.project_stage,
+                                // "project_stage": requestDetail.project_stage,
                                 "applicant": requestDetail.applicant,
                                 "request_time": requestDetail.request_time,
-                                "description": requestDetail.description,
+                                // "description": requestDetail.description,
                                 'version': requestDetail.version + '.0',
                                 "approver": requestDetail.approver,
                                 "process_opinion": requestDetail.process_opinion,
@@ -241,7 +255,10 @@
                             <tr>
                                 <td>${attachment.source_name}</td>
                                 <td>${size}</td>
-                                <td>已上传</td>
+                                <td>${requestDetail.project_stage}</td>
+                                <td>
+                                    <textarea class="layui-textarea" style="min-height: 50px;" disabled>${requestDetail.description}</textarea>
+                                </td>
                                 <td>
                                     <a class="layui-btn layui-btn-xs download-btn" href="/Office_Automation/public/upload/${attachment.save_path}" download="${attachment.source_name}">下载</a>
                                 </td>
@@ -293,7 +310,10 @@
                             <tr>
                                 <td>${attachment.source_name}</td>
                                 <td>${size}</td>
-                                <td>已上传</td>
+                                <td>${requestDetail.project_stage}</td>
+                                <td>
+                                    <textarea class="layui-textarea" style="min-height: 50px;" disabled>${requestDetail.description}</textarea>
+                                </td>
                                 <td>
                                     <a class="layui-btn layui-btn-xs download-btn" href="/Office_Automation/public/upload/${attachment.save_path}" download="${attachment.source_name}">下载</a>
                                 </td>
@@ -356,7 +376,8 @@
                     success: function (res) {
                         layer.close(index);
                         if (res.code == 0) {
-                            layer.alert("已通过", {title: '提示'}, function () {
+                            layer.alert("已通过", {title: '提示'}, function (index) {
+                                layer.close(index);
                                 // 关闭当前窗口
                                 var index = parent.layer.getFrameIndex(window.name);
                                 parent.layer.close(index);

@@ -693,6 +693,7 @@ class TableItemC extends Controller
                     $tableFieldValue = new TableFieldValue();
                     $tableFieldValue->item_id = $fields['itemId'];
                     $tableFieldValue->field_id = $fields['fieldId'];
+                    $tableFieldValue->field_value = '';         // TODO 按道理不需要这步
                     $tableFieldValue->save();
                 }
                 if ($tableFieldValue->field_value) {

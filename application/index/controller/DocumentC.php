@@ -25,6 +25,7 @@ use app\index\model\ProjectStageInfo;
 use app\index\model\User;
 use app\index\model\UserRole;
 use app\index\service\DocumentService;
+use app\index\service\ProjectService;
 use app\index\service\UserService;
 use think\Db;
 use think\db\exception\DataNotFoundException;
@@ -39,6 +40,21 @@ use think\Session;
  */
 class DocumentC
 {
+    /*
+     * 获取申请列表页面所需信息
+     */
+    public function indexDocRequest() {
+        $sessionUserId = Session::get('info')['user_id'];
+        // 查询所有项目代号
+        $listCodes = $this->getProjectCode();
+        $isSecondApprover = DocumentService::isSecondApprover($sessionUserId)? 1 : 0;
+        $data = [
+            'projectCodes' =>  $listCodes,
+            'isSecondApprover' => $isSecondApprover
+        ];
+        return Result::returnResult(Result::SUCCESS, $data);
+    }
+
     /**
      * 查询所有项目代号、审批人
      * @return array
@@ -121,7 +137,7 @@ class DocumentC
         if($keyword) {
             $condition2 .= " and a.source_name like '%$keyword%'";
         }
-        $count = $docFile->join('oa_doc_file_version dfv', $condition)
+        $count = $docFile->where('status', 1)->join('oa_doc_file_version dfv', $condition)
             ->join('oa_attachment a', $condition2)->count();
         // 查询文件条目
         $docFile->alias('df')->where("status", 1);
@@ -139,7 +155,7 @@ class DocumentC
         if($keyword) {
             $condition2 .= " and a.source_name like '%$keyword%'";
         }
-        $fileList = $docFile->join('oa_doc_file_version dfv', $condition)
+        $fileList = $docFile->where('status', 1)->join('oa_doc_file_version dfv', $condition)
             ->join('oa_attachment a', $condition2)
             ->join('oa_project p', 'p.project_id = df.project_id')
             ->join('oa_user u', 'u.user_id = dfv.uploader_id')
@@ -247,38 +263,24 @@ class DocumentC
     {
         $sessionUserId = Session::get("info")["user_id"];
         if ($type == 0) {
-            $docRequest = new DocRequest();
-
-            $req = $docRequest->where("request_id", $requestId)
-                ->field("request_id,applicant_id,approver_id,project_id,project_stage,description,process_opinion,request_time,process_time,status")
+            $docRequestModel = new DocRequest();
+            $docRequest = $docRequestModel->alias('dr')->where("request_id", $requestId)
+                ->join('oa_user u', 'u.user_id = dr.applicant_id')
+                ->join('oa_user u2', 'u2.user_id = dr.approver_id')
+                ->join('oa_project p', 'p.project_id = dr.project_id')
+                ->field("request_id,applicant_id,approver_id,u.user_name as applicant,u2.user_name as approver,
+                p.project_code,project_stage,process_opinion,request_time,process_time,status")
                 ->find();
-
-            if ($sessionUserId != $req->applicant_id && $sessionUserId != $req->approver_id) {
-                return Result::returnResult(Result::NO_ACCESS);
-            }
-            $req->requestUser;
-            $req->approverUser;
-            $req->projectCode;
-            $req->projectStage;
-            $req->applicant_name = $req->requestUser->user_name;
-            $req->approver_name = $req->approverUser->user_name;
-            $req->project_code = $req->projectCode->project_code;
-//        $req -> project_stage = $req -> projectStage -> stage_name;
-            //关联多个附件
-            $req->attachments;
-//            if (($sessionUserId === $req->approver_id) && ($req->status === 0)) {
-//                $req->isAuthor = 1;
-//            } else {
-//                $req->isAuthor = 0;
-//            }
-            $req->isApprover = ($sessionUserId == $req->approver_id) ? 1 : 0;
-            unset($req->requestUser, $req->approverUser, $req->projectCode, $req->projectStage, $req->approver_id);
+            // 关联多个附件
+            $docRequest->files;
+            $docRequest->attachments;
+            $docRequest->isApprover = ($sessionUserId == $docRequest->approver_id) ? 1 : 0;
             // 获取所有二级审批人
             $secondApproverList = DocumentService::getAllSecondApprover();
             $data = [
-                'requestDetail' => $req,
+                'requestDetail' => $docRequest,
                 'secondApproverList' => $secondApproverList,
-                'isFirstApprover' => DocumentService::isFirstApprover($req->applicant_id)
+                'isFirstApprover' => DocumentService::isFirstApprover($docRequest->applicant_id)
             ];
         } else if ($type == 1) {
             // 获取升版申请详情
@@ -361,8 +363,9 @@ class DocumentC
             }
             $count = $docRequest->count();
             // 获取申请条目
+            $docRequest->alias('dr');
             if ($projectCode) {
-                $docRequest->where("project_id", $projectCode);
+                $docRequest->where("dr.project_id", $projectCode);
             }
             if ($projectStage) {
                 $docRequest->where("project_stage", $projectStage);
@@ -375,20 +378,14 @@ class DocumentC
             } else {
                 $docRequest->where("approver_id", $sessionUserId);
             }
-            $listRequest = $docRequest->field("request_id,applicant_id,approver_id,project_id,project_stage,description,request_time,status")
+            $listRequest = $docRequest->alias('dr')
+                ->join('oa_user u', 'u.user_id = dr.applicant_id')
+                ->join('oa_user u2', 'u2.user_id = dr.approver_id')
+                ->join('oa_project p', 'p.project_id = dr.project_id')
+                ->field("request_id,applicant_id as applicant,approver_id as approver,project_code,project_stage,request_time,status")
                 ->order("request_time", "desc")
                 ->page($page, $limit)
                 ->select();
-            foreach ($listRequest as $req) {
-                $req->requestUser;
-                $req->approverUser;
-                $req->projectCode;
-                $req->projectStage;
-                $req->applicant = $req->requestUser->user_name;
-                $req->approver = $req->approverUser->user_name;
-                $req->project_code = $req->projectCode->project_code;
-                unset($req->requestUser, $req->approverUser, $req->projectCode, $req->projectStage);
-            }
         } else if($type == 1){
             $docUpgradeRequest = new DocUpgradeRequest();
             $docUpgradeRequest->alias('dur');
@@ -682,21 +679,32 @@ class DocumentC
             $fields = input('post.');
             if($fields['type'] == 0) {
                 $uploadList = explode(';', $fields["attachment_list"]);       // 上传的归档文件
+                // 增加申请信息
                 $docRequest = new DocRequest([
                     'applicant_id' => $sessionUserId,
                     'approver_id' => $fields["approver"],
                     'project_id' => $fields["project_id"],
-                    'project_stage' => $fields["project_stage"],
-                    'description' => $fields["description"],
+//                    'project_stage' => $fields["project_stage"],
+//                    'description' => $fields["description"],
                     'request_time' => date('Y-m-d H:i:s', time()),
                 ]);
                 $docRequest->save();
                 // 处理附件列表
-                foreach ($uploadList as $upload) {
+                foreach ($uploadList as $key => $upload) {
                     $attachment = Attachment::get($upload);
                     $attachment->attachment_type = "doc";
                     $attachment->related_id = $docRequest->request_id;
                     $attachment->save();
+                    // 增加文档信息
+                    $docFile = new DocFile();
+                    $docFile->data([
+                        'request_id' => $docRequest->request_id,
+                        'description' => $fields["description"][$key],
+                        'status' => 0,
+                        'project_id' => $fields["project_id"],
+                        'project_stage' => $fields["project_stage"][$key],
+                    ]);
+                    $docFile->save();
                 }
                 // 发送钉钉消息给审批人
                 $this->sendRequestMessage($docRequest);
@@ -804,24 +812,17 @@ class DocumentC
             // 处理附件列表
             $fileList = $docRequest->attachments;
             foreach ($fileList as $file) {
-                $projectCode = $docRequest->projectCode->project_code;
+                // 修改归档文件信息
+                $docFileModel = new DocFile();
+                $docFile = $docFileModel->where('request_id', $docRequest->request_id)
+                    ->where('status', 0)->find();
                 // 生成文档编码
-                $docCode = $this->getDocCode($projectCode, $docRequest->project_stage);
-                $newPath = "doc-file/" . $projectCode . "/" . $docRequest->project_stage;
-                // 增加新的归档文件
-                $docFile = new DocFile();
-                $docFile->data([
-//                    'request_id' => $requestId,
-                    'file_code' => $docCode,            // 文件编码自动生成
-                    'description' => $docRequest->description,
-//                    'save_name' => $file->storage_name,
-//                    'source_name' => $file->source_name,
-//                    'path' => $newPath . "/" . $file->storage_name,
-//                    'size' => $file->file_size,
-                    'project_id' => $docRequest->project_id,
-                    'project_stage' => $docRequest->project_stage,
-                    'create_time' => date('Y-m-d H:i:s', time()),
-                ]);
+                $projectCode = ProjectService::getProjectCode($docFile->project_id);
+                $docCode = $this->getDocCode($projectCode, $docFile->project_stage);
+                $newPath = "doc-file/" . $projectCode . "/" . $docFile->project_stage;
+
+                $docFile->file_code = $docCode;
+                $docFile->status = 1;
                 $docFile->save();
                 // 增加文档第一个版本信息
                 $docFileVersion = new DocFileVersion();
@@ -830,7 +831,7 @@ class DocumentC
                     'request_id' => $docRequest->request_id,
                     'attachment_id' => $file->attachment_id,
                     'uploader_id' => $docRequest->applicant_id,
-                    'description' => $docRequest->description
+                    'description' => $docFile->description
                 ]);
                 $docFileVersion->save();
                 // 移动文档文件到指定位置
@@ -1055,7 +1056,7 @@ class DocumentC
     public function getProjectCode(){
         try {
             $listProjectCodes = Db::table('oa_project')
-                -> field("project_id,project_code")
+                -> field("project_id,project_code,doc_stage")
                 -> select();
             return $listProjectCodes;
         } catch (DataNotFoundException $e) {
@@ -1153,21 +1154,18 @@ class DocumentC
     /**
      * 查询所有作者信息
      */
-    private function getAllAuthor(){
+    private function getAllAuthor()
+    {
         $docReq = new DocRequest();
-        try {
-            $listReq = $docReq -> field("applicant_id")
-                               -> distinct(true)
-                               -> select();
-            foreach ($listReq as $req){
-                $req -> applicant_name = $req -> requestUser -> user_name;
-                unset($req -> requestUser);
-            }
-            return $listReq;
-        } catch (DataNotFoundException $e) {
-        } catch (ModelNotFoundException $e) {
-        } catch (DbException $e) {
+        $listReq = $docReq->field("applicant_id")
+            ->distinct(true)
+            ->select();
+        foreach ($listReq as $req) {
+            $req->applicant_name = $req->requestUser->user_name;
+            unset($req->requestUser);
         }
+
+        return $listReq;
     }
 
     /**
@@ -1277,12 +1275,12 @@ class DocumentC
         $postUrl = 'http://www.bjzzdr.top/us_service/public/other/ding_ding_c/sendMessage';
         $url = 'http://192.168.0.249/office_automation/public/static/layuimini/?requestType=0&requestId=' . $req->request_id;
         $applicant = $req->requestUser->user_name;
-        $description = $req->description;
+//        $description = $req->description;
         $requestId = $req->request_id;
         $data = DataEnum::$msgData;
         $data['userList'] = $DDidList;
         $templet = '▪ 申请人：' . $applicant . "\n";
-        $templet .= '▪ 文档描述：' . $description . "\n";
+//        $templet .= '▪ 文档描述：' . $description . "\n";
         $templet .= '▪ 文档列表：' . $fileList . "\n";
         $templet .= '▪ 链接：' . $url;
         $message = '◉ ' . '您有新文档审批需要处理！(#' . $requestId . ')' . "\n" . $templet;

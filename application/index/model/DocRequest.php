@@ -33,22 +33,32 @@ class DocRequest extends Model
      * 与项目一对一对应
      * @return \think\model\relation\HasOne
      */
-    public function projectCode(){
-        return $this->hasOne('Project',"project_id","project_id")->field('project_code');
-    }
+//    public function projectCode(){
+//        return $this->hasOne('Project',"project_id","project_id")->field('project_code');
+//    }
 
     /**
      * 与项目状态一对一对应
      * @return \think\model\relation\HasOne
      */
-    public function projectStage(){
-        return $this->hasOne('ProjectStage',"id","project_stage")->field('stage_name');
-    }
+//    public function projectStage(){
+//        return $this->hasOne('ProjectStage',"id","project_stage")->field('stage_name');
+//    }
 
     /**
      * 与附件一对多对应
      */
     public function attachments(){
-        return $this->hasMany('Attachment', 'related_id', 'request_id')->where('attachment_type', 'doc')->field('attachment_id, source_name, storage_name, uploader_id, file_size, save_path');
+        return $this->hasMany('Attachment', 'related_id', 'request_id')
+            ->where('attachment_type', 'doc')
+            ->field('attachment_id, source_name, storage_name, uploader_id, file_size, save_path');
+    }
+
+    /*
+     * 关联文档（一对多）
+     */
+    public function files(){
+        return $this->hasMany('DocFile', 'request_id', 'request_id')
+            ->field('project_stage, description');
     }
 }

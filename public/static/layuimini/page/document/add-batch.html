@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>批量发起</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <style>
+        .layui-form-item .layui-input-company {
+            width: auto;padding-right: 10px;line-height: 38px;
+        }
+
+        /* 上传附件 */
+        .layui-upload-drag {
+            margin-top: 10px;
+            padding-bottom: 0;
+            width: 90%;
+            background-color: #eee;
+        }
+        .upload-btn {
+            margin-top: 20px;
+        }
+        .tip {
+            width: 85%;
+            color: #999;
+            font-size: 10px;
+            padding-top: 10px;
+        }
+        /* 标签 */
+        .layui-form-label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <div class="layui-form layuimini-form">
+            <div class="layui-form-item">
+                <label class="layui-form-label required">所属项目</label>
+                <div class="layui-input-inline">
+                    <select class="" name="project_id" id="project-code" lay-verify="required" lay-filter="project-code">
+                        <option value="">--请选择所属项目--</option>
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <div class="tip">提示：目前只允许发起一种项目代号的申请</div>
+                </div>
+            </div>
+            <!--<div class="layui-form-item">-->
+                <!--<label class="layui-form-label required input-title">项目阶段</label>-->
+                <!--<div class="layui-input-inline">-->
+                    <!--<select class="" name="project_stage" lay-verify="required" id="stageSelect" lay-filter="selectStagePre">-->
+                        <!--<option value="">&#45;&#45;请选择项目阶段&#45;&#45;</option>-->
+                    <!--</select>-->
+                <!--</div>-->
+                <!--<div class="layui-input-inline">-->
+                    <!--<select class="" name="project_stage_fix" lay-verify="required" id="stageFix" lay-filter="">-->
+                        <!--<option value="">&#45;&#45;请选择项目阶段&#45;&#45;</option>-->
+                    <!--</select>-->
+                <!--</div>-->
+            <!--</div>-->
+            <div class="layui-form-item">
+                <label class="layui-form-label required">审批人</label>
+                <div class="layui-input-inline">
+                    <select class="" name="approver" lay-verify="required" id="reviewerSelect" lay-filter="">
+                        <option value="">--请选择审批人--</option>
+                    </select>
+                </div>
+            </div>
+            <!--<div class="layui-form-item">-->
+                <!--<label class="layui-form-label required input-title">文档说明</label>-->
+                <!--<div class="layui-input-block">-->
+                    <!--<textarea placeholder="请输入文档说明" name="description" id="minute-context" class="layui-textarea"></textarea>-->
+                <!--</div>-->
+            <!--</div>-->
+            <div class="layui-form-item">
+                <label class="layui-form-label required">上传附件</label>
+                <div class="layui-fluid">
+                    <div class="layui-row">
+                        <div class="layui-col-sm11 layui-col-sm-offset1">
+                            <div class="layui-upload-drag" id="attachment">
+                                <i class="layui-icon"></i>
+                                <p>点击上传，或将文件拖拽到此处</p>
+                                <input type="hidden" id="attachment_list" name="attachment_list">
+                                <button type="button" class="layui-btn upload-btn" id="start_upload" onclick="stopPropagation()" style="margin-top: 20px">开始上传</button>
+                            </div>
+                            <div class="tip">提示：1.选择文件后请先点击“开始上传”按钮再提交；2.单个文件的大小最大为100M</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">文件列表</label>
+                <div class="layui-fluid">
+                    <div class="layui-row">
+                        <div class="layui-col-sm11 layui-col-sm-offset1">
+                            <table class="layui-table">
+                                <colgroup>
+                                    <col width="20%">
+                                    <col width="10%">
+                                    <col width="30%">
+                                    <col width="30%">
+                                    <col width="10%">
+                                </colgroup>
+                                <thead>
+                                <tr>
+                                    <th>文件名</th>
+                                    <th>状态</th>
+                                    <th>项目阶段</th>
+                                    <th>文档说明</th>
+                                    <th>操作</th>
+                                </tr>
+                                </thead>
+                                <tbody id="fileList"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr style="margin-top: 50px">
+            <div class="layui-form-item" style="margin:50px 0 50px 150px;">
+                <button class="layui-btn" lay-submit id="save" lay-filter="save">批量发起</button>
+                <button type="reset" class="layui-btn layui-btn-primary" id="refresh">重置</button>
+                <!--<a href="add-doc.html" class="layui-btn layui-btn-primary" style="float: right;margin-right: 50px">返回</a>-->
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script src="../../js/common.js?v=1" charset="utf-8"></script>
+<script>
+    layui.use(['form','miniTab','upload'], function () {
+        var $ = layui.jquery,
+            form = layui.form,
+            layer = layui.layer,
+            upload = layui.upload,
+            miniTab = layui.miniTab;
+
+        // 渲染上传文件
+        var fileListView = $('#fileList')
+            ,uploadListIns = upload.render({
+            elem: '#attachment'
+            ,url: '/office_automation/public/attachment'
+            ,auto: false
+            ,multiple: true
+            ,size: 102400            // 单位 KB，最大 100MB
+            ,accept: 'file'
+            ,bindAction: '#start_upload'
+            ,choose: function(obj){
+                if($('#fileList').children().length > 9) {
+                    layer.msg('最多上传十个附件！');
+                    return false;
+                }
+                if(!$('#project-code').val()) {
+                    layer.msg('请先选择项目代号', {icon: 5});
+                    return false;
+                }
+                var files = this.files = obj.pushFile();         // 将每次选择的文件追加到文件队列
+
+                $("#start_upload").removeAttr("disabled");
+                // 预读本地文件
+                obj.preview(function(index, file, result){          // 分别是文件索引、文件对象、文件base64编码
+                    var tr = $(`
+                    <tr id="upload-${index}">
+                        <td>${file.name}</td>
+                        <td>等待上传</td>
+                        <td>
+                            <div class="layui-inline" style="width: 150px">
+                                <select class="project-stage" name="project_stage[]" lay-verify="required" lay-filter="project-stage" related-select="">
+                                    <option value="">--请选择项目阶段--</option>
+                                </select>
+                            </div>
+                            <div class="layui-inline" style="width: 150px">
+                                <select class="project-stage-fix" name="project_stage_fix[]">
+                                    <option value="">--请选择--</option>
+                                </select>
+                            </div>
+                        </td>
+                        <td>
+                            <input name="description[]" lay-verify="required" placeholder="请输入文档说明" class="layui-input">
+                        </td>
+                        <td>
+                            <button class="layui-btn layui-btn-xs layui-hide reload">重传</button>
+                            <button class="layui-btn layui-btn-xs layui-btn-danger delete">删除</button>
+                        </td>
+                    </tr>`);
+                    renderProjectStage(tr.find('.project-stage'));
+
+                    // 单个重传
+                    // tr.find('.reload').on('click', function(){
+                    //     obj.upload(index, file);
+                    // });
+
+                    // 删除
+                    tr.find('.delete').on('click', function(){
+                        delete files[index];            // 删除对应的文件
+                        tr.remove();
+                        // 清空 input file 值，以免删除后出现同名文件不可选
+                        uploadListIns.config.elem.next()[0].value = '';
+                        if(!files) {
+                            $("#start_upload").attr("disabled", true);
+                        }
+                    });
+                    fileListView.append(tr);
+                    form.render('select');
+                });
+            }
+            ,before: function(obj){
+                layer.load();            // 取消上传后仍会触发 before
+            }
+            ,done: function(res, index, upload){
+                if(res.code == 0){
+                    // 写入附件 id
+                    if($('#attachment_list').val() == '') {
+                        $('#attachment_list').val(res.data.id);
+                    } else {
+                        var ids = $('#attachment_list').val().split(';');
+                        if(!ids.includes(res.data.id)) {
+                            ids.push(res.data.id);
+                        }
+                        $('#attachment_list').val(ids.join(';'));
+                    }
+
+                    var tr = fileListView.find('tr#upload-'+ index)
+                        ,tds = tr.children();
+                    tds.eq(1).html('<span style="color: #5FB878;">上传成功</span>');
+                    tds.eq(4).html('');
+                    delete this.files[index];            // 删除文件队列已经上传成功的文件
+                } else {
+                    console.log('上传失败：' + res.msg + `(${index})`);
+                    this.error(index, upload);
+                }
+            }
+            ,allDone: function(obj){
+                layer.closeAll('loading');
+                layer.msg('上传完成！');
+                $("#start_upload").attr("disabled", true);
+                console.log('上传完成！共上传' + obj.total + '个文件，成功文件数：' + obj.successful +'，失败文件数：' + obj.aborted);
+            }
+            ,error: function(index, upload){            // 分别为当前文件的索引、重新上传的方法
+                var tr = fileListView.find('tr#upload-'+ index)
+                    ,tds = tr.children();
+                tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
+                tds.eq(3).find('.reload').removeClass('layui-hide');           // 显示重传
+            }
+        });
+
+        // 获取发起归档页面所需信息
+        var projectCodes;           // 项目代号列表
+        $.ajax({
+            url: "/office_automation/public/index/document_c/createDocRequest",
+            type: 'get',
+            success: function (res) {
+                // 填充项目代号
+                projectCodes = res.data.projectCodes;
+                var approvers = res.data.approvers;
+                var element = '';
+                for (var i = 0; i < projectCodes.length; i++) {
+                    element += "<option value='" + projectCodes[i]["project_id"] + "'>" + projectCodes[i]["project_code"] + "</option>";
+                }
+                $("#project-code").append(element);
+                // 填充一级审批人下拉选择
+                element = '';
+                for (var i = 0; i < approvers.length; i++) {
+                    element += "<option value='" + approvers[i]["user_id"] + "'>" + approvers[i]["user_name"] + "</option>";
+                }
+                $("#reviewerSelect").append(element);
+                form.render('select');
+            }
+        });
+
+        var projectStage;           // 项目阶段列表
+        // 渲染项目阶段下拉列表
+        function renderProjectStage(element) {
+            // 获取对应的项目代号
+            var projectId = $('#project-code').val();
+            for(var i in projectCodes) {
+                if(projectCodes[i].project_id == projectId) {
+                    projectStage = projectCodes[i].doc_stage.split(';');
+                    break;
+                }
+            }
+            // 填充项目阶段下拉选择
+            var arr = [];
+            var stagePre = '';
+            for (var i in projectStage) {
+                var index = projectStage[i].indexOf('-');
+                if (index == -1) {
+                    if ($.inArray(projectStage[i], arr) == -1) {
+                        arr.push(projectStage[i]);
+                        stagePre += "<option value='" + projectStage[i] + "'>" + projectStage[i] + "</option>";
+                    }
+                } else {
+                    var pre = projectStage[i].substr(0, index);
+                    if ($.inArray(pre, arr) == -1) {
+                        arr.push(pre);
+                        stagePre += "<option value='" + pre + "'>" + pre + "</option>";
+                    }
+                }
+            }
+            element.append(stagePre);
+        }
+
+        // 监听项目阶段前缀下拉选择
+        form.on('select(project-stage)',function(data){
+            var element = $(data.elem).parent().next().find('select');          // 获取对应的下拉选择对象
+            element.empty();
+            var stagePre = data.value;
+            var stageFix = `<option value="">--请选择--</option>`;
+            if(data.value) {
+                var label = false;          // 标识是否有第二选择
+                for (var i in projectStage) {
+                    if (projectStage[i].startsWith(stagePre)) {
+                        var index = projectStage[i].indexOf('-');
+                        if (index >= 0) {
+                            var fix = projectStage[i].substr(index + 1, projectStage[i].length - 1);
+                            stageFix += "<option value='" + fix + "'>" + fix + "</option>";
+                            label = true;
+                        }
+                    }
+                }
+                if(label) {
+                    element.attr('lay-verify', 'required');
+                } else {
+                    element.removeAttr('lay-verify');
+                }
+            }
+            element.append(stageFix);
+            form.render('select');
+            return false;
+        });
+
+        // 监听选择所属项目的下拉选择
+        form.on('select(project-code)',function(data){
+            if(data.value != '') {
+                $('#project-code').attr('disabled', true);
+                form.render('select');
+            }
+            return false;
+        });
+
+        // 监听提交
+        form.on('submit(save)', function (data) {
+            // 判断是否有文件未上传
+            // if ($('#attachment_list').val() == '') {
+            //     layer.msg('未检测到有已上传文件！', {icon: 5});
+            //     return false;
+            // }
+            var result = data.field;
+            // 处理结果集
+            var fileCount = $('#fileList').find('tr').length;
+            for(var i = 0; i < fileCount; i ++) {
+                if(result['project_stage_fix' + '[' + i + ']']) {
+                    result['project_stage' + '[' + i + ']'] += ('-' + result['project_stage_fix' + '[' + i + ']']);
+                }
+                delete result['project_stage_fix' + '[' + i + ']'];
+            }
+            console.log(result);
+            result.type = 0;
+            delete result.file;
+
+            layer.confirm('确定发起归档？', {icon: 3, title: '提示'}, function (index) {
+                layer.close(index);
+                var index = layer.load(2);
+                $.ajax({
+                    url: "/office_automation/public/index.php/index/document_c/saveRequest",
+                    type: 'post',
+                    data: result,
+                    success: function (res) {
+                        layer.close(index);
+                        if (res.code === 0) {
+                            layer.alert("发起成功", {title: '提示'}, function (index) {
+                                layer.close(index);
+                                location.reload();
+                                miniTab.openNewTabByIframe({
+                                    href: "page/document/index-doc.html",
+                                    title: "文档搜索",
+                                });
+                            });
+                        } else {
+                            layer.msg('发起失败', {icon: 5});
+                        }
+                    }
+                });
+            });
+        });
+    });
+</script>
+</body>
+</html>
