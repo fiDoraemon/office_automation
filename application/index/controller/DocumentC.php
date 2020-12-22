@@ -259,7 +259,7 @@ class DocumentC
      * @throws ModelNotFoundException
      * @throws \think\Exception
      */
-    public function getRequestInfo($requestId, $type)
+    public function getRequestInfo($requestId, $type = 0)
     {
         $sessionUserId = Session::get("info")["user_id"];
         if ($type == 0) {
@@ -269,7 +269,7 @@ class DocumentC
                 ->join('oa_user u2', 'u2.user_id = dr.approver_id')
                 ->join('oa_project p', 'p.project_id = dr.project_id')
                 ->field("request_id,applicant_id,approver_id,u.user_name as applicant,u2.user_name as approver,
-                p.project_code,project_stage,process_opinion,request_time,process_time,status")
+                p.project_code,process_opinion,request_time,process_time,status")
                 ->find();
             // 关联多个附件
             $docRequest->files;
@@ -289,13 +289,16 @@ class DocumentC
                 return Result::returnResult(Result::NO_ACCESS);
             }
             // 获取项目代号和项目阶段
-            $docFile = new DocFile();
-            $file = $docFile->alias('df')->where('file_id', $docUpgradeRequest->file_id)->join('oa_project p', 'p.project_id = df.project_id')->field('project_code,project_stage')->find();
-            $docUpgradeRequest->project_code = $file->project_code;
-            $docUpgradeRequest->project_stage = $file->project_stage;
+            $docFile = DocFile::get($docUpgradeRequest->file_id);
+//            $file = $docFile->where('file_id', $docUpgradeRequest->file_id)
+//                ->join('oa_project p', 'p.project_id = df.project_id')
+//                ->field('project_code,project_stage')->find();
+//            $docUpgradeRequest->project_code = $file->project_code;
+//            $docUpgradeRequest->project_stage = $file->project_stage;
             $docUpgradeRequest->approver = UserService::userIdToName($docUpgradeRequest->approver_id);
             $docUpgradeRequest->applicant = UserService::userIdToName($docUpgradeRequest->applicant_id);
             $docUpgradeRequest->attachment;
+            $docUpgradeRequest->file_code = $docFile->file_code;
             $requestDetail = $docUpgradeRequest->hidden(['file_id', 'applicant_id', 'approver_id'])->toArray();
             // 判断当前用户是否是升版审批人
             $isApprover = ($docUpgradeRequest->approver_id == $sessionUserId) ? 1 : 0;
@@ -314,11 +317,14 @@ class DocumentC
                 return Result::returnResult(Result::NO_ACCESS);
             }
             // 获取项目代号和项目阶段
-            $docFile = new DocFile();
-            $file = $docFile->alias('df')->where('file_id', $docBorrowRequest->file_id)->join('oa_project p', 'p.project_id = df.project_id')->field('df.description,project_code,project_stage')->find();
-            $docBorrowRequest->project_code = $file->project_code;
-            $docBorrowRequest->project_stage = $file->project_stage;
-            $docBorrowRequest->description = $file->description;
+            $docFile = DocFile::get($docBorrowRequest->file_id);
+//            $file = $docFile->alias('df')->where('file_id', $docBorrowRequest->file_id)
+//                ->join('oa_project p', 'p.project_id = df.project_id')
+//                ->field('df.description,project_code,project_stage')->find();
+//            $docBorrowRequest->project_code = $file->project_code;
+//            $docBorrowRequest->project_stage = $file->project_stage;
+            $docBorrowRequest->file_code = $docFile->file_code;
+            $docBorrowRequest->description = $docFile->description;
             $docBorrowRequest->approver = $docBorrowRequest->approver_id ? UserService::userIdToName($docBorrowRequest->approver_id) : '';
             $docBorrowRequest->applicant = UserService::userIdToName($docBorrowRequest->applicant_id);
             $docBorrowRequest->attachment = DocumentService::getFileAttachment($docBorrowRequest->file_id, $docBorrowRequest->version);
@@ -378,11 +384,10 @@ class DocumentC
             } else {
                 $docRequest->where("approver_id", $sessionUserId);
             }
-            $listRequest = $docRequest->alias('dr')
-                ->join('oa_user u', 'u.user_id = dr.applicant_id')
+            $listRequest = $docRequest->join('oa_user u', 'u.user_id = dr.applicant_id')
                 ->join('oa_user u2', 'u2.user_id = dr.approver_id')
                 ->join('oa_project p', 'p.project_id = dr.project_id')
-                ->field("request_id,applicant_id as applicant,approver_id as approver,project_code,request_time,status")
+                ->field("request_id,u.user_name as applicant,u2.user_name as approver,project_code,request_time,status")
                 ->order("request_time", "desc")
                 ->page($page, $limit)
                 ->select();

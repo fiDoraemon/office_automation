@@ -92,8 +92,14 @@
               "target": "_self"
             },
             {
-              "title": "待处理申请",
+              "title": "归档申请",
               "href": "page/document/index-request.html",
+              "icon": "fa fa-list",
+              "target": "_self"
+            },
+            {
+              "title": "升版/借阅申请",
+              "href": "page/document/index-upgrade-borrow-request.html",
               "icon": "fa fa-list",
               "target": "_self"
             }
