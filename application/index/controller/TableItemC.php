@@ -215,7 +215,9 @@ class TableItemC extends Controller
     {
         $tableItem = TableItem::get($id);
         // 判断用户是否是表的可见人
-        if(!TableWorkService::isViewTavle($tableItem->table_id)) {
+        $isViewTavle = TableWorkService::isViewTavle($tableItem->table_id);
+        Session::set('isViewTavle', $isViewTavle);          // 保存到session，进入任务详情时用到
+        if(!$isViewTavle) {
             return Result::returnResult(Result::NO_ACCESS);
         }
         $tableItem->creator_name = UserService::userIdToName($tableItem->creator_id, 1);          // 关联发起人

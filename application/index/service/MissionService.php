@@ -108,9 +108,13 @@ class MissionService
                 // 是否是管理员
                 $user = User::get(['user_id' => $userId]);
                 if($user->super != 1) {
+                    // 是否有合作人关系
                     if(!Cooperation::get(['manager_id' => $mission->reporter_id, 'member_id' => $userId]) &&
                         !Cooperation::get(['manager_id' => $mission->assignee_id, 'member_id' => $userId])) {
-                        return false;
+                        // 判断是否是工作表的任务
+                        if(!Session::get('isViewTavle')) {
+                            return false;
+                        }
                     }
                 }
             }
