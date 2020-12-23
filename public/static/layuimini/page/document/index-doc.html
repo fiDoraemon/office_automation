@@ -69,7 +69,6 @@
             form = layui.form,
             table = layui.table;
 
-        var isDocAdmin = false;  //标识是否是文控
         // 获取所需要的查询条件信息
         $.ajax({
             url: "/office_automation/public/index.php/index/document_c/getProCOdeAndAuthor",
@@ -81,7 +80,6 @@
                 var $projectCodes = "<option value=\"0\" selected>所有</option>";
                 var $projectStages = $allStr;
                 var $authors = $allStr;
-                isDocAdmin = res.data.isDocAdmin;
                 for (var i = 0; i < projectCodes.length; i++) {
                     $projectCodes += "<option value='" + projectCodes[i]["project_id"] + "'>" + projectCodes[i]["project_code"] + "</option>";
                 }
@@ -252,13 +250,12 @@
         // });
 
         // 监听文档表格操作按钮
-        var fileId;
         table.on('tool(fileListFilter)', function (obj) {
             let data = obj.data;
             if (obj.event == 'upgrade') {
-                index = layer.open({
-                    title: '文档升版',
+                layer.open({
                     type: 2,
+                    title: '文档升版',
                     shade: 0.2,
                     maxmin: true,
                     shadeClose: true,
@@ -266,126 +263,16 @@
                     content: 'upgrade-doc.html?fileId=' + data.file_id,
                 });
             } else if (obj.event == 'history-version') {
-                fileId = data.file_id;
-                // 获取文档其它版本
-                $.get(
-                    '/office_automation/public/index/document_c/getFileVersion?fileId=' + data.file_id,
-                    function(res){
-                        var fileVersionList = res.data.fileVersionList;
-                        var fileCode = res.data.fileCode;
-                        // var element = $(`
-                        // <table class="layui-table">
-                        //     <colgroup>
-                        //       <col width="10%">
-                        //       <col width="10%">
-                        //       <col width="30%">
-                        //       <col width="30%">
-                        //       <col width="20%">
-                        //     </colgroup>
-                        //     <thead>
-                        //       <tr>
-                        //         <th>版本号</th>
-                        //         <th>上传者</th>
-                        //         <th>文件名</th>
-                        //         <th>升版说明</th>
-                        //         <th>操作</th>
-                        //       </tr>
-                        //     </thead>
-                        //     <tbody></tbody>
-                        // </table>`);
-                        // for(var i in fileVersionList) {
-                        //     element.find('tbody').append(`
-                        //     <tr>
-                        //         <td>${fileVersionList[i].version}</td>
-                        //         <td>${fileVersionList[i].uploader}</td>
-                        //         <td>${fileVersionList[i].attachment.source_name}</td>
-                        //         <td>${fileVersionList[i].description}</td>
-                        //         <td><button type="button" class="layui-btn layui-btn-normal layui-btn-xs">下载</button></td>
-                        //     </tr>`);
-                        // }
-                        var element = `
-                        <div style="padding: 20px 20px">
-                            <table class="layui-hide" id="version-list" lay-filter="version-list"></table>
-                        </div>`;
-                        layer.open({
-                            type: 1,
-                            title: '历史版本',
-                            content: element,
-                            skin: 'layui-layer-molv',
-                            area: ['70%', '80%'],
-                            shadeClose: true,
-                            anim: 1
-                        });
-                        table.render({
-                            elem: '#version-list',
-                            cols: [[
-                                {field: 'version', title: '版本号', width: '10%', align: 'center',
-                                    templet: function (d) {
-                                        return d.version + '.0';
-                                    }
-                                },
-                                {field: 'uploader',title: '上传者', width: '15%', align: 'center'},
-                                {field: 'source_name', title: '文件名', width: '20%',
-                                    templet: function (d) {
-                                        var attachment = d.attachment;
-                                        if(isDocAdmin || d.isUploader || d.isBorrow) {
-                                            return `
-                                        <a style="color:#009688" href="/Office_Automation/public/upload/${attachment.save_path}" download="${fileCode}-受控-${attachment.source_name}">
-                                            <i class="layui-icon layui-icon-download-circle"></i> ${attachment.source_name}
-                                        </a>`;
-                                        } else {
-                                            return d.attachment.source_name;
-                                        }
-                                    }
-                                },
-                                {field: 'description', title: '升版说明', width: '20%'},
-                                {field: 'create_time', title: '上传时间', width: '20%', align: 'center'},
-                                {title: '操作', width: '15%', align: 'center',
-                                    templet: function(d) {
-                                        var attachment = d.attachment;
-                                        if(isDocAdmin || d.isUploader || d.isBorrow) {
-                                            return `<a class="layui-btn layui-btn-xs" href="/Office_Automation/public/upload/${attachment.save_path}" download="${fileCode}-受控-${attachment.source_name}">下载</a>`;
-                                        } else {
-                                            return  '<a class="layui-btn layui-btn-xs" lay-event="borrow">借阅</a>';
-                                        }
-
-                                    }
-                                }
-                            ]],
-                            id: 'version-list',
-                            skin: 'line',
-                            data: fileVersionList
-                        });
-                    }
-                );
-            }
-        });
-
-        // 监听版本表格操作按钮
-        table.on('tool(version-list)', function (obj) {
-            var data = obj.data;
-            if (obj.event == 'borrow') {
-                layer.confirm('确定借阅？', {icon: 3, title: '提示'}, function (index) {
-                    layer.close(index);
-                    $.ajax({
-                        url: "/office_automation/public/index.php/index/document_c/saveRequest",
-                        type: 'post',
-                        data: {
-                            type: 2,
-                            fileId: fileId,
-                            version: data.version
-                        },
-                        success: function (res) {
-                            if (res.code == 0) {
-                                layer.msg('申请成功，请等待文控审批', {icon: 6});
-                            } else {
-                                layer.msg(res.msg);
-                            }
-                        }
-                    });
+                layer.open({
+                    type: 2,
+                    title: '历史版本（' + data.file_code + '）',
+                    content: 'read-file-version.html?fileId=' + data.file_id,
+                    maxmin:true,
+                    area: ['80%', '100%'],
+                    shadeClose: true,
+                    anim: 1
                 });
             }
-            return false;
         });
     });
 </script>

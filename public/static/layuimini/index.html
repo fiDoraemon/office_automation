@@ -237,10 +237,6 @@
         // 根据任务号打开任务详情
         if(getQueryVariable('missionId')) {
             localStorage.setItem("missionId", getQueryVariable('missionId'));
-            // miniTab.openNewTabByIframe({
-            //     href: "page/mission/index.html",
-            //     title: "我的任务"
-            // });
         } else if(getQueryVariable('minuteId')) {
             localStorage.setItem("minuteId", getQueryVariable('minuteId'));
             miniTab.openNewTabByIframe({
@@ -250,10 +246,17 @@
         } else if(getQueryVariable('requestId') && getQueryVariable('requestType')){
             var docRequest = {type: getQueryVariable('requestType'), requestId: getQueryVariable('requestId')};
             localStorage.setItem("docRequest", JSON.stringify(docRequest));
-            miniTab.openNewTabByIframe({
-                href: "page/document/index-request.html",
-                title: "待处理申请"
-            });
+            if(getQueryVariable('requestType') == 0) {
+                miniTab.openNewTabByIframe({
+                    href: "page/document/index-request.html",
+                    title: "归档申请"
+                });
+            } else {
+                miniTab.openNewTabByIframe({
+                    href: "page/document/index-upgrade-borrow-request.html",
+                    title: "升版/借阅申请"
+                });
+            }
         }
     });
 

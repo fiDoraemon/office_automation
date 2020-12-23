@@ -44,14 +44,14 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="layui-inline">
-                            <label class="layui-form-label">项目阶段</label>
-                            <div class="layui-input-inline">
-                                <select class="stageSelect" name="stage_select" lay-filter="projectStage" id="stageSelect">
-                                    <option value="">所有</option>
-                                </select>
-                            </div>
-                        </div>
+                        <!--<div class="layui-inline">-->
+                            <!--<label class="layui-form-label">项目阶段</label>-->
+                            <!--<div class="layui-input-inline">-->
+                                <!--<select class="stageSelect" name="stage_select" lay-filter="projectStage" id="stageSelect">-->
+                                    <!--<option value="">所有</option>-->
+                                <!--</select>-->
+                            <!--</div>-->
+                        <!--</div>-->
                         <div class="layui-inline">
                             <label class="layui-form-label">说明查询</label>
                             <div class="layui-input-inline">
@@ -119,7 +119,7 @@
                 {field: 'approver', title: '审批人', width: '8%', align: 'center'},
                 {field: 'project_code', title: '所属项目', width: '9%', align: 'center'},
                 {field: 'project_stage', title: '项目阶段', width: '10%', align: 'center'},
-                {field: 'description', title: '文档说明', width: '15%'},
+                {field: 'description', title: '申请说明', width: '15%'},
                 {
                     field: 'version', title: '版本号', width: '10%', align: 'center',
                     templet: function (d) {
@@ -235,22 +235,22 @@
         });
 
         // 监听项目阶段查询
-        form.on('select(projectStage)', function (data) {
-            if (data.value != projectStage) {
-                table.reload('requestList', {
-                    page: {
-                        curr: 1
-                    }
-                    , where: {
-                        type: $('#request-type').val(),
-                        projectCode: $("#projectSelect").val(),
-                        projectStage: data.value,
-                    }
-                }, 'data');
-                projectStage = data.value;
-            }
-            return false;
-        });
+        // form.on('select(projectStage)', function (data) {
+        //     if (data.value != projectStage) {
+        //         table.reload('requestList', {
+        //             page: {
+        //                 curr: 1
+        //             }
+        //             , where: {
+        //                 type: $('#request-type').val(),
+        //                 projectCode: $("#projectSelect").val(),
+        //                 projectStage: data.value,
+        //             }
+        //         }, 'data');
+        //         projectStage = data.value;
+        //     }
+        //     return false;
+        // });
 
         // 搜索框监听操作
         form.on('submit(data-search-btn)', function (data) {

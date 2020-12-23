@@ -18,6 +18,7 @@ use app\index\model\DocBorrowRequest;
 use app\index\model\DocCodeCount;
 use app\index\model\DocFile;
 use app\index\model\DocFileVersion;
+use app\index\model\DocFileVersionToVersion;
 use app\index\model\DocRequest;
 use app\index\model\DocUpgradeRequest;
 use app\index\model\Project;
@@ -56,7 +57,7 @@ class DocumentC
     }
 
     /**
-     * 查询所有项目代号、审批人
+     * 获取发起归档页面所需信息
      * @return array
      * @throws DataNotFoundException
      * @throws DbException
@@ -90,12 +91,9 @@ class DocumentC
         $listCodes = $this->getProjectCode();
         //查询所有评审人
         $listAuthor = $this->getAllAuthor();
-        //是否为文控
-        $isDocAdmin = $this->isDocAdmin();
         $resultArray = [
             "projectCodes" => $listCodes,          // 项目类型
-            "authors" => $listAuthor,         // 作者
-            "isDocAdmin" => $isDocAdmin          // 是否为文控
+            "authors" => $listAuthor         // 作者
         ];
         return Result::returnResult(Result::SUCCESS, $resultArray);
     }
@@ -1447,15 +1445,19 @@ class DocumentC
         return Result::returnResult(Result::SUCCESS, $data);
     }
 
-    /*
+    /**
      * 获取文档版本信息
+     * @param $fileId
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function getFileVersion($fileId) {
         $sessionUserId = Session::get('info')['user_id'];
         $docFile = DocFile::get($fileId);
         $docFileVersion = new DocFileVersion();
         $fileVersionList = $docFileVersion->where('file_id', $fileId)
-//            ->where('version', '<>', $docFile->version)
             ->order('version desc')
             ->field('id,version,attachment_id,uploader_id,description,create_time')
             ->select();
@@ -1464,13 +1466,83 @@ class DocumentC
             $fileVersion->uploader = UserService::userIdToName($fileVersion->uploader_id);
             $fileVersion->isBorrow = DocumentService::isBorrow($fileVersion->id);
             $fileVersion->isUploader = ($fileVersion->uploader_id == $sessionUserId)? 1 : 0;
-            unset($fileVersion->id, $fileVersion->attachment_id, $fileVersion->uploader_id);
+            unset($fileVersion->attachment_id, $fileVersion->uploader_id);
         }
+        $isDocAdmin = $this->isDocAdmin();
         $data = [
             'fileCode' => $docFile->file_code,
-            'fileVersionList' => $fileVersionList
+            'fileVersionList' => $fileVersionList,
+            "isDocAdmin" => $isDocAdmin
         ];
 
         return Result::returnResult(Result::SUCCESS, $data);
+    }
+
+    /**
+     * 获取关联的文件
+     * @param $versionId
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
+    public function getRelatedFileList($versionId) {
+        $docFileVersionToVersion = new DocFileVersionToVersion();
+        // 查找第一个位置
+        $result1 = $docFileVersionToVersion->alias('dfvtv')->where('version_id', $versionId)
+            ->join('oa_doc_file_version dfv', 'dfv.id = dfvtv.related_id')
+            ->join('oa_doc_file df', 'df.file_id = dfv.file_id')
+            ->join('oa_attachment a', 'a.attachment_id = dfv.attachment_id')
+//            ->join('oa_user u', 'u.user_id = dfv.uploader_id')
+            ->field('df.file_code,a.source_name,a.save_path,dfv.version,dfv.description')
+            ->select();
+        // 查找第二个位置
+        $result2 = $docFileVersionToVersion->alias('dfvtv')->where('dfvtv.related_id', $versionId)
+            ->join('oa_doc_file_version dfv', 'dfv.id = dfvtv.related_id')
+            ->join('oa_doc_file df', 'df.file_id = dfv.file_id')
+            ->join('oa_attachment a', 'a.attachment_id = dfv.attachment_id')
+//            ->join('oa_user u', 'u.user_id = dfv.uploader_id')
+            ->field('df.file_code,a.source_name,a.save_path,dfv.version,dfv.description')
+            ->select();
+        $result = array_merge($result1, $result2);
+
+        return Result::returnResult(Result::SUCCESS, $result);
+    }
+
+    // 获取所有文档版本信息
+    public function getAllFileVersion() {
+        $fileName = input('get.keyword');
+        if(!$fileName) {
+            return Result::returnResult(Result::SUCCESS, []);
+        }
+        $docFileVersion = new DocFileVersion();
+        $count = $docFileVersion->alias('dfv')
+            ->join('oa_attachment a', "a.attachment_id = dfv.attachment_id && a.source_name like '%$fileName%'")
+            ->count();
+        $fileList = $docFileVersion->alias('dfv')
+            ->join('oa_attachment a', "a.attachment_id = dfv.attachment_id && a.source_name like '%$fileName%'")
+            ->join('oa_doc_file df', "df.file_id = dfv.file_id")
+            ->field('dfv.id,df.file_code,a.source_name,dfv.version')
+            ->select();
+        return Result::returnResult(Result::SUCCESS, $fileList, $count);
+    }
+
+    /*
+     * 关联文件
+     */
+    public function relateFile() {
+        $versionId = input('post.versionId');
+        $relatedId = input('post.relatedId');
+        $docFileVersionToVersion = DocFileVersionToVersion::get(['version_id' => $versionId, 'related_id' => $relatedId]);
+        $docFileVersionToVersion2 = DocFileVersionToVersion::get(['version_id' => $relatedId, 'related_id' => $versionId]);
+        if($docFileVersionToVersion || $docFileVersionToVersion2) {
+            return Result::returnResult(Result::OBJECT_EXIST);
+        }
+        // 增加版本文件对应信息
+        $docFileVersionToVersion = new DocFileVersionToVersion();
+        $docFileVersionToVersion->version_id = $versionId;
+        $docFileVersionToVersion->related_id = $relatedId;
+        $docFileVersionToVersion->save();
+        return Result::returnResult(Result::SUCCESS);
     }
 }
