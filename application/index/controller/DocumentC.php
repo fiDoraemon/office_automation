@@ -1509,7 +1509,9 @@ class DocumentC
         return Result::returnResult(Result::SUCCESS, $result);
     }
 
-    // 获取所有文档版本信息
+    /*
+     * 获取所有文档版本信息
+     */
     public function getAllFileVersion() {
         $fileName = input('get.keyword');
         if(!$fileName) {
