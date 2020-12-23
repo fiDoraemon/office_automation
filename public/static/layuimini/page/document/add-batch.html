@@ -347,10 +347,10 @@
         // 监听提交
         form.on('submit(save)', function (data) {
             // 判断是否有文件未上传
-            // if ($('#attachment_list').val() == '') {
-            //     layer.msg('未检测到有已上传文件！', {icon: 5});
-            //     return false;
-            // }
+            if ($('#attachment_list').val() == '') {
+                layer.msg('未检测到有已上传文件！', {icon: 5});
+                return false;
+            }
             var result = data.field;
             // 处理结果集
             var fileCount = $('#fileList').find('tr').length;
