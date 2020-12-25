@@ -9,6 +9,7 @@
 namespace app\index\controller;
 
 use app\common\Result;
+use app\index\model\ErpInventory;
 use app\index\model\ErpMaterial;
 use think\Db;
 
@@ -33,7 +34,9 @@ class ErpMaterialC
         if($keyword) {
             $erpMaterial->where('name', 'like', "%$keyword%");
         }
-        $count = $erpMaterial->count();
+        $count = $erpMaterial->alias('em')
+            ->join('oa_erp_inventory ei', 'ei.material_id = em.id')
+            ->count();
         // 获取物料信息列表
         if($materialCode) {
             $erpMaterial->where('code', 'like', "%$materialCode%");
@@ -41,8 +44,11 @@ class ErpMaterialC
         if($keyword) {
             $erpMaterial->where('name', 'like', "%$keyword%");
         }
-        $erpMaterialList = $erpMaterial->order('id desc')
+        $erpMaterialList = $erpMaterial->alias('em')
+            ->join('oa_erp_inventory ei', 'ei.material_id = em.id')
+            ->order('id desc')
             ->page("$page, $limit")
+            ->field('ei.id,em.code,em.name,ei.batch_number,ei.inventory,ei.create_time')
             ->select();
 
         return Result::returnResult(Result::SUCCESS, $erpMaterialList, $count);
@@ -74,11 +80,12 @@ class ErpMaterialC
             }
             // 判断是否存在空值以及料编码是否存在
             for ($i = 0; $i < $count; $i ++) {
+                $codeRows[$i] = trim($codeRows[$i]);
                 if(!$codeRows[$i] || !$nameRows[$i]) {
                     $errorResult['msg'] = '第' . ($i + 1) . '行存在空值';
                     return $errorResult;
                 }
-                $erpMaterial = ErpMaterial::get(['code' => trim($codeRows[$i])]);
+                $erpMaterial = ErpMaterial::get(['code' => $codeRows[$i]]);
                 if($erpMaterial) {
                     $errorResult['msg'] = '第' . ($i + 1) . '行物料编码已存在';
                     return $errorResult;
@@ -88,7 +95,7 @@ class ErpMaterialC
             for ($i = 0; $i < $count; $i ++) {
                 $erpMaterial = new ErpMaterial();
                 $erpMaterial->data([
-                    'code' => trim($codeRows[$i]),
+                    'code' => $codeRows[$i],
                     'name' => trim($nameRows[$i]),
                     'create_time' => date('y-m-d H:i:s',time())
                 ]);
@@ -105,29 +112,38 @@ class ErpMaterialC
     public function batchUpdate() {
         return Db::transaction(function () {
             $materialCodes = input('post.materialCodes');
+            $batchNumbers = input('post.batchNumbers');
             $inventorys = input('post.materialInventorys');
             $codeRows = explode("\n", $materialCodes);
+            $numberRows = explode("\n", $batchNumbers);
             $inventoryRows = explode("\n", $inventorys);
             $errorResult = Result::returnResult(Result::ERROR);
             // 缺少必要参数
-            if(!$materialCodes || !$inventorys) {
+            if(!$materialCodes || !$batchNumbers || !$inventorys) {
                 return Result::returnResult(Result::ERROR);
             }
             // 如果行数不一致
             $count = count($codeRows);
-            if(count($inventoryRows) != $count) {
+            if(count($inventoryRows) != $count || count($numberRows) != $count) {
                 $errorResult['msg'] = '输入框的行数不一致';
                 return $errorResult;
             }
             // 判断是否存在空值以及料编码是否存在等
             for ($i = 0; $i < $count; $i ++) {
-                if(!$codeRows[$i] || !$inventoryRows[$i]) {
+                $codeRows[$i] = trim($codeRows[$i]);
+                $numberRows[$i] = trim($numberRows[$i]);
+                $inventoryRows[$i] = trim($inventoryRows[$i]);
+                if(!$codeRows[$i] || !$numberRows[$i] || !$inventoryRows[$i]) {
                     $errorResult['msg'] = '第' . ($i + 1) . '行存在空值';
                     return $errorResult;
                 }
                 $erpMaterial = ErpMaterial::get(['code' => $codeRows[$i]]);
                 if(!$erpMaterial) {
                     $errorResult['msg'] = '第' . ($i + 1) . '行物料编码不存在';
+                    return $errorResult;
+                }
+                if($numberRows[$i] < 0) {
+                    $errorResult['msg'] = '第' . ($i + 1) . '行批号不能小于0';
                     return $errorResult;
                 }
                 if($inventoryRows[$i] < 0) {
@@ -138,8 +154,14 @@ class ErpMaterialC
             // 更新物料信息
             for ($i = 0; $i < $count; $i ++) {
                 $erpMaterial = ErpMaterial::get(['code' => $codeRows[$i]]);
-                $erpMaterial->inventory = $inventoryRows[$i];
-                $erpMaterial->save();
+                $erpInventory = ErpInventory::get(['material_id' => $erpMaterial->id, 'batch_number' => $numberRows[$i]]);
+                if(!$erpInventory) {
+                    $erpInventory = new ErpInventory();
+                    $erpInventory->material_id = $erpMaterial->id;
+                    $erpInventory->batch_number = $numberRows[$i];
+                }
+                $erpInventory->inventory = $inventoryRows[$i];
+                $erpInventory->save();
             }
 
             return Result::returnResult(Result::SUCCESS);
@@ -172,6 +194,9 @@ class ErpMaterialC
                 return $errorResult;
             }
             $erpMaterial = ErpMaterial::get(['code' => $codeRows[$i]]);
+            // 获取总库存量
+            $erpInventory = new ErpInventory();
+            $totalInventory = $erpInventory->where('material_id', $erpMaterial->id)->sum('inventory');
             if(!$erpMaterial) {
                 $errorResult['msg'] = '第' . ($i + 1) . '行物料编码不存在';
                 return $errorResult;
@@ -180,8 +205,8 @@ class ErpMaterialC
                 $errorResult['msg'] = '第' . ($i + 1) . '行领料量不能小于1';
                 return $errorResult;
             }
-            if($amountRows[$i] > $erpMaterial->inventory) {
-                $errorResult['msg'] = '第' . ($i + 1) . '行领料量大于库存量，库存量：' . $erpMaterial->inventory;
+            if($amountRows[$i] > $totalInventory) {
+                $errorResult['msg'] = '第' . ($i + 1) . '行领料量大于库存量，库存量：' . $totalInventory;
                 return $errorResult;
             }
         }
@@ -189,8 +214,11 @@ class ErpMaterialC
         $applyInfo = "物料编码 物料名称 领用量 领用前库存量 领用后库存量\n";
         for ($i = 0; $i < $count; $i ++) {
             $erpMaterial = ErpMaterial::get(['code' => $codeRows[$i]]);
-            $afterApplyAmount = $erpMaterial->inventory - $amountRows[$i];
-            $applyInfo .= "$erpMaterial->code $erpMaterial->name $amountRows[$i] $erpMaterial->inventory $afterApplyAmount\n";
+            // 获取总库存量
+            $erpInventory = new ErpInventory();
+            $totalInventory = $erpInventory->where('material_id', $erpMaterial->id)->sum('inventory');
+            $afterApplyAmount = $totalInventory - $amountRows[$i];
+            $applyInfo .= "$erpMaterial->code $erpMaterial->name $amountRows[$i] $totalInventory $afterApplyAmount\n";
         }
         return Result::returnResult(Result::SUCCESS, $applyInfo);
     }

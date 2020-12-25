@@ -90,6 +90,12 @@
                                 </div>
                             </div>
                             <div class="layui-inline">
+                                <label class="layui-form-label">批号</label>
+                                <div class="layui-input-inline">
+                                    <textarea class="layui-textarea" name="batchNumbers" lay-verify="required"></textarea>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
                                 <label class="layui-form-label">库存量</label>
                                 <div class="layui-input-inline">
                                     <textarea class="layui-textarea" name="materialInventorys" lay-verify="required"></textarea>
@@ -152,12 +158,12 @@
             url: '/office_automation/public/material',
             toolbar: '#toolbar',
             cols: [[
-                {field: 'id', title: '编号', width: '10%', align: 'center'},
+                {field: 'id', title: '编号', width: '9.6%', align: 'center'},
                 {field: 'code', title: '物料编码', width: '20%'},
                 {field: 'name', title: '物料名称', width: '20%'},
-                {field: 'inventory', title: '库存量', width: '10%', align: 'center'},
-                {field: 'create_time', title: '创建时间', width: '20%', align: 'center'},
-                {field: 'update_time', title: '更新时间', width: '20%', align: 'center'},
+                {field: 'batch_number', title: '批号', width: '15%', align: 'center'},
+                {field: 'inventory', title: '库存量', width: '15%', align: 'center'},
+                {field: 'create_time', title: '创建时间', width: '20%', align: 'center'}
             ]],
             id: 'material-list',
             skin: 'line',
@@ -215,6 +221,7 @@
                 "/office_automation/public/index/erp_material_c/batchUpdate",
                 {
                     materialCodes: result.materialCodes,
+                    batchNumbers: result.batchNumbers,
                     materialInventorys: result.materialInventorys
                 },
                 function(res){
