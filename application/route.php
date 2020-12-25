@@ -16,6 +16,7 @@ return [
         'mission' => 'index/MissionC',
         'project' => 'index/ProjectC',
         'minute'  => 'index/MinuteC',
-        'item' => 'index/TableItemC'
+        'item' => 'index/TableItemC',
+        'material' => 'index/ErpMaterialC'
     ],
 ];

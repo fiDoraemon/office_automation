@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>金蝶ERP辅助</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="../../css/public.css" media="all">
+    <style>
+        /* 标签 */
+        .layui-form-label {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+            <ul class="layui-tab-title" style="margin: 20px 0">
+                <li class="layui-this">物料信息</li>
+                <li>基础信息导入</li>
+                <li>更新库存量</li>
+                <li>生成领料信息</li>
+            </ul>
+            <!-- 物料信息 -->
+            <div class="layui-tab-content" style="height: 100px;">
+                <div class="layui-tab-item layui-show">
+                    <fieldset class="table-search-fieldset">
+                        <legend>物料查询</legend>
+                        <div style="margin: 10px 10px 10px 10px">
+                            <form class="layui-form layui-form-pane">
+                                <div class="layui-form-item">
+                                    <div class="layui-inline">
+                                        <label class="layui-form-label">物料编码</label>
+                                        <div class="layui-input-inline">
+                                            <input type="text" name="code" placeholder="请输入物料编码" autocomplete="off" class="layui-input">
+                                        </div>
+                                    </div>
+                                    <div class="layui-inline">
+                                        <label class="layui-form-label">物料名称</label>
+                                        <div class="layui-input-inline">
+                                            <input type="text" name="keyword" placeholder="请输入物料编码" autocomplete="off" class="layui-input">
+                                        </div>
+                                    </div>
+                                    <div class="layui-inline">
+                                        <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="search"><i class="layui-icon"></i>查询</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </fieldset>
+                    <script type="text/html" id="toolbar"></script>
+                    <table class="layui-hide" id="material-list" lay-filter="material-list"></table>
+                </div>
+                <!-- 基础信息导入 -->
+                <div class="layui-tab-item">
+                    <form class="layui-form">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">物料编码</label>
+                                <div class="layui-input-inline">
+                                    <textarea class="layui-textarea" name="materialCodes" lay-verify="required"></textarea>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">物料名称</label>
+                                <div class="layui-input-inline">
+                                    <textarea class="layui-textarea" name="materialNames" lay-verify="required"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <hr style="margin-top: 50px">
+                        <div class="layui-form-item" style="margin:50px 0 50px 150px">
+                            <button class="layui-btn" lay-submit lay-filter="add">导入</button>
+                            <button type="reset" id="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- 更新库存量 -->
+                <div class="layui-tab-item">
+                    <form class="layui-form">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">物料编码</label>
+                                <div class="layui-input-inline">
+                                    <textarea class="layui-textarea" name="materialCodes" lay-verify="required"></textarea>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">库存量</label>
+                                <div class="layui-input-inline">
+                                    <textarea class="layui-textarea" name="materialInventorys" lay-verify="required"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <hr style="margin-top: 50px">
+                        <div class="layui-form-item" style="margin:50px 0 50px 150px">
+                            <button class="layui-btn" lay-submit lay-filter="update">更新</button>
+                            <button type="reset" id="reset2" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- 生成领料信息 -->
+                <div class="layui-tab-item">
+                    <form class="layui-form">
+                        <div class="layui-form-item">
+                            <div class="layui-inline">
+                                <label class="layui-form-label">物料编码</label>
+                                <div class="layui-input-inline">
+                                    <textarea class="layui-textarea" name="materialCodes" lay-verify="required"></textarea>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label">领料量</label>
+                                <div class="layui-input-inline" style="width: auto">
+                                    <textarea class="layui-textarea" name="applyAmounts" lay-verify="required"></textarea>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <label class="layui-form-label" style="color: #00a2d4">生成结果</label>
+                                <div class="layui-input-inline" style="width: 400px;">
+                                    <textarea class="layui-textarea" id="applyInfo"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <hr style="margin-top: 50px">
+                        <div class="layui-form-item" style="margin:50px 0 50px 150px">
+                            <button class="layui-btn" lay-submit lay-filter="create">生成</button>
+                            <button type="reset" id="reset3" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../../lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="../../js/common.js" charset="utf-8"></script>
+<script>
+    layui.use(['element', 'table', 'form'], function () {
+        $ = layui.jquery,
+            element = layui.element,
+            table = layui.table,
+            form = layui.form;
+
+        // 渲染物料信息表格
+        table.render({
+            elem: '#material-list',
+            url: '/office_automation/public/material',
+            toolbar: '#toolbar',
+            cols: [[
+                {field: 'id', title: '编号', width: '10%', align: 'center'},
+                {field: 'code', title: '物料编码', width: '20%'},
+                {field: 'name', title: '物料名称', width: '20%'},
+                {field: 'inventory', title: '库存量', width: '10%', align: 'center'},
+                {field: 'create_time', title: '创建时间', width: '20%', align: 'center'},
+                {field: 'update_time', title: '更新时间', width: '20%', align: 'center'},
+            ]],
+            id: 'material-list',
+            skin: 'line',
+            limits: [10, 15, 20, 25, 50, 100],
+            limit: 10,
+            page: true,
+            done: function () {
+                $('.layuimini-container').height(window.innerHeight);
+            }
+        });
+
+        // 监听查询操作
+        form.on('submit(search)', function (data) {
+            var result = data.field;
+            table.reload('material-list', {
+                page: {
+                    curr: 1
+                }
+                , where: {
+                    materialCode: result.code.trim(),
+                    keyword: result.keyword.trim()
+                }
+            }, 'data');
+
+            return false;
+        });
+
+        // 监听导入操作
+        form.on('submit(add)', function (data) {
+            var result = data.field;
+            $.post(
+                "/office_automation/public/index/erp_material_c/batchSave",
+                {
+                    materialCodes: result.materialCodes,
+                    materialNames: result.materialNames
+                },
+                function(res){
+                    if(res.code == 0) {
+                        layer.msg('导入成功', {icon: 6}, function () {
+                            $('#reset').click();
+                        });
+                    } else {
+                        layer.msg(res.msg, {icon: 5});
+                    }
+                }
+            );
+
+            return false;
+        });
+
+        // 监听更新操作
+        form.on('submit(update)', function (data) {
+            var result = data.field;
+            $.post(
+                "/office_automation/public/index/erp_material_c/batchUpdate",
+                {
+                    materialCodes: result.materialCodes,
+                    materialInventorys: result.materialInventorys
+                },
+                function(res){
+                    if(res.code == 0) {
+                        layer.msg('更新成功', {icon: 6}, function () {
+                            $('#reset2').click();
+                        });
+                    } else {
+                        layer.msg(res.msg, {icon: 5});
+                    }
+                }
+            );
+
+            return false;
+        });
+
+        // 监听生成操作
+        form.on('submit(create)', function (data) {
+            var result = data.field;
+            $.post(
+                "/office_automation/public/index/erp_material_c/createApplyInfo",
+                {
+                    materialCodes: result.materialCodes,
+                    applyAmounts: result.applyAmounts
+                },
+                function(res){
+                    if(res.code == 0) {
+                        layer.msg('生成成功', {icon: 6});
+                        $('#applyInfo').val(res.data);
+                    } else {
+                        layer.msg(res.msg, {icon: 5});
+                    }
+                }
+            );
+
+            return false;
+        });
+
+        // 监听多行文本框高度变化
+        $('.layui-textarea').resize(function(){
+            $('.layui-textarea').height($(this).height());
+        });
+    });
+</script>
+</body>
+</html>

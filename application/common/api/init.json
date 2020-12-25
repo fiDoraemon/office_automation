@@ -133,9 +133,23 @@
         },
         {
           "title": "ERP",
-          "href": "http://192.168.0.249/ERP_system/ERP.php",
+          "href": "",
           "icon": "fa fa-superpowers",
-          "target": "_self"
+          "target": "_self",
+          "child": [
+            {
+              "title": "ERP系统",
+              "href": "http://192.168.0.249/ERP_system/ERP.php",
+              "icon": "fa fa-suitcase",
+              "target": "_self"
+            },
+            {
+              "title": "金蝶ERP辅助",
+              "href": "page/erp/index-erp.html",
+              "icon": "fa fa-paper-plane",
+              "target": "_self"
+            }
+          ]
         },
         {
           "title": "样机配置",
