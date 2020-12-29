@@ -169,7 +169,7 @@ class TableItemC extends Controller
             ]);
             $tableItem->save();
             // 增加条目字段对应值
-            $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
+//            $checkUserList = explode(';', $fields['checkUserList']);            // 多选字段列表
             foreach ($fields as $key => $value) {
                 if(substr($key,0, 5) == 'field') {
                     $fieldId = substr($key,5);

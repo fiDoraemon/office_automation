@@ -59,5 +59,5 @@ class DataEnum
     /*
      * 工作表字段类型
      */
-    public static $fieldType = ['text', 'textArea', 'select', 'user', 'users', 'checkbox', 'mission'];
+    public static $fieldType = ['text', 'textArea', 'select', 'user', 'users', 'checkbox', 'mission', 'picture'];
 }

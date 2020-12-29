@@ -10,6 +10,7 @@ namespace app\index\service;
 
 
 use app\index\common\DataEnum;
+use app\index\model\Attachment;
 use app\index\model\Label;
 use app\index\model\Mission;
 use app\index\model\TableField;
@@ -89,8 +90,13 @@ class TableWorkService
             } else if($tableField->type == 'mission') {            // 任务
                 $missions = str_ireplace('；',',', $tableField->field_value);
                 $mission = new Mission();
-                $missionList = $mission->where('mission_id', 'in', $missions)->field('mission_id,mission_title')->select();
-                $tableField->missionList = $missionList;
+                $tableField->missionList = $mission->where('mission_id', 'in', $missions)
+                    ->field('mission_id,mission_title')->select();
+            } else if($tableField->type == 'picture') {
+                $attachments = str_replace(';',',', $tableField->field_value);
+                $attachment = new Attachment();
+                $tableField->attachmentList = $attachment->where('attachment_id', 'in', $attachments)
+                    ->field('attachment_id,source_name,save_path')->select();
             }
         }
 

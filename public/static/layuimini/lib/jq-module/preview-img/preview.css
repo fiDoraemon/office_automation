@@ -33,7 +33,7 @@
     right: 20px;
     width: 32px;
     height: 32px;
-    background: url(../../images/previewImg/closeicon.png) no-repeat center center;
+    background: url(img/closeicon.png) no-repeat center center;
     background-size: cover;
     cursor: pointer;
 }
@@ -99,7 +99,7 @@
     left: 0px;
     bottom: 0;
     height: 100px;
-    background: url(../../images/previewImg/left_img.png) no-repeat center;
+    background: url(./img/left_img.png) no-repeat center;
     background-size: 20px;
     background-color: rgba(0, 0, 0, 0.3);
     cursor: pointer;
@@ -113,7 +113,7 @@
     right: 0px;
     bottom: 0;
     height: 100px;
-    background: url(../../images/previewImg/right_img.png) no-repeat center;
+    background: url(./img/right_img.png) no-repeat center;
     background-size: 20px;
     background-color: rgba(0, 0, 0, 0.3);
     cursor: pointer;
@@ -138,12 +138,12 @@
     -moz-transform: translate(0, -50%);
     -ms-transform: translate(0, -50%);
     -o-transform: translate(0, -50%);
-    background: url(../../images/previewImg/prev.png) no-repeat center center;
+    background: url(img/prev.png) no-repeat center center;
     cursor: pointer;
 }
 
 .mask-layer-container .img-pre:hover {
-    background: url(../../images/previewImg/prev_h.png) no-repeat center center;
+    background: url(img/prev_h.png) no-repeat center center;
     background-color: rgba(0, 0, 0, 0.3);
 }
 
@@ -153,7 +153,7 @@
     position: absolute;
     border-radius: 100%;
     cursor: pointer;
-    background: url(../../images/previewImg/next.png) no-repeat center center;
+    background: url(img/next.png) no-repeat center center;
     right: 20px;
     top: 50%;
     transform: translate(0, -50%);
@@ -164,7 +164,7 @@
 }
 
 .mask-layer-container .img-next:hover {
-    background: url(../../images/previewImg/next_h.png) no-repeat center center;
+    background: url(img/next_h.png) no-repeat center center;
     background-color: rgba(0, 0, 0, 0.3);
 }
 
@@ -270,27 +270,27 @@
     transition: ease 0.3s;
 }
 .mask-layer .contextmenu li>a.clockwise{
-   background: url(../../images/previewImg/right_rotate.png) no-repeat left 5px center;
+   background: url(img/right_rotate.png) no-repeat left 5px center; 
    background-size:24px 24px ;
 }
 .contextmenu li>a.clockwise:hover{
-   background: url(../../images/previewImg/right_rotate_h.png) no-repeat left 5px center;
+   background: url(img/right_rotate_h.png) no-repeat left 5px center; 
    background-size:24px 24px ;
 }
 .mask-layer .contextmenu li>a.counterClockwise{
-   background: url(../../images/previewImg/left_rotate.png) no-repeat left 5px center;
+   background: url(img/left_rotate.png) no-repeat left 5px center; 
    background-size:24px 24px ;
 }
 .contextmenu li>a.counterClockwise:hover{
-   background: url(../../images/previewImg/left_rotate_h.png) no-repeat left 5px center;
+   background: url(img/left_rotate_h.png) no-repeat left 5px center; 
    background-size:24px 24px ;
 }
 .mask-layer .contextmenu li>a.downimg{
-   background: url(../../images/previewImg/down.png) no-repeat left 5px center;
+   background: url(img/down.png) no-repeat left 5px center; 
    background-size:24px 24px ;
 }
 .contextmenu li>a.downimg:hover{
-   background: url(../../images/previewImg/down_h.png) no-repeat left 5px center;
+   background: url(img/down_h.png) no-repeat left 5px center; 
    background-size:24px 24px ;
 }
 

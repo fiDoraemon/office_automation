@@ -20,28 +20,28 @@ use think\Session;
 class AttachmentService
 {
     /**
-     *
+     * 单个文件上传
      * @param $file
      * @return array
      */
-    public static function fileUpload($file) {
-        $fileInfo = $file->getInfo();
-        // 验证并移动文件（最大 50 MB）
-        $info = $file->validate(['size' => 104857600])->move(ROOT_PATH . 'public/upload');           // 最大100M
-        if ($info) {
-            // 插入附件信息
-            $attachment = new Attachment([
-                'source_name' => $fileInfo['name'],
-                'storage_name' => $info->getFilename(),
-                'uploader_id' => Session::get("info")["user_id"],
-                'file_size' => $fileInfo['size'],           // 单位：字节
-                'save_path' => $info->getSaveName()
-            ]);
-            $attachment->save();
-            return ['result' => true, 'id' => $attachment->attachment_id];
-        } else {
-            // 上传失败返回错误信息
-            return ['result' => false, 'error' => $file->getError()];
-        }
-    }
+//    public static function fileUpload($file) {
+//        $fileInfo = $file->getInfo();
+//        // 验证并移动文件（最大 100 MB）
+//        $info = $file->validate(['size' => 104857600])->move(ROOT_PATH . 'public/upload');           // 最大100M
+//        if ($info) {
+//            // 插入附件信息
+//            $attachment = new Attachment([
+//                'source_name' => $fileInfo['name'],
+//                'storage_name' => $info->getFilename(),
+//                'uploader_id' => Session::get("info")["user_id"],
+//                'file_size' => $fileInfo['size'],           // 单位：字节
+//                'save_path' => $info->getSaveName()
+//            ]);
+//            $attachment->save();
+//            return ['result' => true, 'id' => $attachment->attachment_id];
+//        } else {
+//            // 上传失败返回错误信息
+//            return ['result' => false, 'error' => $file->getError()];
+//        }
+//    }
 }

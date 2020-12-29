@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <link rel="stylesheet" href="../../css/common.css">
+    <link rel="stylesheet" href="../../lib/jq-module/preview-img/preview.css?v=1">
     <style>
         /* 上传附件 */
         .layui-upload-drag {
@@ -57,6 +58,29 @@
         /* 增加表格 */
         .add-table th, .add-table td{
             text-align: center;
+        }
+        /* 图片列表 */
+        .layui-upload-list .img-item {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .layui-upload-list .img-item img {
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc8c8;
+        }
+        .layui-upload-list .img-item i {
+            position: absolute;
+            right: 15%;
+            font-size: 18px;
+        }
+        .layui-upload-list .img-item span {
+            position: absolute;
+            bottom: -25%;
+            left: 30%;
+            font-size: 12px;
+            color: #ca2424;
         }
     </style>
 </head>
@@ -160,18 +184,19 @@
                                     <!--<input type="hidden" id="delete_list" name="delete_list">-->
                                     <button type="button" class="layui-btn upload-btn" id="start_upload" onclick="stopPropagation()">开始上传</button>
                                 </div>
-                                <div class="tip">提示：1.选择文件后请先点击“开始上传”按钮再提交；2.最多上传10个文件</div>
+                                <div class="tip">提示：1.选择文件后请先点击“开始上传”按钮再提交；2.最多上传10个文件；3.单个文件的大小最大是100M</div>
                             </div>
                             <div class="layui-col-sm8">
                                 <div class="layui-upload-list">
                                     <table class="layui-table">
                                         <thead>
-                                        <tr>
-                                            <th>文件名</th>
-                                            <th>大小</th>
-                                            <th>状态</th>
-                                            <th>操作</th>
-                                        </tr></thead>
+                                            <tr>
+                                                <th>文件名</th>
+                                                <th>大小</th>
+                                                <th>状态</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
                                         <tbody id="fileList"></tbody>
                                     </table>
                                 </div>
@@ -222,6 +247,7 @@
 <script src="../../js/common.js?v=2" charset="utf-8"></script>
 <script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf-8"></script>
 <script src="../../lib/jq-module/paigusu.min.js" charset="utf-8"></script>
+<script src="../../lib/jq-module/preview-img/preview.js" charset="utf-8"></script>
 <script>
     layui.use(['form', 'laydate', 'upload', 'tableSelect', 'table'], function () {
         var $ = layui.$,
@@ -232,96 +258,13 @@
             tableSelect = layui.tableSelect,
             table = layui.table;
 
-        //文件上传
-        var fileListView = $('#fileList')
-            ,uploadListIns = upload.render({
-            elem: '#attachment'
-            ,url: '/office_automation/public/attachment'
-            ,auto: false
-            ,multiple: true
-            ,size: 61440            // 单位 KB，最大 60MB
-            ,accept: 'file'
-            ,bindAction: '#start_upload'
-            ,choose: function(obj){
-                if($('#fileList').children().length > 9) {
-                    return layer.msg('最多上传试10个附件！');
-                }
-                var files = this.files = obj.pushFile();         // 将每次选择的文件追加到文件队列
-
-                $("#start_upload").removeAttr("disabled");
-                // 预读本地文件
-                obj.preview(function(index, file, result){          // 分别是文件索引、文件对象、文件base64编码
-                    var tr = $(['<tr id="upload-'+ index +'">'
-                        ,'<td>'+ file.name +'</td>'
-                        ,'<td>'+ (file.size/1024).toFixed(1) +'kb</td>'
-                        ,'<td>等待上传</td>'
-                        ,'<td>'
-                        ,'<button class="layui-btn layui-btn-xs layui-hide reload">重传</button>'
-                        ,'<button class="layui-btn layui-btn-xs layui-btn-danger delete">删除</button>'
-                        ,'</td>'
-                        ,'</tr>'].join(''));
-
-                    //单个重传
-                    tr.find('.reload').on('click', function(){
-                        obj.upload(index, file);
-                    });
-
-                    //删除
-                    tr.find('.delete').on('click', function(){
-                        delete files[index];            // 删除对应的文件
-                        tr.remove();
-                        uploadListIns.config.elem.next()[0].value = '';         // 清空 input file 值，以免删除后出现同名文件不可选
-                        if(!files) {
-                            $("#start_upload").attr("disabled", true);
-                        }
-                    });
-
-                    fileListView.append(tr);
-                });
-            }
-            ,before: function(obj){
-                layer.load();            // 取消上传后仍会触发 before
-            }
-            ,done: function(res, index, upload){
-                if(res.code == 0){
-                    // 写入附件 id
-                    if($('#attachment_list').val() == '') {
-                        $('#attachment_list').val(res.data.id);
-                    } else {
-                        var ids = $('#attachment_list').val().split(';');
-                        if(!ids.includes(res.data.id)) {
-                            ids.push(res.data.id);
-                        }
-                        $('#attachment_list').val(ids.join(';'));
-                    }
-
-                    var tr = fileListView.find('tr#upload-'+ index)
-                        ,tds = tr.children();
-                    tds.eq(3).html('<span style="color: #5FB878;">上传成功</span>');
-                    tds.eq(4).html('');
-                    delete this.files[index];            // 删除文件队列已经上传成功的文件
-                } else {
-                    console.log('上传失败：' + res.msg + `(${index})`);
-                    this.error(index, upload);
-                }
-            }
-            ,allDone: function(obj){
-                layer.closeAll('loading');
-                layer.msg('上传完成！');
-                $("#start_upload").attr("disabled", true);
-                console.log('上传完成！共上传' + obj.total + '个文件，成功文件数：' + obj.successful +'，失败文件数：' + obj.aborted);
-            }
-            ,error: function(index, upload){            // 分别为当前文件的索引、重新上传的方法
-                var tr = fileListView.find('tr#upload-'+ index)
-                    ,tds = tr.children();
-                tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
-                tds.eq(3).find('.reload').removeClass('layui-hide');           // 显示重传
-            }
-        });
+        showZoomImg('.zoomImg', 'img');         // 图片预览
+        // 文件上传
+        uploadAttachment();
 
         // 获取条目详情
-        var radioUserList = [];          // 单选用户字段列表
-        var checkUserList = [];          // 多选用户字段列表
+        // var radioUserList = [];          // 单选用户字段列表
+        // var checkUserList = [];          // 多选用户字段列表
         var fields;         // 工作表字段
         var index = layer.load(2);
         $.get(
@@ -358,10 +301,10 @@
                     fields = itemDetail.fields;
                     var fieldValues = {};           // 工作表字段值
                     userIdsList = [];            // 多选用户列表数组
-                    var dateList = [];          // 日期字段列表
-                    var missionList = [];           // 任务字段列表
+                    // var dateList = [];          // 日期字段列表
+                    // var missionList = [];           // 任务字段列表
                     element = '';
-                    for (j in fields) {
+                    for (var j in fields) {
                         if(fields[j].type == 'textarea') {
                             var input = $(`
                             <div class="layui-form-item layui-form-text">
@@ -380,6 +323,12 @@
                                 <div class="layui-input-inline"></div>
                                 <button type="button" class="layui-btn layui-btn-primary layui-btn-sm add-field-mission" field-index="${j}"><i class="layui-icon"></i></button>
                                 <div class="layui-inline" style="width: 60%;"></div>
+                            </div>`);
+                        } else if(fields[j].type == 'user') {
+                            var input = $(`
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">${fields[j].name}</label>
+                                <div class="layui-input-inline"></div>
                             </div>`);
                         } else {
                             var input = $(`
@@ -409,16 +358,16 @@
                             }
                         } else if(fields[j].type == 'date') {
                             input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" autocomplete="off" class="layui-input" readonly>`);
-                            dateList.push('field' + fields[j].field_id);
+                            // dateList.push('field' + fields[j].field_id);
                             fieldValues['field' + fields[j].field_id] = fields[j].field_value;           // 加入赋值数组
                         } else if(fields[j].type == 'user') {
                             if(fields[j].field_value != 0) {
-                                input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" ts-selected="${fields[j].field_value}" readonly>`);
+                                input.find('.layui-input-inline').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" ts-selected="${fields[j].field_value}" readonly>`);
                                 fieldValues['field' + fields[j].field_id] = fields[j].field_value2;           // 加入赋值数组
                             } else {
-                                input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly>`);
+                                input.find('.layui-input-inline').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly>`);
                             }
-                            radioUserList.push('field' + fields[j].field_id);
+                            // radioUserList.push('field' + fields[j].field_id);
                         } else if(fields[j].type == 'users') {
                             input.append(`
                             <div class="layui-input-inline">
@@ -434,16 +383,15 @@
                             <div id="field${fields[j].field_id}-userList" class="multipleSelect"></div>`);
                             var users = fields[j].users;
                             userIdsList['field' + fields[j].field_id] = [];         // 定义已选的全局变量
-                            for (i in users) {
+                            for (var i in users) {
                                 input.find('.multipleSelect').append(`
                                 <a href="javascript:;">
                                     <span lay-value="${users[i].user_id}">${users[i].user_name}</span>
                                     <i class="layui-icon layui-icon-close"></i>
-                                </a>
-                                `);
+                                </a>`);
                                 userIdsList['field' + fields[j].field_id].push(users[i].user_id);           // 加入已选的全局变量
                             }
-                            checkUserList.push('field' + fields[j].field_id);
+                            // checkUserList.push('field' + fields[j].field_id);
                         } else if(fields[j].type == 'checkbox') {
                             var values = fields[j].value.split('，');
                             for(var k in values) {
@@ -456,10 +404,25 @@
                             }
                         } else if(fields[j].type == 'mission') {
                             input.find('.layui-input-inline').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" autocomplete="off">`);
-                            missionList.push('field' + fields[j].field_id);
+                            // missionList.push('field' + fields[j].field_id);
                             fieldValues['field' + fields[j].field_id] = fields[j].field_value;
                             for(var i in fields[j].missionList) {
                                 input.find('.layui-inline').append(`<div class="to-mission2" mission-id="${fields[j].missionList[i]['mission_id']}">${fields[j].missionList[i]['mission_id']}：${fields[j].missionList[i]['mission_title']}</div>`);
+                            }
+                        } else if(fields[j].type == 'picture') {
+                            input.find('.layui-input-block').append(`
+                            <blockquote class="layui-elem-quote layui-quote-nm" style="margin-top: 10px;" id="field${fields[j].field_id}">
+                                预览图：
+                                <button type="button" class="layui-btn layui-btn-primary layui-btn-sm"" style="float: right"><i class="layui-icon layui-icon-upload-drag"></i></button>
+                                <div class="layui-upload-list zoomImgBox"></div>
+                            </blockquote>`);
+                            var attachmentList = fields[j].attachmentList;
+                            for (var i in attachmentList) {
+                                input.find('.layui-upload-list').append(`
+                                <div class="img-item">
+                                    <img class="zoomImg" data-caption="${attachmentList[i].source_name}" src="/office_automation/public/upload/${attachmentList[i].save_path}" alt="${attachmentList[i].source_name}" width="80" height="80" attachment-id="${attachmentList[i].attachment_id}">
+                                    <i class="layui-icon layui-icon-close"></i>
+                                </div>`);
                             }
                         } else {
                             input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" class="layui-input">`);
@@ -470,20 +433,127 @@
                     // 渲染表单（下拉选择和复选框）
                     form.render('select', 'add-item');
                     form.render('checkbox', 'add-item');
-                    for(i in dateList) {            // 日期
-                        laydate.render({
-                            elem: '#' + dateList[i]
-                        });
+                    fieldFileList = [];         // 字段文件列表
+                    departmentSelect();
+                    for (let i in fields) {         // 定义方法时使用let
+                        if (fields[i].type == 'date') {
+                            laydate.render({
+                                elem: '#field' + fields[i].field_id
+                            });
+                        } else if (fields[i].type == 'user') {
+                            userSelectTable('#field' + fields[i].field_id);
+                        } else if(fields[i].type == 'mission') {
+                            missionSelectTable('#field' + fields[i].field_id);
+                        } else if(fields[i].type == 'picture') {
+                            fieldFileList[fields[i].field_id] = [];
+                            // 监听粘贴图片操作
+                            $('#field' + fields[i].field_id).on('paste', function (eventObj) {
+                                var event = eventObj.originalEvent;
+                                var imageRe = new RegExp(/image\/.*/);
+                                var fileList = $.map(event.clipboardData.items, function (o) {
+                                    if(!imageRe.test(o.type)){ return }
+                                    var blob = o.getAsFile();
+                                    return blob;
+                                });
+                                var element = $(this);
+                                for(var j in fileList) {
+                                    var fd = new FileReader();
+                                    fd.readAsDataURL(fileList[j]);
+                                    fieldFileList[fields[i].field_id].push(fileList[j]);
+                                    (function(e) {
+                                        fd.onload = function(){
+                                            element.find('.layui-upload-list').append(`
+                                            <div class="img-item">
+                                                <img class="zoomImg" data-caption="${fileList[j].name}" src="${this.result}" alt="${fileList[j].name}" width="80" height="80" is-new="1">
+                                                <i class="layui-icon layui-icon-close"></i>
+                                                <span>未上传</span>
+                                            </div>`);
+                                        }
+                                    })(fileList[j].name);
+                                }
+                                // console.log(fileList);
+                            });
+                            // 监听上传操作
+                            $('#field' + fields[i].field_id).find('button').click(function () {
+                                var fileList = fieldFileList[fields[i].field_id];
+                                if(fileList.length > 0) {
+                                    for(var j in fileList){
+                                        var form = new FormData();
+                                        form.append("file", fileList[j]);
+                                        // var index = layer.load(2);
+                                        $.ajax({
+                                            type: 'post',
+                                            data: form,
+                                            url:"/office_automation/public/attachment",
+                                            processData: false,
+                                            contentType: false,
+                                            success: function(res) {
+                                                // layer.close(index);
+                                                var element = $('#field' + fields[i].field_id).find("img[is-new='1']:first");
+                                                if(res.code == 0) {
+                                                    layer.msg('上传成功', {icon: 6});
+                                                    element.attr('attachment-id', res.data.id);
+                                                    element.attr('is-new', '0');
+                                                    element.parent().find('span').text('已上传');
+                                                    element.parent().find('span').css('color', 'green');
+                                                    fieldFileList[fields[i].field_id] = [];
+                                                } else {
+                                                    layer.msg('上传失败', {icon: 5});
+                                                    element.attr('is-new', '0');
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                            // upload.render({
+                            //     elem: '#field' + fields[i].field_id
+                            //     ,url: '/office_automation/public/attachment'
+                            //     ,multiple: true
+                            //     ,auto: false
+                            //     ,bindAction: '#field' + fields[i].field_id + '-start'
+                            //     ,choose: function(obj){
+                            //         this.files = obj.pushFile();
+                            //         console.log(this.files);
+                            //         obj.preview(function(index, file, result){
+                            //             $('#field' + fields[i].field_id + '-upload-list').append(`
+                            //             <div class="img-item">
+                            //                 <img class="zoomImg" data-caption="${file.name}" src="${result}" alt="${file.name}" width="80" height="80" is-new="1">
+                            //                 <i class="layui-icon layui-icon-close"></i>
+                            //                 <span>未上传</span>
+                            //             </div>`);
+                            //         });
+                            //     }
+                            //     ,done: function(res, index, upload){
+                            //         if(res.code == 0) {
+                            //             layer.msg('上传成功', {icon: 6})
+                            //             var element = $('#field' + fields[i].field_id + '-upload-list').find("img[is-new='1']:first");
+                            //             element.attr('attachment-id', res.data.id);
+                            //             element.attr('is-new', '0');
+                            //             element.parent().find('span').text('已上传');
+                            //             element.parent().find('span').css('color', 'green');
+                            //             delete this.files[index];
+                            //         } else {
+                            //             layer.msg('上传失败', {icon: 6});
+                            //         }
+                            //     }
+                            // });
+                        }
                     }
-                    for(i in radioUserList) {           // 单选用户
-                        userSelectTable('#' + radioUserList[i]);
-                    }
-                    if(checkUserList.length > 0) {          // 多选用户
-                        departmentSelect($, form);
-                    }
-                    for(var i in missionList) {            // 任务
-                        missionSelectTable('#' + missionList[i]);
-                    }
+                    // for(i in dateList) {            // 日期
+                    //     laydate.render({
+                    //         elem: '#' + dateList[i]
+                    //     });
+                    // }
+                    // for(i in radioUserList) {           // 单选用户
+                    //     userSelectTable('#' + radioUserList[i]);
+                    // }
+                    // if(checkUserList.length > 0) {          // 多选用户
+                    //     departmentSelect();
+                    // }
+                    // for(var i in missionList) {            // 任务
+                    //     missionSelectTable('#' + missionList[i]);
+                    // }
                     // 表单赋值
                     form.val("setValue", fieldValues);
                     // 填充处理意见表
@@ -575,8 +645,7 @@
                 <td><input type="text" name="finish_date[${num}]" id="finish-date${num}" lay-verify="date" placeholder="请选择截止日期" autocomplete="off" class="layui-input" readonly></td>
                 <td><input type="text" name="description[${num}]" lay-verify="required" lay-reqtext="任务描述不能为空" placeholder="请输入任务描述" autocomplete="off" class="layui-input"></td>
                 <td><button type="button" class="layui-btn layui-btn-danger layui-btn-sm delete-mission">删除</button></td>
-            </tr>
-            `);
+            </tr>`);
             $('#mission-info').append(element);
             // 渲染表单（处理人和日期）
             userSelectTable('#assignee' + num);
@@ -649,24 +718,37 @@
                 }
             });
         });
+        // 删除图片 TODO
+        $('body').on('click', '.layui-icon-close', function () {
+            var element = $(this).parent();
+            layer.confirm('确定要删除图片？', {icon: 3, title:'提示'}, function(index){
+                layer.close(index);
+                element.remove();
+            });
+        });
 
         //监听提交
         form.on('submit(saveBtn)', function (data) {
             var result = data.field;
             // 处理单选和多选用户
-            if(radioUserList.length > 0) {
-                for (i in radioUserList) {
-                    var userId = $('#' + radioUserList[i]).attr('ts-selected');
+            for (var i in fields) {
+                if (fields[i].type == 'user') {
+                    var userId = $('#field' + fields[i].field_id).attr('ts-selected');
                     if(userId == '' || userId == null || userId == undefined) {
-                        result[radioUserList[i]] = 0;
+                        result['field' + fields[i].field_id] = 0;
                     } else {
-                        result[radioUserList[i]] = $('#' + radioUserList[i]).attr('ts-selected');
+                        result['field' + fields[i].field_id] = $('#field' + fields[i].field_id).attr('ts-selected');
                     }
-                }
-            }
-            if(checkUserList.length > 0) {
-                for (i in checkUserList) {
-                    result[checkUserList[i]] = userIdsList[checkUserList[i]].join(';');
+                } else if(fields[i].type == 'users') {
+                    result['field' + fields[i].field_id] = userIdsList['field' + fields[i].field_id].join(';');
+                } else if(fields[i].type == 'picture') {
+                    var imgs = $('#field' + fields[i].field_id).find('img');
+                    var ids = imgs.map(function(){
+                        if($(this).attr('attachment-id')) {
+                            return $(this).attr('attachment-id');
+                        }
+                    }).get();
+                    result['field' + fields[i].field_id] = ids.join(';');
                 }
             }
             // 处理新增任务信息

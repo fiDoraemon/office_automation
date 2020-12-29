@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <link rel="stylesheet" href="../../css/common.css">
+    <link rel="stylesheet" href="../../lib/jq-module/preview-img/preview.css?v=1">
     <style>
         /* 表单标签（暂时） */
         #fields .layui-form-label {
@@ -21,6 +22,29 @@
         .layui-form-label {
             font-weight: bold;
         }
+        /* 图片列表 */
+        .layui-upload-list .img-item {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .layui-upload-list .img-item img {
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc8c8;
+        }
+        .layui-upload-list .img-item i {
+            position: absolute;
+            right: 15%;
+            font-size: 18px;
+        }
+        .layui-upload-list .img-item span {
+            position: absolute;
+            bottom: -25%;
+            left: 30%;
+            font-size: 12px;
+            color: #ca2424;
+        }
     </style>
 </head>
 <body>
@@ -30,7 +54,7 @@
                 <div class="layui-form-item">
                     <label class="layui-form-label required">工作表</label>
                     <div class="layui-input-inline" style="width: 30%">
-                        <input type="text" id="table-name" autocomplete="off" class="layui-input" readonly>
+                        <input type="text" id="table-name" autocomplete="off" class="layui-input" disabled>
                     </div>
                 </div>
                 <div class="layui-form-item">
@@ -75,8 +99,9 @@
 <script src="../../js/common.js?v=1" charset="utf-8"></script>
 <script src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js" charset="utf-8"></script>
 <script src="../../lib/jq-module/paigusu.min.js" charset="utf-8"></script>
+<script src="../../lib/jq-module/preview-img/preview.js" charset="utf-8"></script>
 <script>
-    layui.use(['form', 'laydate', 'tableSelect', 'miniTab'], function () {
+    layui.use(['form', 'laydate', 'tableSelect', 'miniTab', 'upload'], function () {
         var $ = layui.$,
             form = layui.form,
             layer = layui.layer,
@@ -84,6 +109,8 @@
             upload = layui.upload,
             tableSelect = layui.tableSelect,
             miniTab = layui.miniTab;
+
+        showZoomImg('.zoomImg', 'img');         // 图片预览
         // 颜色选择
         $('.select-color').paigusu({
             color: '#666',           //初始色
@@ -92,10 +119,11 @@
             $('input[name="color"]').val('#' + obj.hex);
         });
         // 获取信息
-        var dateList = [];          // 日期字段列表
-        var radioUserList = [];          // 单选用户字段列表
-        var checkUserList = [];          // 多选用户字段列表
-        var missionList = [];           // 任务字段列表
+        // var dateList = [];          // 日期字段列表
+        // var radioUserList = [];          // 单选用户字段列表
+        // var checkUserList = [];          // 多选用户字段列表
+        // var missionList = [];           // 任务字段列表
+        var fields;         // 工作表字段列表
         var index = layer.load(2);
         $.get(
             "/office_automation/public/item/create?tableId=" + getQueryVariable('tableId'),
@@ -112,8 +140,8 @@
                     $('#label-serach').append(element);
                     form.render('select');
                     // 填充工作表字段
-                    var fields = res.data.fields;
-                    for (j in fields) {
+                    fields = res.data.fields;
+                    for (var j in fields) {
                         if(fields[j].type == 'textarea') {
                             var input = $(`
                             <div class="layui-form-item layui-form-text">
@@ -124,6 +152,12 @@
                             var input = $(`
                             <div class="layui-form-item">
                                 <label class="layui-form-label">${fields[j].name}</label>
+                            </div>`);
+                        } else if(fields[j].type == 'user' || fields[j].type == 'mission') {
+                            var input = $(`
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">${fields[j].name}</label>
+                                <div class="layui-input-inline"></div>
                             </div>`);
                         } else {
                             var input = $(`
@@ -151,9 +185,9 @@
                             input.find('.layui-input-block').append(select);
                         } else if(fields[j].type == 'date') {
                             input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" autocomplete="off" class="layui-input" readonly>`);
-                            dateList.push('field' + fields[j].field_id);
+                            // dateList.push('field' + fields[j].field_id);
                         } else if(fields[j].type == 'user') {
-                            input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly>`);
+                            input.find('.layui-input-inline').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly>`);
                             radioUserList.push('field' + fields[j].field_id);
                         } else if(fields[j].type == 'users') {
                             input.append(`
@@ -175,8 +209,16 @@
                                 input.find('.layui-input-block').append(`<input type="checkbox" name="field${fields[j].field_id}[]" title="${values[k]}" lay-filter="customize-check" value="${values[k]}">`);
                             }
                         } else if(fields[j].type == 'mission') {
-                            input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" autocomplete="off">`);
-                            missionList.push('field' + fields[j].field_id);
+                            input.find('.layui-input-inline').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" autocomplete="off">`);
+                            // missionList.push('field' + fields[j].field_id);
+                        } else if(fields[j].type == 'picture') {
+                            var element = `
+                            <blockquote class="layui-elem-quote layui-quote-nm" style="margin-top: 10px;" id="field${fields[j].field_id}">
+                                预览图：
+                                <button type="button" class="layui-btn layui-btn-primary layui-btn-sm" style="float: right"><i class="layui-icon layui-icon-upload-drag"></i></button>
+                                <div class="layui-upload-list zoomImgBox"></div>
+                            </blockquote>`;
+                            input.find('.layui-input-block').append(element);
                         } else {
                             input.find('.layui-input-block').append(`<input type="text" name="field${fields[j].field_id}" class="layui-input">`);
                         }
@@ -185,25 +227,133 @@
                     // 渲染表单（下拉选择和复选框）
                     form.render('select', 'add-item');
                     form.render('checkbox', 'add-item');
-                    for(var i in dateList) {            // 日期
-                        laydate.render({
-                            elem: '#' + dateList[i]
-                        });
-                    }
-                    for(var i in radioUserList) {           // 单选用户
-                        userSelectTable('#' + radioUserList[i]);
-                    }
                     userIdsList = [];            // 多选用户列表数组
-                    if(checkUserList.length > 0) {          // 多选用户
-                        departmentSelect($, form);
-                        // 定义多个多选用户全局变量
-                        for(var i in checkUserList) {
-                            userIdsList[checkUserList[i]] = [];
+                    fieldFileList = [];         // 字段文件列表
+                    departmentSelect();
+                    for (let i in fields) {
+                        if(fields[i].type == 'date') {
+                            laydate.render({
+                                elem: '#field' + fields[i].field_id
+                            });
+                        } else if(fields[i].type == 'user') {
+                            userSelectTable('#field' + fields[i].field_id);
+                        } else if(fields[i].type == 'mission') {
+                            missionSelectTable('#field' + fields[i].field_id);
+                        } else if(fields[i].type == 'picture') {
+                            fieldFileList[fields[i].field_id] = [];
+                            // 监听粘贴图片操作
+                            $('#field' + fields[i].field_id).on('paste', function (eventObj) {
+                                var event = eventObj.originalEvent;
+                                var imageRe = new RegExp(/image\/.*/);
+                                var fileList = $.map(event.clipboardData.items, function (o) {
+                                    if(!imageRe.test(o.type)){ return }
+                                    var blob = o.getAsFile();
+                                    return blob;
+                                });
+                                var element = $(this);
+                                for(var j in fileList) {
+                                    var fd = new FileReader();
+                                    fd.readAsDataURL(fileList[j]);
+                                    fieldFileList[fields[i].field_id].push(fileList[j]);
+                                    (function(e) {
+                                        fd.onload = function(){
+                                            element.find('.layui-upload-list').append(`
+                                            <div class="img-item">
+                                                <img class="zoomImg" data-caption="${fileList[j].name}" src="${this.result}" alt="${fileList[j].name}" width="80" height="80" is-new="1">
+                                                <i class="layui-icon layui-icon-close"></i>
+                                                <span>未上传</span>
+                                            </div>`);
+                                        }
+                                    })(fileList[j].name);
+                                }
+                                // console.log(fileList);
+                            });
+                            // 监听上传操作
+                            $('#field' + fields[i].field_id).find('button').click(function () {
+                                var fileList = fieldFileList[fields[i].field_id];
+                                if(fileList.length > 0) {
+                                    for(var j in fileList){
+                                        var form = new FormData();
+                                        form.append("file", fileList[j]);
+                                        // var index = layer.load(2);
+                                        $.ajax({
+                                            type: 'post',
+                                            data: form,
+                                            url:"/office_automation/public/attachment",
+                                            processData: false,
+                                            contentType: false,
+                                            success: function(res) {
+                                                // layer.close(index);
+                                                var element = $('#field' + fields[i].field_id).find("img[is-new='1']:first");
+                                                if(res.code == 0) {
+                                                    layer.msg('上传成功', {icon: 6});
+                                                    element.attr('attachment-id', res.data.id);
+                                                    element.attr('is-new', '0');
+                                                    element.parent().find('span').text('已上传');
+                                                    element.parent().find('span').css('color', 'green');
+                                                    fieldFileList[fields[i].field_id] = [];
+                                                } else {
+                                                    layer.msg('上传失败', {icon: 5});
+                                                    element.attr('is-new', '0');
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            });
+                            // upload.render({
+                            //     elem: '#field' + fields[i].field_id
+                            //     ,url: '/office_automation/public/attachment'
+                            //     ,multiple: true
+                            //     ,auto: false
+                            //     ,bindAction: '#field' + fields[i].field_id + '-start'
+                            //     ,choose: function(obj){
+                            //         this.files = obj.pushFile();
+                            //         obj.preview(function(index, file, result){
+                            //             $('#field' + fields[i].field_id + '-upload-list').append(`
+                            //             <div class="img-item">
+                            //                 <img class="zoomImg" data-caption="${file.name}" src="${result}" alt="${file.name}" width="80" height="80" is-new="1">
+                            //                 <i class="layui-icon layui-icon-close"></i>
+                            //                 <span>未上传</span>
+                            //             </div>`);
+                            //         });
+                            //     }
+                            //     ,done: function(res, index, upload){
+                            //         if(res.code == 0) {
+                            //             layer.msg('上传成功', {icon: 6})
+                                        // var element = $('#field' + fields[i].field_id + '-upload-list').find("img[is-new='1']:first");
+                                        // element.attr('attachment-id', res.data.id);
+                                        // element.attr('is-new', '0');
+                                        // element.parent().find('span').text('已上传');
+                                        // element.parent().find('span').css('color', 'green');
+                            //         } else {
+                            //             layer.msg('上传失败', {icon: 6});
+                            //         }
+                            //     }
+                            // });
+                        } else if(fields[i].type == 'users') {
+                            userIdsList['field' + fields[i].field_id] = [];         // 定义多个多选用户全局变量
                         }
                     }
-                    for(var i in missionList) {            // 任务
-                        missionSelectTable('#' + missionList[i]);
-                    }
+                    // for(var i in dateList) {            // 日期
+                    //     laydate.render({
+                    //         elem: '#' + dateList[i]
+                    //     });
+                    // }
+                    // for(var i in radioUserList) {           // 单选用户
+                    //     userSelectTable('#' + radioUserList[i]);
+                    // }
+                    // userIdsList = [];            // 多选用户列表数组
+                    // if(checkUserList.length > 0) {          // 多选用户
+                    //     departmentSelect();
+                    //     // 定义多个多选用户全局变量
+                    //     for(var i in checkUserList) {
+                    //         userIdsList[checkUserList[i]] = [];
+                    //     }
+                    // }
+                    // for(var i in missionList) {            // 任务
+                    //     missionSelectTable('#' + missionList[i]);
+                    // }
                     layer.close(index);
                 }
             }
@@ -222,9 +372,13 @@
                 }
             }
         });
-
-        form.on('checkbox(customize-check)', function(data){
-            console.log(data.value); //复选框value值，也可以通过data.elem.value得到
+        // 删除图片 TODO
+        $('body').on('click', '.layui-icon-close', function () {
+            var element = $(this).parent();
+            layer.confirm('确定要删除图片？', {icon: 3, title:'提示'}, function(index){
+                layer.close(index);
+                element.remove();
+            });
         });
 
         //监听提交
@@ -235,8 +389,27 @@
                 layer.msg('标签列表需用中文分号；分隔', {icon: 5});
                 return false;
             }
+            for (var i in fields) {
+                if(fields[i].type == 'user') {
+                    var userId = $('#field' + fields[i].field_id).attr('ts-selected');
+                    if(userId == '' || userId == null || userId == undefined) {
+                        result['field' + fields[i].field_id] = 0;
+                    } else {
+                        result['field' + fields[i].field_id] = $('#field' + fields[i].field_id).attr('ts-selected');
+                    }
+                } else if(fields[i].type == 'users') {
+                    result['field' + fields[i].field_id] = userIdsList['field' + fields[i].field_id].join(';');
+                } else if(fields[i].type == 'picture') {
+                    // 获取图片列表
+                    var imgs = $('#field' + fields[i].field_id).find('img');
+                    var ids = imgs.map(function(){
+                        return $(this).attr('attachment-id');
+                    }).get();
+                    result['field' + fields[i].field_id] = ids.join(';');
+                }
+            }
             // 处理任务
-            if(missionList.length > 0) {
+            // if(missionList.length > 0) {
                 // result = true;
                 // for (var i in missionList) {
                 //     $.ajax({
@@ -253,26 +426,23 @@
                 //     layer.msg('任务字段值中的任务不存在', {icon: 5});
                 //     return false;
                 // }
-            }
+            // }
             // 处理单选和多选用户
-            if(radioUserList.length > 0) {
-                for (i in radioUserList) {
-                    var userId = $('#' + radioUserList[i]).attr('ts-selected');
-                    if(userId == '' || userId == null || userId == undefined) {
-                        result[radioUserList[i]] = 0;
-                    } else {
-                        result[radioUserList[i]] = $('#' + radioUserList[i]).attr('ts-selected');
-                    }
-                }
-            }
-            if(checkUserList.length > 0) {
-                result.checkUserList = checkUserList.join(';');
-                for (i in checkUserList) {
-                    result[checkUserList[i]] = userIdsList[checkUserList[i]].join(';');
-                }
-            } else {
-                result.checkUserList = '';
-            }
+            // if(radioUserList.length > 0) {
+            //     for (i in radioUserList) {
+            //         var userId = $('#' + radioUserList[i]).attr('ts-selected');
+            //         if(userId == '' || userId == null || userId == undefined) {
+            //             result[radioUserList[i]] = 0;
+            //         } else {
+            //             result[radioUserList[i]] = $('#' + radioUserList[i]).attr('ts-selected');
+            //         }
+            //     }
+            // }
+            // if(checkUserList.length > 0) {
+            //     for (i in checkUserList) {
+            //         result[checkUserList[i]] = userIdsList[checkUserList[i]].join(';');
+            //     }
+            // }
             layer.confirm('确定提交？', {icon: 3, title:'提示'}, function(index){
                 layer.close(index);
                 var index = layer.load(2);

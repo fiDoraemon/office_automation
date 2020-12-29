@@ -315,7 +315,7 @@
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: 'add-item.html?v=1&tableId=' + $('#work-table').val(),
+                    content: 'add-item.html?v=2&tableId=' + $('#work-table').val(),
                 });
             } else if(obj.event === 'batchUpdate' || obj.event === 'batchAdd') {
                 if($('#work-table').val() == '') {
@@ -388,7 +388,7 @@
                 var index = layer.open({
                     title: '条目详情',
                     type: 2,
-                    content: '../table/read-item.html?itemId=' + data.item_id,
+                    content: '../table/read-item.html?v=5&itemId=' + data.item_id,
                     shade: 0.2,
                     maxmin:true,
                     shadeClose: true,
