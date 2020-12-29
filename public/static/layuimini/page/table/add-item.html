@@ -188,7 +188,7 @@
                             // dateList.push('field' + fields[j].field_id);
                         } else if(fields[j].type == 'user') {
                             input.find('.layui-input-inline').append(`<input type="text" name="field${fields[j].field_id}" id="field${fields[j].field_id}" class="layui-input" readonly>`);
-                            radioUserList.push('field' + fields[j].field_id);
+                            // radioUserList.push('field' + fields[j].field_id);
                         } else if(fields[j].type == 'users') {
                             input.append(`
                             <div class="layui-input-inline">
@@ -202,7 +202,7 @@
                                 </select>
                             </div>
                             <div id="field${fields[j].field_id}-userList" class="multipleSelect"></div>`);
-                            checkUserList.push('field' + fields[j].field_id);
+                            // checkUserList.push('field' + fields[j].field_id);
                         } else if(fields[j].type == 'checkbox') {
                             var values = fields[j].value.split('，');
                             for(var k in values) {
