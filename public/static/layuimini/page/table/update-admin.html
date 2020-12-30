@@ -6,40 +6,126 @@
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" media="all">
     <link rel="stylesheet" href="../../css/public.css" media="all">
     <link rel="stylesheet" href="../../lib/font-awesome-4.7.0/css/font-awesome.min.css" media="all">
-    <link rel="stylesheet" href="../../css/table/update-admin.css" media="all">
+    <link rel="stylesheet" href="../../css/common.css">
+    <style>
+        .input-title {
+            font-weight: bold;
+        }
+
+        .not-input {
+            color: #999999;
+        }
+
+        #table-name {
+            width: 400px;
+        }
+
+        #userList {
+            width: 800px;
+            height: 38px;
+            line-height: 1.3;
+            line-height: 38px \9;
+            border: none;
+            background-color: #fff;
+            border-radius: 2px;
+        }
+
+        .multiSelect a {
+            padding: 2px 5px;
+            background: #908e8e;
+            border-radius: 2px;
+            color: #fff;
+            display: block;
+            line-height: 20px;
+            height: 20px;
+            margin: 7px 4px 3px 2px;
+            float: left;
+        }
+
+        .multiSelect i {
+            margin-left: 4px;
+        }
+
+        .multiSelect a:link {
+            color: #fff;
+        }
+
+        a:-webkit-any-link {
+            color: -webkit-link;
+            cursor: pointer;
+        }
+
+        .icon-btn {
+            margin-top: 8px;
+        }
+
+        ul li {
+            height: 40px;
+            margin-bottom: 10px;
+        }
+
+        .stop {
+            margin-left: 50px;
+        }
+
+        .down, .up {
+            color: #6E6E6E;
+        }
+
+        .isShow {
+            float: left;
+            font-weight: bold;
+            padding-top: 10px;
+            line-height: 20px;
+            text-align: right;
+        }
+
+        /*上下移动行*/
+        .sortablelist {
+            position: relative;
+        }
+
+        .sortableitem {
+            position: relative;
+        }
+        /* 标签 */
+        .layui-form-label {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 <div class="layuimini-container">
     <div class="layuimini-main">
         <form class="layui-form layuimini-form">
             <div class="layui-form-item">
-                <label class="layui-form-label required input-title">工作表名：</label>
+                <label class="layui-form-label required">工作表名称：</label>
                 <div class="layui-input-inline">
                     <input type="text" id="table-name" name="tableName" lay-verify="required" autocomplete="off" placeholder="请输入表名称" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label input-title">状态：</label>
+                <label class="layui-form-label">状态：</label>
                 <div class="layui-input-inline" id="table-status"></div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label input-title">描述：</label>
+                <label class="layui-form-label ">描述：</label>
                 <div class="layui-input-block">
                     <textarea placeholder="请输入工作表描述" name="description" id="description" class="layui-textarea" rows="3"></textarea>
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label input-title not-input">创建人：</label>
+                <label class="layui-form-label">创建人：</label>
                 <div class="layui-input-inline">
                     <input type="text" id="create-user" name="" disabled autocomplete="off" class="layui-input">
                 </div>
-                <label class="layui-form-label input-title not-input">创建时间：</label>
+                <label class="layui-form-label ">创建时间：</label>
                 <div class="layui-input-inline">
                     <input type="text" id="create-time" name="" disabled autocomplete="off" class="layui-input">
                 </div>
             </div>
             <div class="layui-form-item ">
-                <label class="layui-form-label required input-title">表字段：</label>
+                <label class="layui-form-label">表字段：</label>
                 <div class="layui-inline">
                     <div id="" >
                         <ul id="field-List" class="sortablelist"></ul>
@@ -47,36 +133,38 @@
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label input-title not-input">可见人：</label>
+                <label class="layui-form-label">可见人：</label>
                 <div class="layui-input-inline">
                     <div id="userList" class="multiSelect"></div>
                 </div>
             </div>
             <div class="layui-form-item">
-                <label class="layui-form-label input-title required">新增可见人：</label>
-                <div class="layui-inline">
-                    <div class="layui-input-inline">
-                        <select id="select-department" lay-filter="select-department">
-                            <option value="">--选择部门--</option>
-                        </select>
-                    </div>
-                    <div class="layui-input-inline">
-                        <select id="select-user" lay-filter="select-user">
-                            <option value="">--选择员工--</option>
-                        </select>
-                    </div>
-                    <div class="layui-input-inline"></div>
+                <label class="layui-form-label required">新增可见人：</label>
+                <div class="layui-input-inline">
+                    <select id="select-department" lay-filter="select-department">
+                        <option value="">--选择部门--</option>
+                    </select>
                 </div>
+                <div class="layui-input-inline">
+                    <select id="select-user" lay-filter="select-user">
+                        <option value="">--选择员工--</option>
+                    </select>
+                </div>
+                <div id="newUserList" class="multiSelect" style="display: inline-block;width: 55%"></div>
             </div>
-
             <div class="layui-form-item">
-                <label class="layui-form-label input-title"></label>
-                <div class="layui-inline">
-                    <div class="layui-input-inline">
-                        <div id="newUserList" class="multiSelect">
-                        </div>
-                    </div>
+                <label class="layui-form-label">批量新建条目人员：</label>
+                <div class="layui-input-inline">
+                    <select class="select-department" select-user="create" lay-filter="multipleSelect-department">
+                        <option value="">请选择部门</option>
+                    </select>
                 </div>
+                <div class="layui-input-inline">
+                    <select id="create" lay-filter="multipleSelect-user">
+                        <option value="">请选择用户</option>
+                    </select>
+                </div>
+                <div id="create-userList" class="multipleSelect"></div>
             </div>
             <hr>
             <div class="layui-form-item" style="margin:50px 0 50px 150px;">
@@ -137,6 +225,22 @@
                         $("#table-status").append("<input  type=\"checkbox\" lay-filter=\"switch\" name=\"isOpen\" lay-skin=\"switch\" lay-text=\"启用|禁用\" class=\"table-status\">")
                     }
                     form.render('checkbox');
+                    // 填充可批量新增条目人员列表
+                    var createUserList = data.createUserList;
+                    departmentSelect();         // 填充部门下拉列表
+                    userIdsList = [];
+                    userIdsList['create'] = [];
+                    var element = '';
+                    for (var i in createUserList) {
+                        userIdsList['create'].push(createUserList[i].user_id);
+                        element += `
+                        <a href="javascript:;">
+                            <span lay-value="${createUserList[i].user_id}">${createUserList[i].user_name}</span>
+                            <i class="layui-icon layui-icon-close"></i>
+                        </a>
+                        `;
+                    }
+                    $("#create-userList").append(element);
                 }
             },
             error: function (res) {
@@ -429,23 +533,26 @@
         // 监听提交
         form.on('submit(save)', function (data) {
             var result = data.field;
+            let fieldList = getFieldList();
+            var status = $(".table-status").next().hasClass("layui-form-onswitch") ? 1 : 0;
+            var createUserList = userIdsList['create'].join(';');
+            var data = {
+                tableId: tableId,
+                tableName: result.tableName,
+                status: status,
+                description: result.description,
+                fieldList: fieldList,
+                newUserList: newUserList,
+                delUserList: delUserList,
+                createUserList: createUserList
+            }
             layer.confirm('确定修改工作表？', {icon: 3, title: '提示'}, function (index) {
                 layer.close(index);
                 let loadingIndex = layer.load(2);
-                let fieldList = getFieldList();
-                var status = $(".table-status").next().hasClass("layui-form-onswitch") ? 1 : 0;
                 $.ajax({
                     url: "/office_automation/public/index.php/index/admin_c/updateTable",
                     type: 'post',
-                    data: {
-                        tableId: tableId,
-                        tableName: result.tableName,
-                        status: status,
-                        description: result.description,
-                        fieldList: fieldList,
-                        newUserList: newUserList,
-                        delUserList: delUserList
-                    },
+                    data: data,
                     success: function (res) {
                         layer.close(loadingIndex);
                         if (res.code === 0) {

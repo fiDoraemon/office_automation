@@ -22,6 +22,7 @@ use app\index\model\TableUser;
 use app\index\model\TableWork;
 use app\index\model\User;
 use app\index\model\UserRole;
+use app\index\service\UserService;
 use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
@@ -453,21 +454,20 @@ class AdminC
     /**
      * 根据工作表id查询工作表详细信息
      */
-    public function getTableOfId(){
+    public function getTableOfId()
+    {
         $tableId = $_GET["tableId"];
-        $table = new TableWork();
-        $tableInfo = $table -> where("table_id",$tableId)
-                            -> field("table_id,table_name,creator_id,create_time,status,description")
-                            -> find();
-        $tableInfo -> creator_name = $tableInfo -> creator -> user_name;
-        $tableInfo -> fieldList = $tableInfo -> fields;
-        $tableUsers = $tableInfo -> users;
-        foreach ($tableUsers as $u){
-            $u -> user_name = $u -> user -> user_name;
-            unset( $u -> user);
+        $table = TableWork::get($tableId);
+        $table->creator_name = $table->creator->user_name;
+        $table->fieldList = $table->fields;
+        $table->createUserList = UserService::getUserByString($table->batch_create);
+        foreach ($table->users as $u) {
+            $u->user_name = $u->user->user_name;
+            unset($u->user);
         }
-        unset($tableInfo -> creator, $tableInfo -> fields);
-        return Result::returnResult(Result::SUCCESS, $tableInfo);
+        unset($table->creator, $table->fields, $table->batch_create);
+
+        return Result::returnResult(Result::SUCCESS, $table);
     }
 
     /**
@@ -487,7 +487,8 @@ class AdminC
             $table->where('table_id', $tableId)
                 ->update(['table_name' => $tableName,
                     'status' => $tableStatus,
-                    'description' => $description]);
+                    'description' => $description,
+                    'batch_create' => input('post.createUserList')]);
             //添加新可见人员
             $tableUser = new TableUser();
             $newUser = [];
@@ -545,12 +546,13 @@ class AdminC
      * 获取所有项目信息
      * @return array
      */
-    public function getAllProject(){
+    public function getAllProject()
+    {
         $project = new Project();
         try {
-            $projectList = $project -> where('project_id', '>', 0)
-                                    -> field("project_id,project_code,project_name,description,doc_stage")
-                                    -> select();
+            $projectList = $project->where('project_id', '>', 0)
+                ->field("project_id,project_code,project_name,description,doc_stage")
+                ->select();
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
@@ -561,21 +563,22 @@ class AdminC
     /**
      * 保存新项目信息
      */
-    public function saveProject(){
+    public function saveProject()
+    {
         $projectCode = $_POST["project_code"];
         $projectName = $_POST["project_name"];
         $description = $_POST["description"];
-        $stage       = $_POST["stage"];
+        $stage = $_POST["stage"];
         $project = new Project();
         $project->data([
             'project_code' => $projectCode,
             'project_name' => $projectName,
-            'description'  => $description,
-            'doc_stage'    => $stage,
-            'create_time'  =>  date('Y-m-d H:i:s', time())
+            'description' => $description,
+            'doc_stage' => $stage,
+            'create_time' => date('Y-m-d H:i:s', time())
         ]);
-        $resultCount = $project -> save();
-        if($resultCount > 0){
+        $resultCount = $project->save();
+        if ($resultCount > 0) {
             return Result::returnResult(Result::SUCCESS);
         }
         return Result::returnResult(Result::ERROR);
@@ -585,13 +588,14 @@ class AdminC
      * 获取项目详细信息
      * @return array
      */
-    public function getProjectOfId(){
+    public function getProjectOfId()
+    {
         $projectId = $_GET["projectId"];
         $project = new Project();
         try {
-            $projectInfo = $project -> where('project_id', $projectId)
-                                    -> field("project_id,project_code,project_name,description,doc_stage")
-                                    -> find();
+            $projectInfo = $project->where('project_id', $projectId)
+                ->field("project_id,project_code,project_name,description,doc_stage")
+                ->find();
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
@@ -602,20 +606,21 @@ class AdminC
     /**
      * 保存新项目信息
      */
-    public function updateProject(){
-        $projectId   = $_POST["project_id"];
+    public function updateProject()
+    {
+        $projectId = $_POST["project_id"];
         $projectCode = $_POST["project_code"];
         $projectName = $_POST["project_name"];
         $description = $_POST["description"];
-        $stage       = $_POST["stage"];
+        $stage = $_POST["stage"];
         $project = new Project;
-        $resultCount = $project ->save([
+        $resultCount = $project->save([
             'project_code' => $projectCode,
             'project_name' => $projectName,
-            'description'  => $description,
-            'doc_stage'    => $stage,
-        ],['project_id' => $projectId]);
-        if($resultCount > 0){
+            'description' => $description,
+            'doc_stage' => $stage,
+        ], ['project_id' => $projectId]);
+        if ($resultCount > 0) {
             return Result::returnResult(Result::SUCCESS);
         }
         return Result::returnResult(Result::ERROR);

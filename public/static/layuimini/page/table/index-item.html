@@ -231,7 +231,7 @@
 
         // 获取信息
         var tableList;          // 工作表列表
-        var radioUserList = [];          // 单选用户字段列表
+        // var radioUserList = [];          // 单选用户字段列表
         var isAdmin = false;            // 是否是管理员
         var index = layer.load(2);
         $.get(
@@ -315,7 +315,7 @@
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: 'add-item.html?v=2&tableId=' + $('#work-table').val(),
+                    content: 'add-item.html?v=3&tableId=' + $('#work-table').val(),
                 });
             } else if(obj.event === 'batchUpdate' || obj.event === 'batchAdd') {
                 if($('#work-table').val() == '') {

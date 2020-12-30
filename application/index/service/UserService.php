@@ -68,4 +68,23 @@ class UserService
             return true;
         }
     }
+
+    /**
+     * 根据以;分隔的工号字符串获取用户信息
+     * @param $string
+     * @return array|false|\PDOStatement|string|\think\Collection
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
+    public static function getUserByString($string) {
+        if($string) {
+            $userIdList = explode(';', $string);
+            $user = new User();
+            $userList = $user->where('user_id', 'in', $userIdList)->field('user_id,user_name')->select();
+            return $userList;
+        } else {
+            return [];
+        }
+    }
 }
