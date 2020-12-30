@@ -106,6 +106,7 @@
                 }
             }
             var fields = tableList[i].partFields;
+            var isBatchCreate = tableList[i].isBatchCreate;
             // 获取需要显示的列
             var cols = [
                 {field: 'sort', width: 80, title: 'id', align: "center",
@@ -179,8 +180,8 @@
                     } else {
                         localStorage.setItem("pageLimit", $('.layui-laypage-limits select').val());
                     }
-                    // 判断是否是管理员
-                    if(isAdmin) {
+                    // 判断是否可以批量新增条目
+                    if(isAdmin || isBatchCreate) {
                         $('#batchAdd').removeClass("layui-hide");
                     }
                 }

@@ -36,7 +36,9 @@ class TableWorkService
      */
     public static function getTableList($sessionUserId) {
         $tableWork = new TableWork();
-        $tableList = $tableWork->where('status', 1)->alias('tw')->join('oa_table_user tu', "tu.table_id = tw.table_id and tu.user_id = $sessionUserId")->field('tw.table_id,table_name')->select();
+        $tableList = $tableWork->alias('tw')->where('status', 1)
+            ->join('oa_table_user tu', "tu.table_id = tw.table_id and tu.user_id = $sessionUserId")
+            ->field('tw.table_id,table_name,batch_create')->select();
         foreach ($tableList as $table) {
             $table->partFields;
         }

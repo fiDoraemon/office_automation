@@ -29,8 +29,15 @@ class TableItemC extends Controller
 {
     /**
      * 显示工作表条目列表
-     *
-     * @return \think\Response
+     * @param string $tableId
+     * @param int $page
+     * @param int $limit
+     * @param string $keyword
+     * @return array
+     * @throws \think\Exception
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
      */
     public function index($tableId = '', $page = 1, $limit = 10, $keyword = '')
     {
@@ -118,6 +125,9 @@ class TableItemC extends Controller
         foreach ($tableList as $table) {
             // 获取工作表的可见人列表
             $table->viewUserList = TableWorkService::getViewUserList($table->table_id);
+            // 判断当前用户是否可以批量新增条目
+            $table->isBatchCreate = (stripos($table->batch_create, $sessionUserId) !== false)? 1 : 0;
+            unset($table->batch_create);
         }
         $data = [
             'tableList' => $tableList,
@@ -128,9 +138,10 @@ class TableItemC extends Controller
     }
 
     /**
-     * 显示创建资源表单页.
-     *
-     * @return \think\Response
+     * 显示创建资源表单页
+     * @param $tableId
+     * @return array
+     * @throws \think\exception\DbException
      */
     public function create($tableId)
     {
