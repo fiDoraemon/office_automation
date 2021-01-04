@@ -81,7 +81,7 @@ class ErpMaterialC
             // 判断是否存在空值以及料编码是否存在
             for ($i = 0; $i < $count; $i ++) {
                 $codeRows[$i] = trim($codeRows[$i]);
-                if(!$codeRows[$i] || !$nameRows[$i]) {
+                if($codeRows[$i] === '' || $nameRows[$i] === '') {
                     $errorResult['msg'] = '第' . ($i + 1) . '行存在空值';
                     return $errorResult;
                 }
@@ -133,7 +133,7 @@ class ErpMaterialC
                 $codeRows[$i] = trim($codeRows[$i]);
                 $numberRows[$i] = trim($numberRows[$i]);
                 $inventoryRows[$i] = trim($inventoryRows[$i]);
-                if(!$codeRows[$i] || !$numberRows[$i] || !$inventoryRows[$i]) {
+                if($codeRows[$i] === '' || $numberRows[$i] === '' || $inventoryRows[$i] === '') {
                     $errorResult['msg'] = '第' . ($i + 1) . '行存在空值';
                     return $errorResult;
                 }
@@ -189,7 +189,7 @@ class ErpMaterialC
         }
         // 判断是否存在空值以及料编码是否存在等
         for ($i = 0; $i < $count; $i ++) {
-            if(!$codeRows[$i] || !$amountRows[$i]) {
+            if($codeRows[$i] === '' || $amountRows[$i] === '') {
                 $errorResult['msg'] = '第' . ($i + 1) . '行存在空值';
                 return $errorResult;
             }

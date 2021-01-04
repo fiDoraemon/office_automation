@@ -4,31 +4,28 @@ keep_login = 1;  //0代表不保持登录，1代表保持登录
 var token = getCookie('user_token');
 $.ajax({
     url: "/office_automation/public/index.php/index/login_c/checkLogin",
-    type:'get',
-    data: {
-    },
-    success: function(res){
-        if(res.code === 0){
+    type: 'get',
+    data: {},
+    success: function (res) {
+        if (res.code === 0) {
             window.location = '../index.html';
-        }else if(token != "" && token != null){ //检查cookie中是否存在token信息
+        } else if (token != "" && token != null) { //检查cookie中是否存在token信息
             $.ajax({
                 url: "/office_automation/public/index.php/index/login_c/tokenLogin",
-                type:'post',
+                type: 'post',
                 data: {
-                    userToken : token
+                    userToken: token
                 },
-                success: function(res){
-                    if(res.code === 16){
+                success: function (res) {
+                    if (res.code === 16) {
                         //token登录成功,跳转页面
                         window.location = '../index.html';
                     }
                 },
-                error: function(res){
+                error: function (res) {
                 }
             });
         }
-    },
-    error: function(res){
     }
 });
 
@@ -39,28 +36,40 @@ $.ajax({
 // });
 
 //发送登录请求
-function sendData(){
-    var userNum  = $("#user-num").val();
-    var userPwd  = $("#user-pwd").val();
+function sendData() {
+    var userNum = $("#user-num").val();
+    var userPwd = $("#user-pwd").val();
     var pageCode = $("#page-code").val();
     $.ajax({
         url: "/office_automation/public/index.php/index/login_c/login",
-        type:'post',
+        type: 'post',
         //dataType: 'json',//返回的内容的类型，由于PHP文件是直接echo的，那么这里就是text
         data: {
-            userNum  : userNum,
-            userPwd  : userPwd,
-            pageCode : pageCode,
+            userNum: userNum,
+            userPwd: userPwd,
+            pageCode: pageCode,
             keepLogin: keep_login
         },
-        success: function(res){
+        success: function (res) {
             var code = res['code'];
             var user_token = res["data"];
             switch (code) {
                 case 0:
-                    if(keep_login === 1){
-                        setCookie("user_token",user_token,7);
+                    if (keep_login === 1) {
+                        setCookie("user_token", user_token, 7);
                     }
+                    // 同时登录旧OA系统
+                    $.post(
+                        "/mission_system/mission_common.php",
+                        {
+                            funcname: 'login',
+                            userId: res.data.userId,
+                            userName: res.data.userName
+                        },
+                        function(res){
+                            console.log(res);
+                        }
+                    );
                     loginSuccess();
                     break;
                 case 1:
@@ -74,28 +83,26 @@ function sendData(){
                     break;
             }
         },
-        error: function(data){
+        error: function (data) {
         }
     });
 }
 
 //设置cookie
-function setCookie(cname,cvalue,exdays)
-{
+function setCookie(cname, cvalue, exdays) {
     var d = new Date();
-    d.setTime(d.getTime()+(exdays*24*60*60*1000));
+    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
     var expires = "expires=" + d.toGMTString() + "; path=/office_automation/public/static/layuimini";
     document.cookie = cname + "=" + cvalue + "; " + expires;
 }
+
 //获取cookie
-function getCookie(cname)
-{
+function getCookie(cname) {
     var name = cname + "=";
     var ca = document.cookie.split(';');
-    for(var i=0; i<ca.length; i++)
-    {
+    for (var i = 0; i < ca.length; i++) {
         var c = ca[i].trim();
-        if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+        if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
     }
     return "";
 }
@@ -103,9 +110,9 @@ function getCookie(cname)
 /**
  * 登录成功，跳转页面
  */
-function loginSuccess(){
+function loginSuccess() {
     // window.location = '../index.html';
-    layer.msg('登录成功' ,{time: 500},function() {
+    layer.msg('登录成功', {time: 500}, function () {
         window.location = '../index.html';
     });
 }
@@ -113,8 +120,8 @@ function loginSuccess(){
 /**
  * 用户填写信息有误导致登录失败
  */
-function loginFail(){
-    layer.msg('用户名或密码有误！', function() {
+function loginFail() {
+    layer.msg('用户名或密码有误！', function () {
 
     });
 }
@@ -122,8 +129,8 @@ function loginFail(){
 /**
  * 系统出错导致的登录失败
  */
-function loginError(){
-    layer.msg('系统繁忙', function() {
+function loginError() {
+    layer.msg('系统繁忙', function () {
 
     });
 }
@@ -131,14 +138,14 @@ function loginError(){
 /**
  * 验证码输入错误
  */
-function pageCodeError(){
-    layer.msg('验证码输入错误！', function() {
+function pageCodeError() {
+    layer.msg('验证码输入错误！', function () {
 
     });
 }
 
 
-layui.use(['form','jquery'], function () {
+layui.use(['form', 'jquery'], function () {
     var $ = layui.jquery,
         form = layui.form,
         layer = layui.layer;

@@ -232,7 +232,7 @@ class TableItemC extends Controller
             return Result::returnResult(Result::NO_ACCESS);
         }
         $tableItem->creator_name = UserService::userIdToName($tableItem->creator_id, 1);          // 关联发起人
-        $tableItem->table_name = $tableItem->table->table_name;         // 关联工作表
+//        $tableItem->table_name = $tableItem->table->table_name;         // 关联工作表
         $tableItem->fields = TableWorkService::getItemFieldList($tableItem);            // 获取工作表字段
         $tableItem->label_list = implode('；', TableWorkService::getItemLabelList($id));         // 获取条目标签列表
         $labelList = LabelService::getLabelList();          // 获取标签列表

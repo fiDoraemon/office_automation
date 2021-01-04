@@ -1084,10 +1084,10 @@ class DocumentC
      * @param $stagePre  项目阶段前缀
      * @return mixed
      */
-    public function getProjectStageFix($stagePre){
-        $listStageFix = ProjectStageInfo::where('project_stage_pre',$stagePre) -> column('project_stage_fix');
-        return $listStageFix;
-    }
+//    public function getProjectStageFix($stagePre){
+//        $listStageFix = ProjectStageInfo::where('project_stage_pre',$stagePre) -> column('project_stage_fix');
+//        return $listStageFix;
+//    }
 
     /**
      * 查询我借阅的文档
