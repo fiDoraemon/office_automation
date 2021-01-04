@@ -80,7 +80,7 @@ class LoginC
             if ($checkResult) {
                 $userInfo = Session::get('info');
                 $data = [
-                    'userId' => $userInfo['userId'],
+                    'userId' => $userInfo['user_id'],
                     'token' => $userInfo["token"]
                 ];
                 return Result::returnResult(Result::SUCCESS, $data);
