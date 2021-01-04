@@ -52,7 +52,7 @@ function sendData() {
         },
         success: function (res) {
             var code = res['code'];
-            var user_token = res["data"];
+            var user_token = res.data.token;
             switch (code) {
                 case 0:
                     if (keep_login === 1) {
@@ -63,7 +63,7 @@ function sendData() {
                         "/mission_system/mission_common.php",
                         {
                             funcname: 'login',
-                            userId: res.data.userId,
+                            userId: userNum,
                             userName: res.data.userName
                         },
                         function(res){

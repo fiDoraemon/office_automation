@@ -79,7 +79,11 @@ class LoginC
             $checkResult = $this->checkUser($userNum, $userPwd, $keepLogin);
             if ($checkResult) {
                 $userInfo = Session::get('info');
-                return Result::returnResult(Result::SUCCESS, $userInfo["token"]);
+                $data = [
+                    'userId' => $userInfo['userId'],
+                    'token' => $userInfo["token"]
+                ];
+                return Result::returnResult(Result::SUCCESS, $data);
             } else {
                 return Result::returnResult(Result::NO_USER_INFO, null);
             }
