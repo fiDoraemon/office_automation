@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>书库</title>
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" type="text/css">
+    <script type="text/javascript" src="../../lib/layui-v2.5.5/layui.js" ></script>
+    <script type="text/javascript" src="../../js/library/book.js"></script>
+</head>
+<body>
+<div>
+    <table id="book" lay-filter="test"></table>
+</div>
+
+<script type="text/html" id="top">
+    <div class="layui-btn-container">
+        <input class="layui-btn layui-btn-sm" type="text" name="search">
+        <button class="layui-btn layui-btn-sm" type="submit" lay-event="search">搜索</button>
+<!--        <button class="layui-btn layui-btn-sm" lay-event="update">编辑</button>-->
+        <select class="layui-btn layui-btn-sm" name="city" lay-verify="">
+            <option value="">请选择一个城市</option>
+            <option value="010">北京</option>
+            <option value="021">上海</option>
+            <option value="0571">杭州</option>
+        </select>
+
+    </div>
+</script>
+</body>
+</html>

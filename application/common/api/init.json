@@ -185,7 +185,7 @@
         },
         {
           "title": "图书馆",
-          "href": "http://192.168.0.249/book_system/book_portal.php",
+          "href": "page/library/view-repository.html",
           "icon": "fa fa-book",
           "target": "_self"
         },

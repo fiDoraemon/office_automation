@@ -82,7 +82,6 @@ function getQueryVariable(variable) {
             return pair[1];
         }
     }
-
     return false;
 }
 
@@ -158,7 +157,6 @@ function nodeToString(node) {
     tmpNode.appendChild(node.cloneNode(true));
     var str = tmpNode.innerHTML;
     tmpNode = node = null;
-
     return str;
 }
 
@@ -187,7 +185,6 @@ function departmentSelect() {
 function userSelectTable(element) {
     layui.use(['tableSelect'], function () {
         var tableSelect = layui.tableSelect;
-
         tableSelect.render({
             elem: element,
             checkedKey: 'user_id',
