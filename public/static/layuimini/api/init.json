@@ -134,9 +134,15 @@
           "target": "_self",
           "child": [
             {
-              "title": "图书馆",
-              "href": "http://192.168.0.249/book_system/book_portal.php",
+              "title": "书库",
+              "href": "page/library/view_repository.html",
               "icon": "fa fa-snowflake-o",
+              "target": "_self"
+            },
+            {
+              "title": "我的借阅",
+              "href": "page/library/myBorrow.html",
+              "icon": "fa fa-calendar",
               "target": "_self"
             }
           ]

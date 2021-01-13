@@ -4,27 +4,64 @@
     <meta charset="UTF-8">
     <title>书库</title>
     <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" type="text/css">
-    <script type="text/javascript" src="../../lib/layui-v2.5.5/layui.js" ></script>
+    <script type="text/javascript" src="../../lib/layui-v2.5.5/layui.js"></script>
     <script type="text/javascript" src="../../js/library/book.js"></script>
+    <script type="text/javascript" src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+    <script src="../../js/common.js" charset="utf-8"></script>
 </head>
 <body>
-<div>
-    <table id="book" lay-filter="test"></table>
-</div>
+    <div class="layuimini-main">
+            <div style="margin: 10px 10px 10px 50px">
+                <form class="layui-form layui-form-pane" action="" lay-filter="data-search" id="searchBooks">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">图书分类</label>
+                            <div class="layui-input-inline">
+                                <select class="projectSelect" name="librarySelect" lay-filter="library_select" id="library_select">
+                                    <option value="0" selected>所有</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline" align="center">
+                            <label class="layui-form-label">当前状态</label>
+                            <div class="layui-input-inline">
+                                <select class="stageSelect" name="stage_select"  lay-filter="borrowStage" id="borrow_Select">
+                                    <option value="0" selected>可借阅</option>
+                                    <option value="1" selected>已借出</option>
+                                    <option value="2" selected>图书下架</option>
+                                    <option value="3" selected>图书采购中</option>
+                                    <option value="" selected>请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label">关键字</label>
+                            <div class="layui-input-inline">
+                                <input type="text" id="searchContext" name="keyword" autocomplete="off" class="layui-input" placeholder="书名/作者">
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <button type="submit" class="layui-btn layui-btn-primary"  lay-submit lay-filter="data-search-btn"><i class="layui-icon"></i> 搜 索</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
 
-<script type="text/html" id="top">
-    <div class="layui-btn-container">
-        <input class="layui-btn layui-btn-sm" type="text" name="search">
-        <button class="layui-btn layui-btn-sm" type="submit" lay-event="search">搜索</button>
-<!--        <button class="layui-btn layui-btn-sm" lay-event="update">编辑</button>-->
-        <select class="layui-btn layui-btn-sm" name="city" lay-verify="">
-            <option value="">请选择一个城市</option>
-            <option value="010">北京</option>
-            <option value="021">上海</option>
-            <option value="0571">杭州</option>
-        </select>
+         <!--   <table class="layui-hide" id="fileList" lay-filter="fileListFilter"></table>-->
+
+        <script type="text/html" id="borrow">
+            <a class="layui-btn layui-btn-sm" lay-event="borrow">借阅</a>
+        </script>
+
+        <script type="text/html" id="top">
+            <a class="layui-btn layui-btn-sm" lay-event="myBorrow">我的借阅</a>
+        </script>
 
     </div>
-</script>
+    <div>
+        <table id="book" lay-filter="fileListFilter"></table>
+    </div>
+
+
 </body>
 </html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>我的借阅</title>
+    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" type="text/css">
+    <script type="text/javascript" src="../../lib/layui-v2.5.5/layui.js"></script>
+    <script type="text/javascript" src="../../js/library/myBorrow.js"></script>
+    <script type="text/javascript" src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+    <script src="../../js/common.js" charset="utf-8"></script>
+</head>
+<body>
+    <div>
+        <table id="borrowBook" lay-filter="borrowFilter"></table>
+    </div>
+    <script type="text/html" id="borrowEnd">
+        <a class="layui-btn layui-btn-sm" lay-event="sendBack">归还</a>
+    </script>
+</body>
+</html>
