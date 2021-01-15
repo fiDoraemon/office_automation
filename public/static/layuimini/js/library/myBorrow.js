@@ -12,13 +12,45 @@ layui.use(['table','form'],function () {
         , limit: 15
         , toolbar: '#top'
         , cols: [[
-            {field: 'id', title: "序号"},
+            {field: 'id',title: "序号",type:"numbers"},
             {field: 'book_id', title: "图书编号"},
             {field: 'name', title: "图书名称",},
             {field: 'start_time', title: "借阅开始时间",},
+            {field: 'end_time',title: "归还时间"},
             {field: 'note', title: "备注",},
             {title: '操作', align: 'center', toolbar: '#borrowEnd'},
         ]]
+    })
+
+    table.on('tool(borrowFilter)',function (obj){
+        var data = obj.data;
+        var event = obj.event;
+        if (event === "sendBack"){
+            layer.open({
+                type:0
+                ,
+            })
+            $.ajax({
+                url:"/office_automation/public/index.php/index/library_c/sendBook"
+                ,type: "POST"
+                ,data:{
+                    data
+                },
+                success (res){
+                    if (res["code"] === 0){
+                        alert("归还成功");
+                        table.reload('borrowBook'),{
+                            url:"/office_automation/public/index.php/index/library_c/getMyBorrow"
+                            ,page:{
+                                curr:1
+                            }
+                        }
+                    }else {
+                        alert(res['msg']);
+                    }
+                }
+            })
+        }
 
     })
 })

@@ -185,9 +185,22 @@
         },
         {
           "title": "图书馆",
-          "href": "page/library/view-repository.html",
+          "href": "",
           "icon": "fa fa-book",
-          "target": "_self"
+          "target": "_self",
+          "child":[
+            {
+            "title": "书库",
+            "href": "page/library/view-repository.html",
+            "icon": "fa fa-bookmark ",
+            "target": "_self"
+          },{
+            "title": "我的借阅记录",
+            "href": "page/library/myBorrow.html",
+            "icon": "fa fa-clipboard",
+            "target": "_self"
+          }
+          ]
         },
         {
           "title": "心愿单",
@@ -240,6 +253,26 @@
           "href": "page/project/index-project.html",
           "icon": "fa fa-meetup",
           "target": "_self"
+        },
+        {
+          "title": "图书馆管理",
+          "href": "page/user/index.html",
+          "icon": "fa fa-meetup",
+          "target": "_self",
+          "child": [
+            {
+              "title": "书库管理",
+              "href": "page/library/libraryAdministration/administrator-repository.html",
+              "icon": "fa fa-list",
+              "target": "_self"
+            },
+            {
+              "title": "借阅情况",
+              "href": "page/library/libraryAdministration/borrowAdministrator.html",
+              "icon": "fa fa-plus",
+              "target": "_self"
+            }
+          ]
         }
       ]
     }

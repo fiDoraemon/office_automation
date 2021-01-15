@@ -10,18 +10,17 @@ layui.use(['table','form'],function (){
         , height: 600 //容器高度
         , page: true
         , limit:15
-        , toolbar: '#top'
+        , toolbar: '#add'
         , cols: [[
             /*{field: 'longSelect',        title: "多选",        type:'checkbox'},*/
-            {field: 'id',                title: "序号",  type:"numbers",       align:'center', },
-            {field: 'book_id',           title: "书本编号",                     align:'center', },
-            {field: 'name',              title: "图书名称",                     align:'center', },
-            {field: 'publisher',         title: "出版社",                       align:'center', },
-            {field: 'borrow_status',     title: "借阅状态",                     align:'center', },
-            {field: 'classification',    title: "图书分类",                     align:'center', },
-            {title: '操作',               align:'center',                       toolbar:'#borrow'}
+            {field: 'id',                title: "序号",       type:"numbers"},
+            {field: 'book_id',           title: "书本编号"},
+            {field: 'name',              title: "图书名称",},
+            {field: 'publisher',         title: "出版社",},
+            {field: 'borrow_status',     title: "借阅状态",},
+            {field: 'classification',    title: "图书分类",},
+            {title: '操作',               align:'center',    toolbar:'#edit'},
         ]]
-        ,id:'fileList'
     })
     form.on("submit(data-search-btn)",function (data){
         var result = data.field;
@@ -47,18 +46,7 @@ layui.use(['table','form'],function (){
                     data
                 }
                 ,success: function(res) {
-                    if (res["code"] === 0){
-                        alert("借阅成功！请保管好书籍，完成阅读后及时归还！谢谢！");
-                        /*table.reload('fileList'),{
-                            url:"/office_automation/public/index.php/index/library_c/getAllBooks"
-                            ,page:{
-                                curr:1
-                            }
-                        }*/
-                        table.render('fileList');
-                    }else {
-                        alert(res['msg']);
-                    }
+
                 }
             })
         }
@@ -75,12 +63,10 @@ function queryClassification(form){
             var classifition = res["data"];
             for (var i = 0; i < classifition.length; i++){
                 var $option = "<option value='" + classifition[i]['id'] + "'>" + classifition[i]['classification'] + "</option>";
-                $("#library_select").append($option);
+                $("#classification_select").append($option);
             }
             //需要重新加载
             form.render('select');
-        },
-        error: function(data){
         }
     })
 }

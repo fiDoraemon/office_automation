@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>增加图书</title>
+    <link rel="stylesheet" href="../../../lib/layui-v2.5.5/css/layui.css" type="text/css">
+    <script type="text/javascript" src="../../../lib/layui-v2.5.5/layui.js"></script>
+    <script type="text/javascript" src="../../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+    <script type="text/javascript" src="../../../js/library/libraryAdministration/add-book.js"></script>
+    <script src="../../../js/common.js" charset="utf-8"></script>
+
+</head>
+<body>
+<div>
+    <fieldset class="layui-elem-field layui-field-title">
+        <legend>增加图书</legend>
+    </fieldset>
+</div>
+<div class="layui-form layui-main" action="">
+    <div class="layui-form-item">
+        <label class="layui-form-label">图书名称</label>
+        <div class="layui-input-inline">
+            <input type="text" id="book-name" name="book" required lay-verify="required" placeholder="请输入图书名称"
+                   autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">出版社</label>
+        <div class="layui-input-inline">
+            <input type="text" id="book-publisher" name="publisher" required lay-verify="required"
+                   placeholder="请输入图书出版社" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">图书分类</label>
+        <div class="layui-input-inline">
+            <select name="select" lay-verify="required" id="classification_select">
+                <option value="">请选择</option>
+            </select>
+        </div>
+        <div>
+            <a name="add_Classification" id="add" class="layui-btn-sm layui-btn" lay-event="add"
+               lay-filter="add-classification">增加分类</a>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">图书状态</label>
+        <div class="layui-input-block">
+            <input type="radio" name="status" value="0" title="可以借阅">
+            <input type="radio" name="status" value="2" title="已下架">
+            <input type="radio" name="status" value="3" title="采购中">
+        </div>
+    </div>
+    <div class="layui-form-item layui-form-text">
+        <label class="layui-form-label">备注</label>
+        <div class="layui-input-block">
+            <textarea name="desc" placeholder="请输入内容" class="layui-textarea"></textarea>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button type="submit" class="layui-btn" lay-submit lay-filter="add-book-data" name="add-book-btn">立即提交</button>
+            <button type="reset" class="layui-btn">重置</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

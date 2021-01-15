@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <title>书库</title>
-    <link rel="stylesheet" href="../../lib/layui-v2.5.5/css/layui.css" type="text/css">
-    <script type="text/javascript" src="../../lib/layui-v2.5.5/layui.js"></script>
-    <script type="text/javascript" src="../../js/library/book.js"></script>
-    <script type="text/javascript" src="../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
-    <script src="../../js/common.js" charset="utf-8"></script>
-    <script type="text/javascript" src="../../js/library/libraryAdministration/add-book.js"></script>
+    <link rel="stylesheet" href="../../../lib/layui-v2.5.5/css/layui.css" type="text/css">
+    <script type="text/javascript" src="../../../lib/layui-v2.5.5/layui.js"></script>
+    <script type="text/javascript" src="../../../js/library/libraryAdministration/administrator-repository.js"></script>
+    <script type="text/javascript" src="../../../lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+    <script src="../../../js/common.js" charset="utf-8"></script>
 </head>
 <body>
 <div class="layuimini-main">
@@ -52,12 +51,18 @@
         </form>
     </div>
     <!--   <table class="layui-hide" id="fileList" lay-filter="fileListFilter"></table>-->
-    <script type="text/html" id="borrow">
-        <a class="layui-btn layui-btn-sm" lay-event="borrow">借阅</a>
+    <script type="text/html" id="edit">
+        <a class="layui-btn layui-btn-sm" lay-event="edit">编辑</a>
     </script>
+    <script type="text/html" id="add">
+        <a class="layui-btn layui-btn-sm" lay-event="add" href="add-book.html">增加图书</a>
+    </script>
+
 </div>
 <div>
     <table id="book" lay-filter="fileListFilter"></table>
 </div>
+
+
 </body>
 </html>

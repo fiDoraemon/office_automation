@@ -42,6 +42,8 @@ class Result
     const HAVE_NO_ROOT                  = 34;
     const EXIST_BORROW                  = 35;
     const WAITING_DOC_ADMIN             = 36;
+    const LIBRARY_BORROW_FAIL           = 37;
+    const LIBRARY_SENDBACK_FAIL         = 38;
 
     // 对应结果
     public static $resultMsg = [
@@ -80,7 +82,9 @@ class Result
         self::PIC_UPLOAD_FAIL           => '图片上传失败',
         self::HAVE_NO_ROOT              => '没有根任务',
         self::EXIST_BORROW              => '已经存在借阅信息',
-        self::WAITING_DOC_ADMIN         => '等待文控审批中'
+        self::WAITING_DOC_ADMIN         => '等待文控审批中',
+        self::LIBRARY_BORROW_FAIL       => '借阅失败,该状态下的图书不可借阅',
+        self::LIBRARY_SENDBACK_FAIL     => '归还失败'
     ];
 
     // 返回结果
